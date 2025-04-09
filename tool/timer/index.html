@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>タイマーツール - ひみっちゃんのKAMIツール</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="timer.css">
+</head>
+<body>
+    <header>
+        <h1><a href="../">ひみっちゃんのKAMIツール</a> - タイマーツール</h1>
+        <nav>
+            <ul>
+                <li><a href="https://hmts.jp">ひみっちゃん（メインサイト）へ</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <h2>タイマー</h2>
+        <div id="timer-display">00:00</div>
+        <div id="timer-controls">
+            <label for="minutes">分:</label>
+            <input type="number" id="minutes" min="0" value="5">
+            <label for="seconds">秒:</label>
+            <input type="number" id="seconds" min="0" max="59" value="0">
+            <button id="start-button">スタート</button>
+            <button id="stop-button" disabled>ストップ</button>
+            <button id="reset-button">リセット</button>
+        </div>
+        <audio id="alarm-sound" src="alarm.mp3" preload="auto"></audio>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 ひみっちゃん</p>
+    </footer>
+
+    <script src="timer.js"></script>
+</body>
+</html>
