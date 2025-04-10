@@ -1,0 +1,241 @@
+/* タイマーUI拡張スタイル */
+
+/* 現在時刻表示 */
+.current-time {
+    font-size: 1.2rem;
+    font-weight: 500;
+    margin-right: 15px;
+    color: #fff;
+    background-color: rgba(255, 255, 255, 0.1);
+    padding: 5px 10px;
+    border-radius: 4px;
+    display: inline-block;
+}
+
+.header-tools {
+    display: flex;
+    align-items: center;
+}
+
+/* ヘッダーのツールエリアをレスポンシブに */
+@media (max-width: 600px) {
+    .header-tools {
+        margin-top: 10px;
+    }
+    
+    .header-top {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .current-time {
+        margin-right: 10px;
+    }
+}
+
+/* タイマー表示強化 */
+#timer-display {
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.1);
+    transition: all 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
+/* プログレスリングのスムーズアニメーション */
+.progress-ring-circle {
+    transition: stroke-dashoffset 0.7s cubic-bezier(0.33, 1, 0.68, 1), 
+                stroke 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* タイマー開始時のアニメーション強化 */
+#timer-display.timer-started {
+    transform: scale(1.08);
+    opacity: 0.9;
+    text-shadow: 0 0 10px rgba(40, 167, 69, 0.5);
+}
+
+/* タイマー停止時のアニメーション強化 */
+#timer-display.timer-stopped {
+    transform: scale(1);
+    opacity: 1;
+}
+
+/* タイマー終了時の特別アニメーション */
+#timer-display.timer-ended {
+    animation: pulseEnd 1.5s infinite alternate;
+    color: #dc3545;
+    text-shadow: 0 0 10px rgba(220, 53, 69, 0.6);
+}
+
+@keyframes pulseEnd {
+    0% { transform: scale(1); }
+    100% { transform: scale(1.1); }
+}
+
+/* タイマーコンテナのホバーエフェクト */
+.timer-container:hover {
+    transform: translateY(-2px);
+    transition: transform 0.3s ease;
+}
+
+/* ボタンのタップフィードバック改善 */
+#timer-controls button:active {
+    transform: scale(0.92);
+    transition: transform 0.1s ease;
+    opacity: 0.8;
+}
+
+/* スタートボタンの強調表示 */
+#start-button {
+    position: relative;
+    overflow: hidden;
+}
+
+#start-button::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0) 70%);
+    opacity: 0;
+    transition: opacity 0.4s ease;
+}
+
+#start-button:hover::after {
+    opacity: 1;
+}
+
+/* 入力フィールドの視覚的フィードバック */
+#timer-controls input[type="number"]:focus {
+    box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.25);
+    border-color: #28a745;
+}
+
+/* モバイル向けレイアウト改善 */
+@media (max-width: 600px) {
+    /* より大きくボタンを配置 */
+    #timer-controls button {
+        min-height: 50px;
+        margin: 8px;
+    }
+    
+    /* タイマーコンテナとボタングループの間隔 */
+    .timer-container {
+        margin-bottom: 2rem;
+    }
+    
+    /* アクションボタン領域の余白調整 */
+    .action-buttons {
+        padding: 0.5rem;
+    }
+    
+    /* タップターゲットを拡大 */
+    .adjust-button {
+        min-width: 44px;
+        min-height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    /* 入力フィールドの可読性向上 */
+    #timer-controls input[type="number"] {
+        font-size: 1.2rem;
+        padding: 8px 5px;
+    }
+}
+
+/* テーマに依存しない緊急時の色設定 */
+.time-critical {
+    color: #dc3545 !important;
+    animation: criticalPulse 1s infinite alternate;
+}
+
+@keyframes criticalPulse {
+    0% { opacity: 0.8; }
+    100% { opacity: 1; }
+}
+
+/* スワイプジェスチャーガイド */
+.swipe-guide {
+    display: none; /* デフォルトで非表示 */
+    text-align: center;
+    margin: 5px 0 15px;
+    font-size: 0.9rem;
+    color: #777;
+    padding: 8px;
+    border-radius: 8px;
+    background-color: rgba(0, 0, 0, 0.03);
+}
+
+/* タッチデバイスでのみガイド表示 */
+@media (hover: none) and (pointer: coarse) {
+    .swipe-guide {
+        display: block;
+    }
+}
+
+/* スマートフォン用の操作性向上 */
+@media (max-width: 600px) {
+    .timer-container {
+        touch-action: pan-x; /* 左右スクロール許可、上下スワイプをカスタム処理 */
+    }
+    
+    #timer-controls button {
+        min-width: 80px; /* タップしやすいサイズに */
+    }
+    
+    .timer-controls button {
+        touch-action: manipulation; /* タッチ操作を最適化 */
+    }
+}
+
+/* 時間調整ボタンの視認性向上 */
+.adjust-button {
+    position: relative;
+    overflow: hidden;
+    transition: background-color 0.2s ease;
+}
+
+.adjust-button:active::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    transform: scale(0);
+    animation: ripple 0.6s linear;
+}
+
+@keyframes ripple {
+    to {
+        transform: scale(2.5);
+        opacity: 0;
+    }
+}
+
+/* アクセシビリティ */
+@media (prefers-reduced-motion: reduce) {
+    .timer-container,
+    #timer-display,
+    .progress-ring-circle,
+    #timer-display.timer-started,
+    #timer-display.timer-stopped,
+    #timer-display.timer-ended,
+    #start-button::after,
+    .timer-container:hover,
+    #timer-controls button:active {
+        transition: none !important;
+        animation: none !important;
+        transform: none !important;
+    }
+    
+    /* アニメーションなしでも視覚的フィードバックを提供 */
+    .time-critical {
+        font-weight: bold !important;
+        text-decoration: underline !important;
+    }
+}

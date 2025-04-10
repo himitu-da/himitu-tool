@@ -9,30 +9,145 @@
 </head>
 <body>
     <header>
-        <h1><a href="../">ひみっちゃんのKAMIツール</a> - タイマーツール</h1>
-        <nav>
-            <ul>
-                <li><a href="https://hmts.jp">ひみっちゃん（メインサイト）へ</a></li>
-            </ul>
-        </nav>
+        <div class="header-top">
+            <h1><a href="../">ひみっちゃんのKAMIツール</a></h1>
+            <button id="settings-button" class="icon-button" title="設定">⚙️</button>
+        </div>
+        <div class="header-bottom">
+            <h2>タイマーツール</h2>
+        </div>
     </header>
 
     <main>
-        <h2>タイマー</h2>
-        <div id="timer-display">00:00</div>
+        <!-- <h2>タイマー</h2> h2はヘッダーに移動 -->
+        <div class="timer-container">
+            <svg id="progress-ring" width="300" height="300" viewBox="0 0 120 120" class="responsive-svg">
+                <circle class="progress-ring-bg" cx="60" cy="60" r="54" fill="transparent" stroke="#e0e0e0" stroke-width="8"/>
+                <circle id="progress-ring-circle" class="progress-ring-circle" cx="60" cy="60" r="54" fill="transparent" stroke="#28a745" stroke-width="8" transform="rotate(-90 60 60)" stroke-dasharray="339.29" stroke-dashoffset="339.29"/>
+                 <!-- stroke-dasharray = 2 * PI * r = 2 * 3.14159 * 54 ≈ 339.29 -->
+            </svg>
+            <div id="timer-display">00:00</div>
+        </div>
+        <!-- 線形プログレスバーは削除
+        <div class="timer-progress">
+            <div class="timer-progress-bar"></div>
+        </div>
+        -->
         <div id="timer-controls">
-            <label for="minutes">分:</label>
-            <input type="number" id="minutes" min="0" value="5">
-            <label for="seconds">秒:</label>
-            <input type="number" id="seconds" min="0" max="59" value="0">
-            <button id="start-button">スタート</button>
-            <button id="stop-button" disabled>ストップ</button>
-            <button id="reset-button">リセット</button>
+            <div class="time-adjust">
+                <div class="time-inputs">
+                    <div class="slider-container">
+                        <div class="slider-labels">
+                            <label for="minutes">分:</label>
+                            <input type="number" id="minutes" min="0" max="60" value="5" class="modern-input">
+                        </div>
+                        <input type="range" id="minutes-slider" min="0" max="60" value="5" class="timer-slider">
+                        <div class="slider-labels">
+                            <label for="seconds">秒:</label>
+                            <input type="number" id="seconds" min="0" max="59" value="0" class="modern-input">
+                        </div>
+                        <input type="range" id="seconds-slider" min="0" max="59" value="0" class="timer-slider">
+                    </div>
+                </div>
+            </div>
+            <div class="action-buttons">
+                <button id="start-button" class="icon-button">▶️ スタート</button> <!-- アイコン追加 -->
+                <button id="stop-button" class="icon-button" disabled>⏹️ ストップ</button> <!-- アイコン追加 -->
+                <button id="reset-button" class="icon-button">🔄 リセット</button> <!-- アイコン追加 -->
+                <!-- 設定ボタンはヘッダーに移動 -->
+            </div>
         </div>
         <audio id="alarm-sound" src="alarm.mp3" preload="auto"></audio>
+
+        <!-- 設定モーダル -->
+        <div id="settings-modal" class="modal">
+            <div class="modal-content">
+                <span class="close-button">&times;</span>
+                <h2>設定</h2>
+                <div class="tab-container">
+                    <div class="tab-buttons">
+                        <button class="tab-button active" data-tab="basic">基本設定</button>
+                        <button class="tab-button" data-tab="theme">テーマ</button>
+                        <button class="tab-button" data-tab="sound">音声</button>
+                        <button class="tab-button" data-tab="advanced">詳細</button>
+                    </div>
+                    <div id="basic" class="tab-content active">
+                        <h3>基本設定</h3>
+                        <div class="setting-item">
+                            <label for="default-minutes">デフォルト時間（分）:</label>
+                            <input type="number" id="default-minutes" min="0" value="5">
+                        </div>
+                        <div class="setting-item">
+                            <label for="default-seconds">デフォルト時間（秒）:</label>
+                            <input type="number" id="default-seconds" min="0" max="59" value="0">
+                        </div>
+                        <button id="save-basic-settings">基本設定を保存</button>
+                    </div>
+                    <div id="theme" class="tab-content">
+                        <h3>テーマ設定</h3>
+                        <div class="setting-item">
+                            <label>カラーテーマ:</label>
+                            <div class="theme-options">
+                                <label>
+                                    <input type="radio" name="theme" value="default" checked> デフォルト
+                                </label>
+                                <label>
+                                    <input type="radio" name="theme" value="dark"> ダーク
+                                </label>
+                                <label>
+                                    <input type="radio" name="theme" value="ocean"> オーシャン
+                                </label>
+                                <!-- 他のテーマオプション -->
+                            </div>
+                        </div>
+                        <!-- テーマ設定はリアルタイムに反映されるため、保存ボタンは不要な場合が多い -->
+                    </div>
+                    <div id="sound" class="tab-content">
+                        <h3>音声設定</h3>
+                        <div class="setting-item">
+                            <label for="alarm-select">アラーム音:</label>
+                            <select id="alarm-select">
+                                <option value="alarm.mp3">デフォルト</option>
+                                <option value="alarm2.mp3">サウンド2</option> <!-- 仮のオプション -->
+                                <option value="alarm3.mp3">サウンド3</option> <!-- 仮のオプション -->
+                            </select>
+                        </div>
+                        <div class="setting-item">
+                            <label for="volume-slider">音量:</label>
+                            <input type="range" id="volume-slider" min="0" max="1" step="0.1" value="1">
+                            <span id="volume-value">100%</span>
+                        </div>
+                         <button id="save-sound-settings">音声設定を保存</button>
+                    </div>
+                    <div id="advanced" class="tab-content">
+                        <h3>詳細設定</h3>
+                        <div class="setting-item toggle-switch">
+                            <label for="enable-milliseconds">ミリ秒表示を有効にする:</label>
+                            <label class="switch">
+                                <input type="checkbox" id="enable-milliseconds">
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+                        <!-- 他の詳細設定項目 -->
+                         <button id="save-advanced-settings">詳細設定を保存</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- クイック設定メニュー (初期非表示) -->
+        <div id="quick-settings-menu" class="quick-menu">
+            <ul>
+                <li><button data-action="set-time" data-value="300">5分</button></li>
+                <li><button data-action="set-time" data-value="600">10分</button></li>
+                <li><button data-action="toggle-theme">テーマ切替</button></li>
+                <li><button data-action="toggle-sound">サウンドON/OFF</button></li>
+            </ul>
+        </div>
     </main>
 
     <footer>
+        <a href="https://hmts.jp" class="kami-site-link">ひみっちゃんのKAMIサイト</a>
         <p>&copy; 2025 ひみっちゃん</p>
     </footer>
 

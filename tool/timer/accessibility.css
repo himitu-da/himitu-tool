@@ -1,0 +1,146 @@
+/* アクセシビリティ拡張スタイル */
+
+/* アニメーション制限 */
+@media (prefers-reduced-motion: reduce) {
+    .timer-container,
+    #timer-display,
+    .progress-ring-circle,
+    #timer-display.timer-started,
+    #timer-display.timer-stopped,
+    #timer-display.timer-ended,
+    #start-button::after,
+    .timer-container:hover,
+    #timer-controls button:active,
+    .adjust-button:active::after {
+        transition: none !important;
+        animation: none !important;
+        transform: none !important;
+    }
+    
+    /* アニメーションなしでも視覚的フィードバックを提供 */
+    .time-critical {
+        font-weight: bold !important;
+        text-decoration: underline !important;
+    }
+}
+
+/* 色覚障害の方への配慮 */
+@media (prefers-contrast: more) {
+    #timer-display {
+        text-shadow: none !important;
+    }
+    
+    .progress-ring-circle {
+        stroke-width: 10px !important; /* より太い線で視認性向上 */
+    }
+    
+    #timer-controls button {
+        border: 2px solid black;
+    }
+    
+    .time-critical {
+        outline: 2px solid #dc3545 !important;
+        outline-offset: 3px;
+    }
+    
+    /* ボタンにパターンを追加して色だけに依存しない識別方法を提供 */
+    #start-button::before {
+        content: '▶';
+        margin-right: 5px;
+    }
+    
+    #stop-button::before {
+        content: '■';
+        margin-right: 5px;
+    }
+    
+    #reset-button::before {
+        content: '↺';
+        margin-right: 5px;
+    }
+}
+
+/* トークバックモード対応 */
+#timer-display {
+    aria-live: polite; /* スクリーンリーダーで変化を通知 */
+}
+
+/* キーボード操作強化 */
+#timer-controls button:focus {
+    outline: 3px solid rgba(0, 123, 255, 0.5) !important;
+    outline-offset: 2px;
+}
+
+#timer-controls input:focus {
+    outline: 3px solid rgba(0, 123, 255, 0.5) !important;
+    outline-offset: 1px;
+}
+
+/* ハイコントラストモード対応 */
+@media (forced-colors: active) {
+    .progress-ring-circle {
+        stroke: HighlightText !important;
+    }
+    
+    #timer-display {
+        color: CanvasText !important;
+    }
+    
+    .time-critical {
+        color: LinkText !important;
+    }
+    
+    #timer-controls button {
+        border: 2px solid ButtonText !important;
+        forced-color-adjust: none;
+    }
+}
+
+/* 大文字表示モード */
+@media (prefers-contrast: more) {
+    .swipe-guide {
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        font-weight: bold;
+    }
+}
+
+/* スクリーンリーダー専用テキスト */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* フォーカス枠の強化 */
+:focus-visible {
+    outline: 3px solid #0066ff !important;
+    outline-offset: 3px !important;
+    border-radius: 2px;
+}
+
+/* テキストサイズ調整への対応 */
+@media (prefers-reduced-data: reduce) {
+    .swipe-guide {
+        display: none !important; /* データセーバーモードではガイドを非表示 */
+    }
+}
+
+/* 大きなテキストサイズへの対応 */
+@media (min-resolution: 1dppx) {
+    html {
+        font-size: calc(100% + 0.5vw); /* より読みやすい可変フォントサイズ */
+    }
+    
+    /* タッチターゲットを拡大 */
+    #timer-controls button {
+        min-height: 44px;
+        min-width: 44px;
+    }
+}
