@@ -55,7 +55,7 @@ body.theme-ocean .time-adjust {
     font-size: 5rem; /* 大きくする */
     font-weight: bold;
     text-align: center;
-    color: #000; /* 黒色に固定 */
+    color: inherit; /* テーマに合わせる */
     letter-spacing: 0.05em; /* 少し詰める */
     /* position, margin は不要に */
     z-index: 1; /* SVGより手前に */
@@ -313,6 +313,7 @@ header .settings .icon-button:hover {
 
 .modal-content {
     background-color: #fefefe;
+    color: #333; /* ライトテーマ用の文字色を設定 */
     margin: 10% auto; /* 上下10%、左右中央に配置 */
     padding: 30px;
     border: 1px solid #888;
@@ -365,6 +366,7 @@ header .settings .icon-button:hover {
 
 .tab-button {
     background-color: inherit;
+    color: inherit; /* ボタンの文字色を親から継承 */
     float: left;
     border: none;
     outline: none;
@@ -424,6 +426,7 @@ header .settings .icon-button:hover {
 .setting-item input[type="text"],
 .setting-item select {
     padding: 8px;
+    color: inherit; /* 文字色を継承 */
     border: 1px solid #ccc;
     border-radius: 4px;
     flex-grow: 1; /* 入力欄が残りのスペースを埋める */
