@@ -234,6 +234,7 @@ export default function TimerPage() {
 
   const currentTotalTime = isRunning ? (initialMinutes * 60 + initialSeconds) * 1000 : (inputMinutes * 60 + inputSeconds) * 1000;
   const progress = currentTotalTime > 0 ? (timeLeft / currentTotalTime) : 0;
+  const isSettingsDisabled = isRunning || (!isRunning && timeLeft > 0 && timeLeft < (initialMinutes * 60 + initialSeconds) * 1000);
   const radius = 54;
   const circumference = 2 * Math.PI * radius;
   const strokeDashoffset = circumference - progress * circumference;
@@ -280,7 +281,9 @@ export default function TimerPage() {
             if (!touchStartRef.current) return;
             const dy = e.changedTouches[0].clientY - touchStartRef.current.y;
             const dx = e.changedTouches[0].clientX - touchStartRef.current.x;
-            if (Math.abs(dx) > 50) handleAdjustTime(dx > 0 ? 10 : -10); // L/R Swipe
+            if (Math.abs(dx) > 50) {
+              if (!isSettingsDisabled) handleAdjustTime(dx > 0 ? 10 : -10); // L/R Swipe
+            }
             else if (Math.abs(dy) > 50) setIsSettingsOpen(dy < 0); // U/D Swipe
             touchStartRef.current = null;
           }}
@@ -315,21 +318,21 @@ export default function TimerPage() {
         </div>
 
         {/* Time Inputs & Sliders */}
-        <div className={`w-full max-w-sm mx-auto p-5 rounded-2xl shadow-lg mb-8 transition-colors duration-300 ${getPanelClasses()}`}>
+        <div className={`w-full max-w-sm mx-auto p-5 rounded-2xl shadow-lg mb-8 transition-colors duration-300 ${getPanelClasses()} ${isSettingsDisabled ? 'opacity-50 pointer-events-none transition-opacity duration-300' : ''}`}>
           {/* Minutes */}
           <div className="flex justify-between items-center mb-2">
             <label className="text-sm font-bold opacity-80">分:</label>
             <div className="flex items-center gap-2">
               <button
                 onClick={() => {
-                  if (isRunning) return;
+                  if (isSettingsDisabled) return;
                   const val = Math.max(0, inputMinutes - 1);
                   setInputMinutes(val);
                   setTimeLeft((val * 60 + inputSeconds) * 1000);
                   setInitialMinutes(val);
                   setInitialSeconds(inputSeconds);
                 }}
-                disabled={isRunning}
+                disabled={isSettingsDisabled}
                 className={`w-8 h-8 flex items-center justify-center rounded-full disabled:opacity-50 transition active:scale-95 ${getButtonHoverClasses()}`}
               >
                 
@@ -341,25 +344,25 @@ export default function TimerPage() {
                   const val = parseInt(e.target.value) || 0;
                   const newMin = Math.min(99, val);
                   setInputMinutes(newMin);
-                  if (!isRunning) {
+                  if (!isSettingsDisabled) {
                     setTimeLeft((newMin * 60 + inputSeconds) * 1000);
                     setInitialMinutes(newMin);
                     setInitialSeconds(inputSeconds);
                   }
                 }}
-                disabled={isRunning}
+                disabled={isSettingsDisabled}
                 className={`w-16 p-1 text-center font-bold text-lg rounded-lg outline-none focus:ring-2 relative z-10 transition [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none ${getNumberInputClasses()}`}
               />
               <button
                 onClick={() => {
-                  if (isRunning) return;
+                  if (isSettingsDisabled) return;
                   const val = Math.min(99, inputMinutes + 1);
                   setInputMinutes(val);
                   setTimeLeft((val * 60 + inputSeconds) * 1000);
                   setInitialMinutes(val);
                   setInitialSeconds(inputSeconds);
                 }}
-                disabled={isRunning}
+                disabled={isSettingsDisabled}
                 className={`w-8 h-8 flex items-center justify-center rounded-full disabled:opacity-50 transition active:scale-95 ${getButtonHoverClasses()}`}
               >
                 
@@ -372,13 +375,13 @@ export default function TimerPage() {
             onChange={(e) => {
               const val = parseInt(e.target.value) || 0;
               setInputMinutes(val);
-              if (!isRunning) {
+              if (!isSettingsDisabled) {
                 setTimeLeft((val * 60 + inputSeconds) * 1000);
                 setInitialMinutes(val);
                 setInitialSeconds(inputSeconds);
               }
             }}
-            disabled={isRunning}
+            disabled={isSettingsDisabled}
             className={`w-full h-2 mb-6 rounded-lg appearance-none cursor-pointer ${getRangeSliderClasses()}`}
           />
 
@@ -388,14 +391,14 @@ export default function TimerPage() {
             <div className="flex items-center gap-2">
               <button
                 onClick={() => {
-                  if (isRunning) return;
+                  if (isSettingsDisabled) return;
                   const val = Math.max(0, inputSeconds - 1);
                   setInputSeconds(val);
                   setTimeLeft((inputMinutes * 60 + val) * 1000);
                   setInitialMinutes(inputMinutes);
                   setInitialSeconds(val);
                 }}
-                disabled={isRunning}
+                disabled={isSettingsDisabled}
                 className={`w-8 h-8 flex items-center justify-center rounded-full disabled:opacity-50 transition active:scale-95 ${getButtonHoverClasses()}`}
               >
                 
@@ -407,25 +410,25 @@ export default function TimerPage() {
                   const val = parseInt(e.target.value) || 0;
                   const newSec = Math.min(59, val);
                   setInputSeconds(newSec);
-                  if (!isRunning) {
+                  if (!isSettingsDisabled) {
                     setTimeLeft((inputMinutes * 60 + newSec) * 1000);
                     setInitialMinutes(inputMinutes);
                     setInitialSeconds(newSec);
                   }
                 }}
-                disabled={isRunning}
+                disabled={isSettingsDisabled}
                 className={`w-16 p-1 text-center font-bold text-lg rounded-lg outline-none focus:ring-2 relative z-10 transition [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none ${getNumberInputClasses()}`}
               />
               <button
                 onClick={() => {
-                  if (isRunning) return;
+                  if (isSettingsDisabled) return;
                   const val = Math.min(59, inputSeconds + 1);
                   setInputSeconds(val);
                   setTimeLeft((inputMinutes * 60 + val) * 1000);
                   setInitialMinutes(inputMinutes);
                   setInitialSeconds(val);
                 }}
-                disabled={isRunning}
+                disabled={isSettingsDisabled}
                 className={`w-8 h-8 flex items-center justify-center rounded-full disabled:opacity-50 transition active:scale-95 ${getButtonHoverClasses()}`}
               >
                 
@@ -438,13 +441,13 @@ export default function TimerPage() {
             onChange={(e) => {
               const val = parseInt(e.target.value) || 0;
               setInputSeconds(val);
-              if (!isRunning) {
+              if (!isSettingsDisabled) {
                 setTimeLeft((inputMinutes * 60 + val) * 1000);
                 setInitialMinutes(inputMinutes);
                 setInitialSeconds(val);
               }
             }}
-            disabled={isRunning}
+            disabled={isSettingsDisabled}
             className={`w-full h-2 mb-2 rounded-lg appearance-none cursor-pointer ${getRangeSliderClasses()}`}
           />
         </div>
