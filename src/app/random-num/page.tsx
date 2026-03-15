@@ -4,7 +4,7 @@ export default function Rand() {
   const [min, set_min] = useState("");
   const [max, set_max] = useState("");
   const [out, setOut] = useState("");
-  const run = () => { try { setOut(Math.floor(Math.random()*(Number(max)-Number(min)+1))+Number(min)) } catch(e) { setOut("エラー"); } };
+  const run = () => { try { setOut((Math.floor(Math.random()*(Number(max)-Number(min)+1))+Number(min)).toString()) } catch(e) { setOut("エラー"); } };
   return (
     <div className="max-w-md mx-auto p-6 rounded-xl shadow-lg border border-opacity-20 border-current bg-white/10 backdrop-blur-sm">
       <h1 className="text-2xl font-bold mb-6 text-center">乱数生成</h1>

@@ -3,7 +3,7 @@ import React, { useState } from "react";
 export default function B64E() {
   const [inp, setInp] = useState("");
   const [out, setOut] = useState("");
-  const run = () => { try { setOut(btoa(encodeURIComponent(inp).replace(/%([0-9A-F]{2})/g, (m, p1) => String.fromCharCode("0x" + p1)))) } catch(e) { setOut("エラー"); } };
+  const run = () => { try { setOut(btoa(encodeURIComponent(inp).replace(/%([0-9A-F]{2})/g, (m, p1) => String.fromCharCode(parseInt(p1, 16))))) } catch(e) { setOut("エラー"); } };
   return (
     <div className="max-w-2xl mx-auto p-6 rounded-xl shadow-lg border border-opacity-20 border-current bg-white/10 backdrop-blur-sm">
       <h1 className="text-2xl font-bold mb-6 text-center">Base64エンコード</h1>
