@@ -173,7 +173,39 @@ export default function TimerPage() {
     switch (settings.theme) {
       case 'dark': return 'bg-gray-800 shadow-black/40 border border-gray-700';
       case 'ocean': return 'bg-cyan-800 shadow-black/20 border border-cyan-700';
-      default: return 'bg-white shadow-gray-200 border border-gray-100';
+      default: return 'bg-white shadow-sm border border-gray-200';
+    }
+  };
+
+  const getButtonHoverClasses = () => {
+    switch (settings.theme) {
+      case 'dark': return 'hover:bg-white/10';
+      case 'ocean': return 'hover:bg-white/10';
+      default: return 'hover:bg-black/5';
+    }
+  };
+
+  const getNumberInputClasses = () => {
+    switch (settings.theme) {
+      case 'dark': return 'bg-gray-700 border-gray-600 focus:ring-blue-500 text-white';
+      case 'ocean': return 'bg-cyan-700 border-cyan-600 focus:ring-cyan-300 text-cyan-50';
+      default: return 'bg-white border text-gray-900 border-gray-300 focus:ring-blue-500 shadow-sm';
+    }
+  };
+
+  const getRangeSliderClasses = () => {
+    switch (settings.theme) {
+      case 'dark': return 'bg-gray-700 accent-blue-500';
+      case 'ocean': return 'bg-cyan-700 accent-cyan-400';
+      default: return 'bg-blue-100 accent-blue-500';
+    }
+  };
+
+  const getSettingItemClasses = () => {
+    switch (settings.theme) {
+      case 'dark': return 'bg-gray-800 border-gray-700 text-white';
+      case 'ocean': return 'bg-cyan-800 border-cyan-700 text-cyan-50';
+      default: return 'bg-white border-gray-200 shadow-sm text-gray-900';
     }
   };
 
@@ -273,7 +305,7 @@ export default function TimerPage() {
                   setTimeLeft(val * 60 + inputSeconds);
                 }}
                 disabled={isRunning}
-                className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-black/10 dark:hover:bg-white/10 disabled:opacity-50 transition active:scale-95"
+                className={`w-8 h-8 flex items-center justify-center rounded-full disabled:opacity-50 transition active:scale-95 ${getButtonHoverClasses()}`}
               >
                 
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
@@ -286,7 +318,7 @@ export default function TimerPage() {
                   if (!isRunning) setTimeLeft(val * 60 + inputSeconds);
                 }}
                 disabled={isRunning}
-                className="w-16 p-1 text-center font-bold text-lg rounded-lg outline-none focus:ring-2 focus:ring-blue-500 bg-black/5 dark:bg-black/20 text-inherit border border-transparent dark:border-gray-600 transition [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                className={`w-16 p-1 text-center font-bold text-lg rounded-lg outline-none focus:ring-2 relative z-10 transition [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none ${getNumberInputClasses()}`}
               />
               <button
                 onClick={() => {
@@ -296,7 +328,7 @@ export default function TimerPage() {
                   setTimeLeft(val * 60 + inputSeconds);
                 }}
                 disabled={isRunning}
-                className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-black/10 dark:hover:bg-white/10 disabled:opacity-50 transition active:scale-95"
+                className={`w-8 h-8 flex items-center justify-center rounded-full disabled:opacity-50 transition active:scale-95 ${getButtonHoverClasses()}`}
               >
                 
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m18 15-6-6-6 6"/></svg></button>
@@ -311,7 +343,7 @@ export default function TimerPage() {
               if (!isRunning) setTimeLeft(val * 60 + inputSeconds);
             }}
             disabled={isRunning}
-            className="w-full h-2 mb-6 rounded-lg appearance-none cursor-pointer accent-blue-500 bg-gray-200 dark:bg-gray-600"
+            className={`w-full h-2 mb-6 rounded-lg appearance-none cursor-pointer ${getRangeSliderClasses()}`}
           />
 
           {/* Seconds */}
@@ -326,7 +358,7 @@ export default function TimerPage() {
                   setTimeLeft(inputMinutes * 60 + val);
                 }}
                 disabled={isRunning}
-                className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-black/10 dark:hover:bg-white/10 disabled:opacity-50 transition active:scale-95"
+                className={`w-8 h-8 flex items-center justify-center rounded-full disabled:opacity-50 transition active:scale-95 ${getButtonHoverClasses()}`}
               >
                 
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
@@ -339,7 +371,7 @@ export default function TimerPage() {
                   if (!isRunning) setTimeLeft(inputMinutes * 60 + val);
                 }}
                 disabled={isRunning}
-                className="w-16 p-1 text-center font-bold text-lg rounded-lg outline-none focus:ring-2 focus:ring-blue-500 bg-black/5 dark:bg-black/20 text-inherit border border-transparent dark:border-gray-600 transition [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                className={`w-16 p-1 text-center font-bold text-lg rounded-lg outline-none focus:ring-2 relative z-10 transition [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none ${getNumberInputClasses()}`}
               />
               <button
                 onClick={() => {
@@ -349,7 +381,7 @@ export default function TimerPage() {
                   setTimeLeft(inputMinutes * 60 + val);
                 }}
                 disabled={isRunning}
-                className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-black/10 dark:hover:bg-white/10 disabled:opacity-50 transition active:scale-95"
+                className={`w-8 h-8 flex items-center justify-center rounded-full disabled:opacity-50 transition active:scale-95 ${getButtonHoverClasses()}`}
               >
                 
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m18 15-6-6-6 6"/></svg></button>
@@ -364,7 +396,7 @@ export default function TimerPage() {
               if (!isRunning) setTimeLeft(inputMinutes * 60 + val);
             }}
             disabled={isRunning}
-            className="w-full h-2 mb-2 rounded-lg appearance-none cursor-pointer accent-blue-500 bg-gray-200 dark:bg-gray-600"
+            className={`w-full h-2 mb-2 rounded-lg appearance-none cursor-pointer ${getRangeSliderClasses()}`}
           />
         </div>
 
@@ -394,12 +426,12 @@ export default function TimerPage() {
             className={`relative w-full max-w-lg p-6 rounded-2xl shadow-2xl transition-all ${settings.theme === 'dark' ? 'bg-gray-800 text-white' : settings.theme === 'ocean' ? 'bg-cyan-900 text-cyan-50' : 'bg-white text-gray-900'}`} 
             onClick={e => e.stopPropagation()}
           >
-            <button onClick={() => setIsSettingsOpen(false)} className="absolute top-4 right-4 text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white transition-colors">
+            <button onClick={() => setIsSettingsOpen(false)} className={`absolute top-4 right-4 transition-colors ${settings.theme === 'default' ? 'text-gray-500 hover:text-gray-800' : 'text-gray-400 hover:text-white'}`}>
               <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
             </button>
             <h2 className="text-2xl font-bold mb-6">設定</h2>
             
-            <div className="flex border-b border-gray-300 dark:border-gray-700 mb-6 overflow-x-auto select-none">
+            <div className={`flex border-b mb-6 overflow-x-auto select-none ${settings.theme === 'default' ? 'border-gray-300' : 'border-gray-600'}`}>
               {['basic', 'theme', 'sound', 'advanced'].map(tab => (
                 <button 
                   key={tab}
@@ -417,8 +449,8 @@ export default function TimerPage() {
             <div className="py-2 h-64 overflow-y-auto pr-2">
               {activeTab === 'basic' && (
                 <div className="space-y-6">
-                  <h3 className="font-semibold text-lg border-b border-opacity-20 pb-2">基本設定</h3>
-                  <div className="flex justify-between items-center bg-black/5 dark:bg-black/20 p-3 rounded-lg">
+                  <h3 className={`font-semibold text-lg border-b border-opacity-20 pb-2 ${settings.theme === 'default' ? 'border-gray-300' : 'border-gray-600'}`}>基本設定</h3>
+                  <div className={`flex justify-between items-center p-3 rounded-lg border ${getSettingItemClasses()}`}>
                     <label>デフォルト時間（分）:</label>
                     <input type="number" min="0" value={settings.defaultMinutes} onChange={e => {
                         const val = parseInt(e.target.value) || 0;
@@ -428,9 +460,9 @@ export default function TimerPage() {
                             setTimeLeft(val * 60 + inputSeconds);
                             setInitialMinutes(val);
                         }
-                    }} className="w-20 p-2 text-center border rounded-md bg-white dark:bg-gray-700 text-inherit" />
+                    }} className={`w-20 p-2 text-center rounded-md ${getNumberInputClasses()}`} />
                   </div>
-                  <div className="flex justify-between items-center bg-black/5 dark:bg-black/20 p-3 rounded-lg">
+                  <div className={`flex justify-between items-center p-3 rounded-lg border ${getSettingItemClasses()}`}>
                     <label>デフォルト時間（秒）:</label>
                     <input type="number" min="0" max="59" value={settings.defaultSeconds} onChange={e => {
                         const val = parseInt(e.target.value) || 0;
@@ -440,17 +472,17 @@ export default function TimerPage() {
                             setTimeLeft(inputMinutes * 60 + val);
                             setInitialSeconds(val);
                         }
-                    }} className="w-20 p-2 text-center border rounded-md bg-white dark:bg-gray-700 text-inherit" />
+                    }} className={`w-20 p-2 text-center rounded-md ${getNumberInputClasses()}`} />
                   </div>
                 </div>
               )}
 
               {activeTab === 'theme' && (
                 <div className="space-y-6">
-                  <h3 className="font-semibold text-lg border-b border-opacity-20 pb-2">テーマ設定</h3>
+                  <h3 className={`font-semibold text-lg border-b border-opacity-20 pb-2 ${settings.theme === 'default' ? 'border-gray-300' : 'border-gray-600'}`}>テーマ設定</h3>
                   <div className="flex flex-col gap-4">
                     {['default', 'dark', 'ocean'].map(t => (
-                      <label key={t} className="flex items-center gap-3 cursor-pointer bg-black/5 dark:bg-black/20 p-3 rounded-lg hover:bg-black/10 transition-colors">
+                      <label key={t} className={`flex items-center gap-3 cursor-pointer p-3 rounded-lg transition-colors border ${getSettingItemClasses()} ${getButtonHoverClasses()}`}>
                         <input 
                           type="radio" name="theme" value={t} 
                           checked={settings.theme === t}
@@ -466,20 +498,20 @@ export default function TimerPage() {
 
               {activeTab === 'sound' && (
                 <div className="space-y-6">
-                  <h3 className="font-semibold text-lg border-b border-opacity-20 pb-2">音声設定</h3>
-                  <div className="flex justify-between items-center bg-black/5 dark:bg-black/20 p-3 rounded-lg">
+                  <h3 className={`font-semibold text-lg border-b border-opacity-20 pb-2 ${settings.theme === 'default' ? 'border-gray-300' : 'border-gray-600'}`}>音声設定</h3>
+                  <div className={`flex justify-between items-center p-3 rounded-lg border ${getSettingItemClasses()}`}>
                     <label>アラーム音:</label>
                     <select 
                       value={settings.alarmSound}
                       onChange={(e) => updateSettingStore('alarmSound', e.target.value)}
-                      className="p-2 border rounded-md bg-white dark:bg-gray-700 text-inherit focus:outline-none"
+                      className={`p-2 rounded-md focus:outline-none ${getNumberInputClasses()}`}
                     >
                       <option value="/alarm.mp3">デフォルト</option>
                       <option value="/alarm2.mp3">サウンド2</option>
                       <option value="/alarm3.mp3">サウンド3</option>
                     </select>
                   </div>
-                  <div className="bg-black/5 dark:bg-black/20 p-4 rounded-lg space-y-3">
+                  <div className={`p-4 rounded-lg border space-y-3 ${getSettingItemClasses()}`}>
                     <div className="flex justify-between items-center">
                       <label>音量:</label>
                       <span className="font-bold">{Math.round(settings.volume * 100)}%</span>
@@ -488,7 +520,7 @@ export default function TimerPage() {
                       type="range" min="0" max="1" step="0.1" 
                       value={settings.volume}
                       onChange={e => updateSettingStore('volume', parseFloat(e.target.value))}
-                      className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-blue-500 bg-gray-300 dark:bg-gray-600"
+                      className={`w-full h-2 rounded-lg appearance-none cursor-pointer ${getRangeSliderClasses()}`}
                     />
                   </div>
                 </div>
@@ -496,8 +528,8 @@ export default function TimerPage() {
 
               {activeTab === 'advanced' && (
                 <div className="space-y-6">
-                  <h3 className="font-semibold text-lg border-b border-opacity-20 pb-2">詳細設定</h3>
-                  <div className="flex items-center justify-between bg-black/5 dark:bg-black/20 p-4 rounded-lg">
+                  <h3 className={`font-semibold text-lg border-b border-opacity-20 pb-2 ${settings.theme === 'default' ? 'border-gray-300' : 'border-gray-600'}`}>詳細設定</h3>
+                  <div className={`flex items-center justify-between p-4 rounded-lg border ${getSettingItemClasses()}`}>
                     <label>ミリ秒表示を有効にする:</label>
                     <label className="relative inline-flex items-center cursor-pointer">
                       <input 
@@ -506,7 +538,7 @@ export default function TimerPage() {
                         onChange={e => updateSettingStore('enableMilliseconds', e.target.checked)} 
                         className="sr-only peer" 
                       />
-                      <div className="w-14 h-7 bg-gray-300 peer-focus:outline-none rounded-full peer dark:bg-gray-600 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-blue-500"></div>
+                      <div className={`w-14 h-7 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-blue-500 ${settings.theme === 'default' ? 'bg-gray-300' : 'bg-gray-600'}`}></div>
                     </label>
                   </div>
                 </div>
@@ -532,31 +564,31 @@ export default function TimerPage() {
             className={`absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-56 rounded-xl shadow-2xl py-2 z-50 overflow-hidden ${settings.theme === 'dark' ? 'bg-gray-800 text-white border border-gray-700' : 'bg-white text-gray-900 border border-gray-200'}`}
             onClick={e => e.stopPropagation()}
           >
-            <button className="w-full text-left px-5 py-3 hover:bg-black/10 dark:hover:bg-white/10 transition-colors font-semibold" onClick={() => {
+            <button className={`w-full text-left px-5 py-3 transition-colors font-semibold ${getButtonHoverClasses()}`} onClick={() => {
               if(!isRunning) { setInputMinutes(5); setInputSeconds(0); setTimeLeft(300); setInitialMinutes(5); setInitialSeconds(0); }
               setIsQuickSettingsOpen(false);
             }}>5分セット</button>
             
-            <button className="w-full text-left px-5 py-3 hover:bg-black/10 dark:hover:bg-white/10 transition-colors font-semibold" onClick={() => {
+            <button className={`w-full text-left px-5 py-3 transition-colors font-semibold ${getButtonHoverClasses()}`} onClick={() => {
               if(!isRunning) { setInputMinutes(10); setInputSeconds(0); setTimeLeft(600); setInitialMinutes(10); setInitialSeconds(0); }
               setIsQuickSettingsOpen(false);
             }}>10分セット</button>
 
-            <div className="h-px w-full bg-gray-200 dark:bg-gray-700 my-1" />
+            <div className={`h-px w-full my-1 ${settings.theme === 'default' ? 'bg-gray-200' : 'bg-gray-700'}`} />
             
-            <button className="w-full text-left px-5 py-3 hover:bg-black/10 dark:hover:bg-white/10 transition-colors" onClick={() => {
+            <button className={`w-full text-left px-5 py-3 transition-colors ${getButtonHoverClasses()}`} onClick={() => {
               const themes: Theme[] = ['default', 'dark', 'ocean'];
               const nextIdx = (themes.indexOf(settings.theme) + 1) % themes.length;
               updateSettingStore('theme', themes[nextIdx]);
               setIsQuickSettingsOpen(false);
             }}>テーマ切替</button>
             
-            <button className="w-full text-left px-5 py-3 hover:bg-black/10 dark:hover:bg-white/10 transition-colors flex items-center justify-between" onClick={() => {
+            <button className={`w-full text-left px-5 py-3 transition-colors flex items-center justify-between ${getButtonHoverClasses()}`} onClick={() => {
               updateSettingStore('muted', !settings.muted);
               setIsQuickSettingsOpen(false);
             }}>
               サウンド
-              <span className={`text-sm font-bold px-2 py-1 rounded ${settings.muted ? 'bg-red-100 text-red-600 dark:bg-red-900/30' : 'bg-green-100 text-green-600 dark:bg-green-900/30'}`}>
+              <span className={`text-sm font-bold px-2 py-1 rounded ${settings.muted ? (settings.theme === 'default' ? 'bg-red-100 text-red-600' : 'bg-red-900/30 text-red-600') : (settings.theme === 'default' ? 'bg-green-100 text-green-600' : 'bg-green-900/30 text-green-600')}`}>
                 {settings.muted ? 'OFF' : 'ON'}
               </span>
             </button>
