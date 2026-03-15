@@ -385,11 +385,6 @@ export default function TimerPage() {
         </div>
       </main>
 
-      <footer className="text-center p-6 text-sm opacity-70">
-        <a href="https://hmts.jp" className="hover:underline text-blue-500 hover:text-blue-600">ひみっちゃんのKAMIサイト</a>
-        <p className="mt-2">&copy; 2025 ひみっちゃん</p>
-      </footer>
-
       <audio ref={audioRef} preload="auto" />
 
       {/* Settings Modal */}
