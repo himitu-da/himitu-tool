@@ -325,6 +325,20 @@
       ]
     },
     {
+      "id": "income-tax",
+      "title": "所得税計算",
+      "version": "1.0.0",
+      "updatedAt": "2026-03-16",
+      "changeSummary": "Initial registration",
+      "history": [
+        {
+          "version": "1.0.0",
+          "updatedAt": "2026-03-16",
+          "summary": "Initial registration"
+        }
+      ]
+    },
+    {
       "id": "json-format",
       "title": "JSON整形",
       "version": "1.0.0",

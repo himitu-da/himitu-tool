@@ -47,6 +47,7 @@ export default function Home() {
     { title: "パーセント計算", path: "/percent-calc", icon: "📈", desc: "AはBの何%？" },
     { title: "速度変換", path: "/speed-calc", icon: "🚗", desc: "km/h > m/s" },
     { title: "温度変換", path: "/temp-calc", icon: "🌡️", desc: "C > F" },
+    { title: "所得税計算", path: "/income-tax", icon: "🧾", desc: "収入と控除から税額を計算" },
     { title: "利益率", path: "/profit-margin", icon: "📊", desc: "原価と売価" },
     { title: "2進数変換", path: "/bin-enc", icon: "0️⃣", desc: "文字をバイナリに" },
     { title: "16進数変換", path: "/hex-enc", icon: "#️⃣", desc: "文字をHEXに" },
