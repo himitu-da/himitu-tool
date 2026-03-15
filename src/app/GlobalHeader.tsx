@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 import { useTheme, Theme } from "./ThemeProvider";
 
 export function GlobalHeader() {
@@ -43,9 +44,9 @@ export function GlobalHeader() {
     <header className={`sticky top-0 z-50 border-b transition-colors duration-300 ${getHeaderStyle()}`}>
       <div className="container mx-auto px-4 py-4 flex justify-between items-center">
         <h1 className="text-xl font-bold">
-          <a href="/" className={`transition-colors ${getLinkStyle()}`}>
+          <Link href="/" className={`transition-colors ${getLinkStyle()}`}>
             ひみっちゃんのKAMIツール
-          </a>
+          </Link>
         </h1>
         
         <div className="flex items-center gap-2">
