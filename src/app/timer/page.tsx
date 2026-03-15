@@ -2,14 +2,11 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 
-import Link from 'next/link';
-
-type Theme = 'default' | 'dark' | 'ocean';
+import { useTheme } from '../ThemeProvider';
 
 interface Settings {
   defaultMinutes: number;
   defaultSeconds: number;
-  theme: Theme;
   alarmSound: string;
   volume: number;
   enableMilliseconds: boolean;
@@ -17,7 +14,7 @@ interface Settings {
 }
 
 export default function TimerPage() {
-  const [isClient, setIsClient] = useState(false);
+  const { theme, mounted: isClient } = useTheme();
   
   // Timer States
   const [isRunning, setIsRunning] = useState(false);
@@ -25,13 +22,12 @@ export default function TimerPage() {
   const [inputSeconds, setInputSeconds] = useState(0);
   const [initialMinutes, setInitialMinutes] = useState(5);
   const [initialSeconds, setInitialSeconds] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(300);
+  const [timeLeft, setTimeLeft] = useState(300000); // in milliseconds
 
   // Settings & UI States
   const [settings, setSettings] = useState<Settings>({
     defaultMinutes: 5,
     defaultSeconds: 0,
-    theme: 'default',
     alarmSound: '/alarm.mp3',
     volume: 1,
     enableMilliseconds: false,
@@ -45,15 +41,13 @@ export default function TimerPage() {
 
   // Refs
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const endTimeRef = useRef<number | null>(null);
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
 
   // 1. Load Settings on Mount (Client-side only)
   useEffect(() => {
-    setIsClient(true);
     const savedMins = localStorage.getItem('timerDefaultMinutes');
     const savedSecs = localStorage.getItem('timerDefaultSeconds');
-    const savedTheme = localStorage.getItem('timerTheme') as Theme || 'default';
     const savedAlarm = localStorage.getItem('timerAlarmSound') || '/alarm.mp3';
     const savedVolume = localStorage.getItem('timerVolume') || '1';
     const savedEnableMs = localStorage.getItem('timerEnableMilliseconds') === 'true';
@@ -65,7 +59,6 @@ export default function TimerPage() {
     setSettings({
       defaultMinutes: defaultMins,
       defaultSeconds: defaultSecs,
-      theme: savedTheme,
       alarmSound: savedAlarm,
       volume: parseFloat(savedVolume),
       enableMilliseconds: savedEnableMs,
@@ -76,7 +69,7 @@ export default function TimerPage() {
     setInputSeconds(defaultSecs);
     setInitialMinutes(defaultMins);
     setInitialSeconds(defaultSecs);
-    setTimeLeft(defaultMins * 60 + defaultSecs);
+    setTimeLeft((defaultMins * 60 + defaultSecs) * 1000);
   }, []);
 
   // 2. Audio Effects
@@ -90,46 +83,62 @@ export default function TimerPage() {
 
   // 3. Timer Interval Logic
   useEffect(() => {
+    let animationFrameId: number;
+
+    const tick = () => {
+      if (!isRunning || !endTimeRef.current) return;
+      const now = Date.now();
+      const remain = endTimeRef.current - now;
+
+      if (remain <= 0) {
+        setTimeLeft(0);
+        setIsRunning(false);
+        if (audioRef.current && !settings.muted) {
+          audioRef.current.play().catch(e => console.error("Alarm error:", e));
+        }
+        return;
+      }
+      
+      setTimeLeft(remain);
+      animationFrameId = requestAnimationFrame(tick);
+    };
+
     if (isRunning) {
-      timerRef.current = setInterval(() => {
-        setTimeLeft((prev) => {
-          if (prev <= 1) {
-            clearInterval(timerRef.current!);
-            setIsRunning(false);
-            if (audioRef.current && !settings.muted) {
-              audioRef.current.play().catch(e => console.error("Alarm error:", e));
-            }
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-    } else {
-      if (timerRef.current) clearInterval(timerRef.current);
+      animationFrameId = requestAnimationFrame(tick);
     }
+
     return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
+      if (animationFrameId) cancelAnimationFrame(animationFrameId);
     };
   }, [isRunning, settings.muted]);
 
   // --- Handlers ---
   const handleStart = () => {
     if (isRunning) return;
-    const total = inputMinutes * 60 + inputSeconds;
-    if (total <= 0) return;
     
-    setInitialMinutes(inputMinutes);
-    setInitialSeconds(inputSeconds);
-    if (timeLeft === 0 || timeLeft !== total) setTimeLeft(total);
+    let currentLeftMs = timeLeft;
+    // If timer is at 0, reset to input values
+    if (currentLeftMs <= 0) {
+      currentLeftMs = (inputMinutes * 60 + inputSeconds) * 1000;
+      setInitialMinutes(inputMinutes);
+      setInitialSeconds(inputSeconds);
+    }
+    
+    if (currentLeftMs <= 0) return; // Still 0 after check? Do nothing.
+
+    endTimeRef.current = Date.now() + currentLeftMs;
     setIsRunning(true);
   };
 
-  const handleStop = () => setIsRunning(false);
+  const handleStop = () => {
+    setIsRunning(false);
+    // timeLeft is already up-to-date due to tick updates
+  };
 
   const handleReset = () => {
     setIsRunning(false);
-    const total = inputMinutes * 60 + inputSeconds;
-    setTimeLeft(total);
+    const totalMs = (inputMinutes * 60 + inputSeconds) * 1000;
+    setTimeLeft(totalMs);
     setInitialMinutes(inputMinutes);
     setInitialSeconds(inputSeconds);
   };
@@ -138,21 +147,21 @@ export default function TimerPage() {
     if (isRunning) return;
     let newSecs = inputMinutes * 60 + inputSeconds + amount;
     if (newSecs < 0) newSecs = 0;
+    if (newSecs > 5999) newSecs = 5999;
     const m = Math.floor(newSecs / 60);
     const s = newSecs % 60;
     setInputMinutes(m);
     setInputSeconds(s);
-    setTimeLeft(newSecs);
+    setTimeLeft(newSecs * 1000);
     setInitialMinutes(m);
     setInitialSeconds(s);
   };
 
-  const updateSettingStore = (key: keyof Settings, value: any) => {
+  const updateSettingStore = (key: keyof Settings, value: string | number | boolean) => {
     setSettings(prev => ({ ...prev, [key]: value }));
     const mapping: Record<string, string> = {
       defaultMinutes: 'timerDefaultMinutes',
       defaultSeconds: 'timerDefaultSeconds',
-      theme: 'timerTheme',
       alarmSound: 'timerAlarmSound',
       volume: 'timerVolume',
       enableMilliseconds: 'timerEnableMilliseconds',
@@ -163,7 +172,7 @@ export default function TimerPage() {
 
   // --- Theme Style Helpers ---
   const getThemeClasses = () => {
-    switch (settings.theme) {
+    switch (theme) {
       case 'dark': return 'bg-gray-900 text-gray-100';
       case 'ocean': return 'bg-cyan-900 text-cyan-50';
       default: return 'bg-gray-50 text-gray-900';
@@ -171,7 +180,7 @@ export default function TimerPage() {
   };
 
   const getPanelClasses = () => {
-    switch (settings.theme) {
+    switch (theme) {
       case 'dark': return 'bg-gray-800 shadow-black/40 border border-gray-700';
       case 'ocean': return 'bg-cyan-800 shadow-black/20 border border-cyan-700';
       default: return 'bg-white shadow-sm border border-gray-200';
@@ -179,7 +188,7 @@ export default function TimerPage() {
   };
 
   const getButtonHoverClasses = () => {
-    switch (settings.theme) {
+    switch (theme) {
       case 'dark': return 'hover:bg-white/10';
       case 'ocean': return 'hover:bg-white/10';
       default: return 'hover:bg-black/5';
@@ -187,7 +196,7 @@ export default function TimerPage() {
   };
 
   const getNumberInputClasses = () => {
-    switch (settings.theme) {
+    switch (theme) {
       case 'dark': return 'bg-gray-700 border-gray-600 focus:ring-blue-500 text-white';
       case 'ocean': return 'bg-cyan-700 border-cyan-600 focus:ring-cyan-300 text-cyan-50';
       default: return 'bg-white border text-gray-900 border-gray-300 focus:ring-blue-500 shadow-sm';
@@ -195,7 +204,7 @@ export default function TimerPage() {
   };
 
   const getRangeSliderClasses = () => {
-    switch (settings.theme) {
+    switch (theme) {
       case 'dark': return 'bg-gray-700 accent-blue-500';
       case 'ocean': return 'bg-cyan-700 accent-cyan-400';
       default: return 'bg-blue-100 accent-blue-500';
@@ -203,7 +212,7 @@ export default function TimerPage() {
   };
 
   const getSettingItemClasses = () => {
-    switch (settings.theme) {
+    switch (theme) {
       case 'dark': return 'bg-gray-800 border-gray-700 text-white';
       case 'ocean': return 'bg-cyan-800 border-cyan-700 text-cyan-50';
       default: return 'bg-white border-gray-200 shadow-sm text-gray-900';
@@ -211,13 +220,19 @@ export default function TimerPage() {
   };
 
   // --- Display Calculations ---
-  const formatTime = (secs: number) => {
-    const m = Math.floor(secs / 60);
-    const s = secs % 60;
-    return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+  const formatTime = (ms: number) => {
+    const totalSecs = Math.floor(ms / 1000);
+    const m = Math.floor(totalSecs / 60);
+    const s = totalSecs % 60;
+    const milli = Math.floor(ms % 1000);
+    const formatted = `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+    if (settings.enableMilliseconds) {
+      return `${formatted}.${String(milli).padStart(3, '0')}`;
+    }
+    return formatted;
   };
 
-  const currentTotalTime = isRunning ? (initialMinutes * 60 + initialSeconds) : (inputMinutes * 60 + inputSeconds);
+  const currentTotalTime = isRunning ? (initialMinutes * 60 + initialSeconds) * 1000 : (inputMinutes * 60 + inputSeconds) * 1000;
   const progress = currentTotalTime > 0 ? (timeLeft / currentTotalTime) : 0;
   const radius = 54;
   const circumference = 2 * Math.PI * radius;
@@ -236,10 +251,7 @@ export default function TimerPage() {
       {/* Header */}
       <header className="sticky top-0 z-40 flex items-center justify-between p-4 bg-gray-800 text-white shadow-md">
         <div>
-          <h1 className="text-sm font-light opacity-80 hover:opacity-100 transition-opacity">
-            <Link href="/">ひみっちゃんのKAMIツール</Link>
-          </h1>
-          <h2 className="text-xl font-bold mt-1">タイマーツール</h2>
+          <h2 className="text-xl font-bold">タイマーツール</h2>
         </div>
         <button 
           onClick={() => setIsSettingsOpen(true)}
@@ -286,7 +298,7 @@ export default function TimerPage() {
           <svg width="100%" height="100%" viewBox="0 0 120 120" className="absolute top-0 left-0 -rotate-90">
             <circle 
               cx="60" cy="60" r={radius} fill="transparent" 
-              stroke={settings.theme === 'dark' ? '#333' : '#e0e0e0'} strokeWidth="8"
+              stroke={theme === 'dark' ? '#333' : '#e0e0e0'} strokeWidth="8"
             />
             <circle 
               cx="60" cy="60" r={radius} fill="transparent" 
@@ -297,7 +309,7 @@ export default function TimerPage() {
               className="transition-all duration-1000 ease-linear"
             />
           </svg>
-          <div className={`z-10 text-6xl font-bold tracking-widest transition-transform duration-300 ${isRunning ? 'scale-105 opacity-90' : 'scale-100 opacity-100'}`}>
+          <div className={`z-10 ${settings.enableMilliseconds ? 'text-3xl sm:text-4xl' : 'text-5xl sm:text-6xl'} font-bold tracking-widest transition-transform duration-300 ${isRunning ? 'scale-105 opacity-90' : 'scale-100 opacity-100'}`}>
             {formatTime(timeLeft)}
           </div>
         </div>
@@ -313,7 +325,9 @@ export default function TimerPage() {
                   if (isRunning) return;
                   const val = Math.max(0, inputMinutes - 1);
                   setInputMinutes(val);
-                  setTimeLeft(val * 60 + inputSeconds);
+                  setTimeLeft((val * 60 + inputSeconds) * 1000);
+                  setInitialMinutes(val);
+                  setInitialSeconds(inputSeconds);
                 }}
                 disabled={isRunning}
                 className={`w-8 h-8 flex items-center justify-center rounded-full disabled:opacity-50 transition active:scale-95 ${getButtonHoverClasses()}`}
@@ -321,12 +335,17 @@ export default function TimerPage() {
                 
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
               <input 
-                type="number" min="0" max="60" 
+                type="number" min="0" max="99" 
                 value={inputMinutes}
                 onChange={(e) => {
                   const val = parseInt(e.target.value) || 0;
-                  setInputMinutes(val);
-                  if (!isRunning) setTimeLeft(val * 60 + inputSeconds);
+                  const newMin = Math.min(99, val);
+                  setInputMinutes(newMin);
+                  if (!isRunning) {
+                    setTimeLeft((newMin * 60 + inputSeconds) * 1000);
+                    setInitialMinutes(newMin);
+                    setInitialSeconds(inputSeconds);
+                  }
                 }}
                 disabled={isRunning}
                 className={`w-16 p-1 text-center font-bold text-lg rounded-lg outline-none focus:ring-2 relative z-10 transition [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none ${getNumberInputClasses()}`}
@@ -334,9 +353,11 @@ export default function TimerPage() {
               <button
                 onClick={() => {
                   if (isRunning) return;
-                  const val = Math.min(60, inputMinutes + 1);
+                  const val = Math.min(99, inputMinutes + 1);
                   setInputMinutes(val);
-                  setTimeLeft(val * 60 + inputSeconds);
+                  setTimeLeft((val * 60 + inputSeconds) * 1000);
+                  setInitialMinutes(val);
+                  setInitialSeconds(inputSeconds);
                 }}
                 disabled={isRunning}
                 className={`w-8 h-8 flex items-center justify-center rounded-full disabled:opacity-50 transition active:scale-95 ${getButtonHoverClasses()}`}
@@ -346,12 +367,16 @@ export default function TimerPage() {
             </div>
           </div>
           <input 
-            type="range" min="0" max="60"
+            type="range" min="0" max="99"
             value={inputMinutes}
             onChange={(e) => {
               const val = parseInt(e.target.value) || 0;
               setInputMinutes(val);
-              if (!isRunning) setTimeLeft(val * 60 + inputSeconds);
+              if (!isRunning) {
+                setTimeLeft((val * 60 + inputSeconds) * 1000);
+                setInitialMinutes(val);
+                setInitialSeconds(inputSeconds);
+              }
             }}
             disabled={isRunning}
             className={`w-full h-2 mb-6 rounded-lg appearance-none cursor-pointer ${getRangeSliderClasses()}`}
@@ -366,7 +391,9 @@ export default function TimerPage() {
                   if (isRunning) return;
                   const val = Math.max(0, inputSeconds - 1);
                   setInputSeconds(val);
-                  setTimeLeft(inputMinutes * 60 + val);
+                  setTimeLeft((inputMinutes * 60 + val) * 1000);
+                  setInitialMinutes(inputMinutes);
+                  setInitialSeconds(val);
                 }}
                 disabled={isRunning}
                 className={`w-8 h-8 flex items-center justify-center rounded-full disabled:opacity-50 transition active:scale-95 ${getButtonHoverClasses()}`}
@@ -378,8 +405,13 @@ export default function TimerPage() {
                 value={inputSeconds}
                 onChange={(e) => {
                   const val = parseInt(e.target.value) || 0;
-                  setInputSeconds(val);
-                  if (!isRunning) setTimeLeft(inputMinutes * 60 + val);
+                  const newSec = Math.min(59, val);
+                  setInputSeconds(newSec);
+                  if (!isRunning) {
+                    setTimeLeft((inputMinutes * 60 + newSec) * 1000);
+                    setInitialMinutes(inputMinutes);
+                    setInitialSeconds(newSec);
+                  }
                 }}
                 disabled={isRunning}
                 className={`w-16 p-1 text-center font-bold text-lg rounded-lg outline-none focus:ring-2 relative z-10 transition [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none ${getNumberInputClasses()}`}
@@ -389,7 +421,9 @@ export default function TimerPage() {
                   if (isRunning) return;
                   const val = Math.min(59, inputSeconds + 1);
                   setInputSeconds(val);
-                  setTimeLeft(inputMinutes * 60 + val);
+                  setTimeLeft((inputMinutes * 60 + val) * 1000);
+                  setInitialMinutes(inputMinutes);
+                  setInitialSeconds(val);
                 }}
                 disabled={isRunning}
                 className={`w-8 h-8 flex items-center justify-center rounded-full disabled:opacity-50 transition active:scale-95 ${getButtonHoverClasses()}`}
@@ -404,7 +438,11 @@ export default function TimerPage() {
             onChange={(e) => {
               const val = parseInt(e.target.value) || 0;
               setInputSeconds(val);
-              if (!isRunning) setTimeLeft(inputMinutes * 60 + val);
+              if (!isRunning) {
+                setTimeLeft((inputMinutes * 60 + val) * 1000);
+                setInitialMinutes(inputMinutes);
+                setInitialSeconds(val);
+              }
             }}
             disabled={isRunning}
             className={`w-full h-2 mb-2 rounded-lg appearance-none cursor-pointer ${getRangeSliderClasses()}`}
@@ -434,23 +472,22 @@ export default function TimerPage() {
       {isSettingsOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 transition-opacity" onClick={() => setIsSettingsOpen(false)}>
           <div 
-            className={`relative w-full max-w-lg p-6 rounded-2xl shadow-2xl transition-all ${settings.theme === 'dark' ? 'bg-gray-800 text-white' : settings.theme === 'ocean' ? 'bg-cyan-900 text-cyan-50' : 'bg-white text-gray-900'}`} 
+            className={`relative w-full max-w-lg p-6 rounded-2xl shadow-2xl transition-all ${theme === 'dark' ? 'bg-gray-800 text-white' : theme === 'ocean' ? 'bg-cyan-900 text-cyan-50' : 'bg-white text-gray-900'}`} 
             onClick={e => e.stopPropagation()}
           >
-            <button onClick={() => setIsSettingsOpen(false)} className={`absolute top-4 right-4 transition-colors ${settings.theme === 'default' ? 'text-gray-500 hover:text-gray-800' : 'text-gray-400 hover:text-white'}`}>
+            <button onClick={() => setIsSettingsOpen(false)} className={`absolute top-4 right-4 transition-colors ${theme === 'default' ? 'text-gray-500 hover:text-gray-800' : 'text-gray-400 hover:text-white'}`}>
               <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
             </button>
             <h2 className="text-2xl font-bold mb-6">設定</h2>
             
-            <div className={`flex border-b mb-6 overflow-x-auto select-none ${settings.theme === 'default' ? 'border-gray-300' : 'border-gray-600'}`}>
-              {['basic', 'theme', 'sound', 'advanced'].map(tab => (
+            <div className={`flex border-b mb-6 overflow-x-auto select-none ${theme === 'default' ? 'border-gray-300' : 'border-gray-600'}`}>
+              {['basic', 'sound', 'advanced'].map(tab => (
                 <button 
                   key={tab}
                   onClick={() => setActiveTab(tab)}
                   className={`px-4 py-2 font-medium border-b-2 whitespace-nowrap outline-none transition-colors ${activeTab === tab ? 'border-blue-500 text-blue-500' : 'border-transparent opacity-60 hover:opacity-100'}`}
                 >
                   {tab === 'basic' && '基本設定'}
-                  {tab === 'theme' && 'テーマ'}
                   {tab === 'sound' && '音声'}
                   {tab === 'advanced' && '詳細'}
                 </button>
@@ -460,16 +497,17 @@ export default function TimerPage() {
             <div className="py-2 h-64 overflow-y-auto pr-2">
               {activeTab === 'basic' && (
                 <div className="space-y-6">
-                  <h3 className={`font-semibold text-lg border-b border-opacity-20 pb-2 ${settings.theme === 'default' ? 'border-gray-300' : 'border-gray-600'}`}>基本設定</h3>
+                  <h3 className={`font-semibold text-lg border-b border-opacity-20 pb-2 ${theme === 'default' ? 'border-gray-300' : 'border-gray-600'}`}>基本設定</h3>
                   <div className={`flex justify-between items-center p-3 rounded-lg border ${getSettingItemClasses()}`}>
                     <label>デフォルト時間（分）:</label>
-                    <input type="number" min="0" value={settings.defaultMinutes} onChange={e => {
+                    <input type="number" min="0" max="99" value={settings.defaultMinutes} onChange={e => {
                         const val = parseInt(e.target.value) || 0;
-                        updateSettingStore('defaultMinutes', val);
+                        const validMin = Math.min(99, val);
+                        updateSettingStore('defaultMinutes', validMin);
                         if (!isRunning) {
-                            setInputMinutes(val);
-                            setTimeLeft(val * 60 + inputSeconds);
-                            setInitialMinutes(val);
+                            setInputMinutes(validMin);
+                            setTimeLeft((validMin * 60 + inputSeconds) * 1000);
+                            setInitialMinutes(validMin);
                         }
                     }} className={`w-20 p-2 text-center rounded-md ${getNumberInputClasses()}`} />
                   </div>
@@ -477,39 +515,21 @@ export default function TimerPage() {
                     <label>デフォルト時間（秒）:</label>
                     <input type="number" min="0" max="59" value={settings.defaultSeconds} onChange={e => {
                         const val = parseInt(e.target.value) || 0;
-                        updateSettingStore('defaultSeconds', val);
+                        const validSec = Math.min(59, val);
+                        updateSettingStore('defaultSeconds', validSec);
                         if (!isRunning) {
-                            setInputSeconds(val);
-                            setTimeLeft(inputMinutes * 60 + val);
-                            setInitialSeconds(val);
+                            setInputSeconds(validSec);
+                            setTimeLeft((inputMinutes * 60 + validSec) * 1000);
+                            setInitialSeconds(validSec);
                         }
                     }} className={`w-20 p-2 text-center rounded-md ${getNumberInputClasses()}`} />
                   </div>
                 </div>
               )}
 
-              {activeTab === 'theme' && (
-                <div className="space-y-6">
-                  <h3 className={`font-semibold text-lg border-b border-opacity-20 pb-2 ${settings.theme === 'default' ? 'border-gray-300' : 'border-gray-600'}`}>テーマ設定</h3>
-                  <div className="flex flex-col gap-4">
-                    {['default', 'dark', 'ocean'].map(t => (
-                      <label key={t} className={`flex items-center gap-3 cursor-pointer p-3 rounded-lg transition-colors border ${getSettingItemClasses()} ${getButtonHoverClasses()}`}>
-                        <input 
-                          type="radio" name="theme" value={t} 
-                          checked={settings.theme === t}
-                          onChange={(e) => updateSettingStore('theme', e.target.value)}
-                          className="w-5 h-5 text-blue-600 focus:ring-blue-500"
-                        />
-                        <span className="text-lg">{t === 'default' ? 'デフォルト' : t === 'dark' ? 'ダーク' : 'オーシャン'}</span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-              )}
-
               {activeTab === 'sound' && (
                 <div className="space-y-6">
-                  <h3 className={`font-semibold text-lg border-b border-opacity-20 pb-2 ${settings.theme === 'default' ? 'border-gray-300' : 'border-gray-600'}`}>音声設定</h3>
+                  <h3 className={`font-semibold text-lg border-b border-opacity-20 pb-2 ${theme === 'default' ? 'border-gray-300' : 'border-gray-600'}`}>音声設定</h3>
                   <div className={`flex justify-between items-center p-3 rounded-lg border ${getSettingItemClasses()}`}>
                     <label>アラーム音:</label>
                     <select 
@@ -539,7 +559,7 @@ export default function TimerPage() {
 
               {activeTab === 'advanced' && (
                 <div className="space-y-6">
-                  <h3 className={`font-semibold text-lg border-b border-opacity-20 pb-2 ${settings.theme === 'default' ? 'border-gray-300' : 'border-gray-600'}`}>詳細設定</h3>
+                  <h3 className={`font-semibold text-lg border-b border-opacity-20 pb-2 ${theme === 'default' ? 'border-gray-300' : 'border-gray-600'}`}>詳細設定</h3>
                   <div className={`flex items-center justify-between p-4 rounded-lg border ${getSettingItemClasses()}`}>
                     <label>ミリ秒表示を有効にする:</label>
                     <label className="relative inline-flex items-center cursor-pointer">
@@ -549,7 +569,7 @@ export default function TimerPage() {
                         onChange={e => updateSettingStore('enableMilliseconds', e.target.checked)} 
                         className="sr-only peer" 
                       />
-                      <div className={`w-14 h-7 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-blue-500 ${settings.theme === 'default' ? 'bg-gray-300' : 'bg-gray-600'}`}></div>
+                      <div className={`w-14 h-7 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-blue-500 ${theme === 'default' ? 'bg-gray-300' : 'bg-gray-600'}`}></div>
                     </label>
                   </div>
                 </div>
@@ -572,34 +592,28 @@ export default function TimerPage() {
       {isQuickSettingsOpen && (
         <div className="fixed inset-0 z-40 transition-opacity" onClick={() => setIsQuickSettingsOpen(false)} onContextMenu={(e) => e.preventDefault()}>
           <div 
-            className={`absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-56 rounded-xl shadow-2xl py-2 z-50 overflow-hidden ${settings.theme === 'dark' ? 'bg-gray-800 text-white border border-gray-700' : 'bg-white text-gray-900 border border-gray-200'}`}
+            className={`absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-56 rounded-xl shadow-2xl py-2 z-50 overflow-hidden ${theme === 'dark' ? 'bg-gray-800 text-white border border-gray-700' : 'bg-white text-gray-900 border border-gray-200'}`}
             onClick={e => e.stopPropagation()}
           >
             <button className={`w-full text-left px-5 py-3 transition-colors font-semibold ${getButtonHoverClasses()}`} onClick={() => {
-              if(!isRunning) { setInputMinutes(5); setInputSeconds(0); setTimeLeft(300); setInitialMinutes(5); setInitialSeconds(0); }
+              if(!isRunning) { setInputMinutes(5); setInputSeconds(0); setTimeLeft(300000); setInitialMinutes(5); setInitialSeconds(0); }
               setIsQuickSettingsOpen(false);
             }}>5分セット</button>
             
             <button className={`w-full text-left px-5 py-3 transition-colors font-semibold ${getButtonHoverClasses()}`} onClick={() => {
-              if(!isRunning) { setInputMinutes(10); setInputSeconds(0); setTimeLeft(600); setInitialMinutes(10); setInitialSeconds(0); }
+              if(!isRunning) { setInputMinutes(10); setInputSeconds(0); setTimeLeft(600000); setInitialMinutes(10); setInitialSeconds(0); }
               setIsQuickSettingsOpen(false);
             }}>10分セット</button>
 
-            <div className={`h-px w-full my-1 ${settings.theme === 'default' ? 'bg-gray-200' : 'bg-gray-700'}`} />
+            <div className={`h-px w-full my-1 ${theme === 'default' ? 'bg-gray-200' : 'bg-gray-700'}`} />
             
-            <button className={`w-full text-left px-5 py-3 transition-colors ${getButtonHoverClasses()}`} onClick={() => {
-              const themes: Theme[] = ['default', 'dark', 'ocean'];
-              const nextIdx = (themes.indexOf(settings.theme) + 1) % themes.length;
-              updateSettingStore('theme', themes[nextIdx]);
-              setIsQuickSettingsOpen(false);
-            }}>テーマ切替</button>
             
             <button className={`w-full text-left px-5 py-3 transition-colors flex items-center justify-between ${getButtonHoverClasses()}`} onClick={() => {
               updateSettingStore('muted', !settings.muted);
               setIsQuickSettingsOpen(false);
             }}>
               サウンド
-              <span className={`text-sm font-bold px-2 py-1 rounded ${settings.muted ? (settings.theme === 'default' ? 'bg-red-100 text-red-600' : 'bg-red-900/30 text-red-600') : (settings.theme === 'default' ? 'bg-green-100 text-green-600' : 'bg-green-900/30 text-green-600')}`}>
+              <span className={`text-sm font-bold px-2 py-1 rounded ${settings.muted ? (theme === 'default' ? 'bg-red-100 text-red-600' : 'bg-red-900/30 text-red-600') : (theme === 'default' ? 'bg-green-100 text-green-600' : 'bg-green-900/30 text-green-600')}`}>
                 {settings.muted ? 'OFF' : 'ON'}
               </span>
             </button>
@@ -629,7 +643,7 @@ export default function TimerPage() {
             <svg width="100%" height="100%" viewBox="0 0 120 120" className="absolute top-0 left-0 -rotate-90">
               <circle 
                 cx="60" cy="60" r={radius} fill="transparent" 
-                stroke={settings.theme === 'dark' ? '#333' : '#e0e0e0'} strokeWidth="4"
+                stroke={theme === 'dark' ? '#333' : '#e0e0e0'} strokeWidth="4"
               />
               <circle 
                 cx="60" cy="60" r={radius} fill="transparent" 
@@ -640,7 +654,7 @@ export default function TimerPage() {
                 className="transition-all duration-1000 ease-linear"
               />
             </svg>
-            <div className={`z-10 text-[18vw] sm:text-[20vh] font-bold tracking-widest transition-transform duration-300 ${isRunning ? 'scale-105 opacity-90' : 'scale-100 opacity-100'}`}>
+            <div className={`z-10 ${settings.enableMilliseconds ? 'text-[8vw] sm:text-[10vh]' : 'text-[12vw] sm:text-[15vh]'} font-bold tracking-widest transition-transform duration-300 ${isRunning ? 'scale-105 opacity-90' : 'scale-100 opacity-100'}`}>
               {formatTime(timeLeft)}
             </div>
           </div>
