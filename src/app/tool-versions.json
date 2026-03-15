@@ -103,14 +103,19 @@
     {
       "id": "bmi",
       "title": "BMI計算",
-      "version": "1.0.0",
-      "updatedAt": "2026-03-15",
-      "changeSummary": "Initial registration",
+      "version": "1.1.0",
+      "updatedAt": "2026-03-16",
+      "changeSummary": "リアルタイム計算の導入、グラフ表示、BMIの解説追加",
       "history": [
         {
           "version": "1.0.0",
           "updatedAt": "2026-03-15",
           "summary": "Initial registration"
+        },
+        {
+          "version": "1.1.0",
+          "updatedAt": "2026-03-16",
+          "summary": "リアルタイム計算の導入、グラフ表示、BMIの解説追加"
         }
       ]
     },
