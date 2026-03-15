@@ -59,6 +59,16 @@ export default function Home() {
 
   return (
     <div>
+      <div className="mb-12 p-6 sm:p-8 bg-white/5 border border-opacity-20 border-current rounded-xl shadow-sm backdrop-blur-sm text-center">
+        <p className="text-lg sm:text-xl font-medium opacity-90 mb-3">
+          日常の『ちょっと困った』を1つのサイトで解決したい。
+        </p>
+        <p className="text-sm sm:text-base opacity-75 leading-relaxed">
+          そんな思いから、日本人が作成したツール集です。<br />
+          かゆいところに手が届くツールを、この1つのウェブサイトで完結させることを目指しています。
+        </p>
+      </div>
+
       <h2 className="text-2xl font-bold mb-6 border-b pb-2 opacity-80 border-current">ツール一覧</h2>
       <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {tools.map((tool) => (
