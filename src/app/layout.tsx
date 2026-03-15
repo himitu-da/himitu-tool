@@ -18,7 +18,7 @@ export default function RootLayout({
   return (
     <html lang="ja">
       <body className="antialiased font-sans text-gray-900 bg-white">
-        <header className="bg-gray-100 border-b border-gray-300">
+        <header className="sticky top-0 z-50 bg-gray-100 border-b border-gray-300">
           <div className="container mx-auto px-4 py-4 flex justify-between items-center">
             <h1 className="text-xl font-bold">
               <Link href="/" className="text-blue-600 hover:text-blue-800 transition-colors">

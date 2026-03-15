@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useState, useEffect, useRef } from 'react';
 
@@ -201,7 +201,7 @@ export default function TimerPage() {
     <div className={`min-h-screen flex flex-col font-sans transition-colors duration-300 ${getThemeClasses()}`}>
       
       {/* Header */}
-      <header className="flex items-center justify-between p-4 bg-gray-800 text-white shadow-md">
+      <header className="sticky top-0 z-40 flex items-center justify-between p-4 bg-gray-800 text-white shadow-md">
         <div>
           <h1 className="text-sm font-light opacity-80 hover:opacity-100 transition-opacity">
             <Link href="/">ひみっちゃんのKAMIツール</Link>
@@ -264,17 +264,43 @@ export default function TimerPage() {
           {/* Minutes */}
           <div className="flex justify-between items-center mb-2">
             <label className="text-sm font-bold opacity-80">分:</label>
-            <input 
-              type="number" min="0" max="60" 
-              value={inputMinutes}
-              onChange={(e) => {
-                const val = parseInt(e.target.value) || 0;
-                setInputMinutes(val);
-                if (!isRunning) setTimeLeft(val * 60 + inputSeconds);
-              }}
-              disabled={isRunning}
-              className="w-16 p-1 text-center font-bold text-lg rounded-lg outline-none focus:ring-2 focus:ring-blue-500 bg-black/5 dark:bg-black/20 text-inherit border border-transparent dark:border-gray-600 transition"
-            />
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => {
+                  if (isRunning) return;
+                  const val = Math.max(0, inputMinutes - 1);
+                  setInputMinutes(val);
+                  setTimeLeft(val * 60 + inputSeconds);
+                }}
+                disabled={isRunning}
+                className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-black/10 dark:hover:bg-white/10 disabled:opacity-50 transition active:scale-95"
+              >
+                
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
+              <input 
+                type="number" min="0" max="60" 
+                value={inputMinutes}
+                onChange={(e) => {
+                  const val = parseInt(e.target.value) || 0;
+                  setInputMinutes(val);
+                  if (!isRunning) setTimeLeft(val * 60 + inputSeconds);
+                }}
+                disabled={isRunning}
+                className="w-16 p-1 text-center font-bold text-lg rounded-lg outline-none focus:ring-2 focus:ring-blue-500 bg-black/5 dark:bg-black/20 text-inherit border border-transparent dark:border-gray-600 transition [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+              />
+              <button
+                onClick={() => {
+                  if (isRunning) return;
+                  const val = Math.min(60, inputMinutes + 1);
+                  setInputMinutes(val);
+                  setTimeLeft(val * 60 + inputSeconds);
+                }}
+                disabled={isRunning}
+                className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-black/10 dark:hover:bg-white/10 disabled:opacity-50 transition active:scale-95"
+              >
+                
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m18 15-6-6-6 6"/></svg></button>
+            </div>
           </div>
           <input 
             type="range" min="0" max="60"
@@ -291,17 +317,43 @@ export default function TimerPage() {
           {/* Seconds */}
           <div className="flex justify-between items-center mb-2">
             <label className="text-sm font-bold opacity-80">秒:</label>
-            <input 
-              type="number" min="0" max="59" 
-              value={inputSeconds}
-              onChange={(e) => {
-                const val = parseInt(e.target.value) || 0;
-                setInputSeconds(val);
-                if (!isRunning) setTimeLeft(inputMinutes * 60 + val);
-              }}
-              disabled={isRunning}
-              className="w-16 p-1 text-center font-bold text-lg rounded-lg outline-none focus:ring-2 focus:ring-blue-500 bg-black/5 dark:bg-black/20 text-inherit border border-transparent dark:border-gray-600 transition"
-            />
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => {
+                  if (isRunning) return;
+                  const val = Math.max(0, inputSeconds - 1);
+                  setInputSeconds(val);
+                  setTimeLeft(inputMinutes * 60 + val);
+                }}
+                disabled={isRunning}
+                className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-black/10 dark:hover:bg-white/10 disabled:opacity-50 transition active:scale-95"
+              >
+                
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
+              <input 
+                type="number" min="0" max="59" 
+                value={inputSeconds}
+                onChange={(e) => {
+                  const val = parseInt(e.target.value) || 0;
+                  setInputSeconds(val);
+                  if (!isRunning) setTimeLeft(inputMinutes * 60 + val);
+                }}
+                disabled={isRunning}
+                className="w-16 p-1 text-center font-bold text-lg rounded-lg outline-none focus:ring-2 focus:ring-blue-500 bg-black/5 dark:bg-black/20 text-inherit border border-transparent dark:border-gray-600 transition [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+              />
+              <button
+                onClick={() => {
+                  if (isRunning) return;
+                  const val = Math.min(59, inputSeconds + 1);
+                  setInputSeconds(val);
+                  setTimeLeft(inputMinutes * 60 + val);
+                }}
+                disabled={isRunning}
+                className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-black/10 dark:hover:bg-white/10 disabled:opacity-50 transition active:scale-95"
+              >
+                
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m18 15-6-6-6 6"/></svg></button>
+            </div>
           </div>
           <input 
             type="range" min="0" max="59"
@@ -519,3 +571,9 @@ export default function TimerPage() {
     </div>
   );
 }
+
+
+
+
+
+
