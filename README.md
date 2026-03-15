@@ -1,5 +1,41 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## Tool Version Operations
+
+This project supports per-tool versioning for every page under `src/app/*/page.tsx`.
+
+Metadata file:
+
+- `src/app/tool-versions.json`
+
+Initialize or sync all tool records:
+
+```bash
+npm run tools:version:init
+```
+
+Update one tool version and updated date:
+
+```bash
+# patch bump
+npm run tools:version:update -- --id=timer --bump=patch --summary="Fix input validation"
+
+# explicit version
+npm run tools:version:update -- --id=timer --version=2.0.0 --summary="UI redesign"
+```
+
+Pick tools to improve automatically (oldest and lowest-version bias):
+
+```bash
+npm run tools:improve:pick -- --top=10
+```
+
+JSON output is also available:
+
+```bash
+npm run tools:improve:pick -- --top=10 --json
+```
+
 ## Getting Started
 
 First, run the development server:

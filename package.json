@@ -7,7 +7,10 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "deploy": "npm run build && node scripts/deploy.js"
+    "deploy": "npm run build && node scripts/deploy.js",
+    "tools:version:init": "node scripts/init-tool-versions.js",
+    "tools:version:update": "node scripts/update-tool-version.js",
+    "tools:improve:pick": "node scripts/pick-improvement-tools.js"
   },
   "dependencies": {
     "next": "16.1.6",
