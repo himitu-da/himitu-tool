@@ -47,7 +47,7 @@ export default function RootLayout({
               {children}
             </main>
 
-            <footer className="bg-gray-800 text-white py-6 mt-auto">
+            <footer className="bg-gray-800 text-white py-6 mt-auto shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
               <div className="container mx-auto px-4 text-center">
                 <a href="https://hmts.jp" className="text-blue-300 hover:text-blue-100 transition-colors mb-2 inline-block">
                   ひみっちゃんのKAMIサイト
