@@ -41,6 +41,7 @@ export default function TimerPage() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('basic');
   const [isQuickSettingsOpen, setIsQuickSettingsOpen] = useState(false);
+  const [isFullScreen, setIsFullScreen] = useState(false);
 
   // Refs
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -272,6 +273,16 @@ export default function TimerPage() {
             touchStartRef.current = null;
           }}
         >
+          <button 
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsFullScreen(true);
+            }}
+            className="absolute top-0 right-0 z-20 p-2 rounded-full hover:bg-black/10 dark:hover:bg-white/10 transition-colors focus:outline-none"
+            title="全画面表示"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+          </button>
           <svg width="100%" height="100%" viewBox="0 0 120 120" className="absolute top-0 left-0 -rotate-90">
             <circle 
               cx="60" cy="60" r={radius} fill="transparent" 
@@ -591,6 +602,59 @@ export default function TimerPage() {
               <span className={`text-sm font-bold px-2 py-1 rounded ${settings.muted ? (settings.theme === 'default' ? 'bg-red-100 text-red-600' : 'bg-red-900/30 text-red-600') : (settings.theme === 'default' ? 'bg-green-100 text-green-600' : 'bg-green-900/30 text-green-600')}`}>
                 {settings.muted ? 'OFF' : 'ON'}
               </span>
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Full Screen Mode */}
+      {isFullScreen && (
+        <div className={`fixed inset-0 z-50 flex flex-col items-center justify-center p-4 transition-colors duration-300 ${getThemeClasses()}`}>
+          {/* Close Full Screen Button */}
+          <button 
+            onClick={() => setIsFullScreen(false)} 
+            className="absolute top-6 right-6 p-3 rounded-full hover:bg-black/10 dark:hover:bg-white/10 transition-colors focus:outline-none z-50"
+            title="元に戻す"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/>
+            </svg>
+          </button>
+
+          {/* Large Timer Display */}
+          <div 
+            className="relative w-full max-w-[80vh] aspect-square flex justify-center items-center select-none"
+            onDoubleClick={() => isRunning ? handleStop() : handleStart()}
+          >
+            <svg width="100%" height="100%" viewBox="0 0 120 120" className="absolute top-0 left-0 -rotate-90">
+              <circle 
+                cx="60" cy="60" r={radius} fill="transparent" 
+                stroke={settings.theme === 'dark' ? '#333' : '#e0e0e0'} strokeWidth="4"
+              />
+              <circle 
+                cx="60" cy="60" r={radius} fill="transparent" 
+                stroke={strokeColor} strokeWidth="4"
+                strokeDasharray={circumference}
+                strokeDashoffset={strokeDashoffset}
+                strokeLinecap="round"
+                className="transition-all duration-1000 ease-linear"
+              />
+            </svg>
+            <div className={`z-10 text-[18vw] sm:text-[20vh] font-bold tracking-widest transition-transform duration-300 ${isRunning ? 'scale-105 opacity-90' : 'scale-100 opacity-100'}`}>
+              {formatTime(timeLeft)}
+            </div>
+          </div>
+
+          {/* Icon Only Buttons */}
+          <div className="flex justify-center gap-8 mt-12 z-10">
+            <button onClick={handleStart} disabled={isRunning} className="flex items-center justify-center w-20 h-20 rounded-full bg-green-600 hover:bg-green-700 text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed transform active:scale-95 shadow-lg" title="スタート">
+              <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="6 3 20 12 6 21 6 3"/></svg>
+            </button>
+            <button onClick={handleStop} disabled={!isRunning} className="flex items-center justify-center w-20 h-20 rounded-full bg-red-600 hover:bg-red-700 text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed transform active:scale-95 shadow-lg" title="ストップ">
+              <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/></svg>
+            </button>
+            <button onClick={handleReset} className="flex items-center justify-center w-20 h-20 rounded-full bg-blue-600 hover:bg-blue-700 text-white transition-all transform active:scale-95 shadow-lg" title="リセット">
+              <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
             </button>
           </div>
         </div>
