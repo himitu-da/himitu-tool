@@ -10,12 +10,12 @@ export function ThemeWrapper({ children }: { children: React.ReactNode }) {
     switch (theme) {
       case 'dark': return 'bg-gray-900 text-gray-100';
       case 'ocean': return 'bg-cyan-900 text-cyan-50';
-      default: return 'bg-[#0A0A0A] text-gray-100';
+      default: return 'bg-white text-gray-900';
     }
   };
 
   return (
-    <div className={`flex flex-col min-h-screen transition-colors duration-300 ${mounted ? getThemeClasses() : 'bg-[#0A0A0A] text-gray-100'}`}>
+    <div className={`flex flex-col min-h-screen transition-colors duration-300 ${mounted ? getThemeClasses() : 'bg-white text-gray-900'}`}>
       {children}
     </div>
   );
