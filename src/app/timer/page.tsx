@@ -216,8 +216,8 @@ export default function TimerPage() {
     return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
   };
 
-  const totalTime = initialMinutes * 60 + initialSeconds;
-  const progress = totalTime > 0 ? (timeLeft / totalTime) : 0;
+  const currentTotalTime = isRunning ? (initialMinutes * 60 + initialSeconds) : (inputMinutes * 60 + inputSeconds);
+  const progress = currentTotalTime > 0 ? (timeLeft / currentTotalTime) : 0;
   const radius = 54;
   const circumference = 2 * Math.PI * radius;
   const strokeDashoffset = circumference - progress * circumference;
