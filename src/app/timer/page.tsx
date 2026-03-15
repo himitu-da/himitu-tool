@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 
+import Link from 'next/link';
+
 type Theme = 'default' | 'dark' | 'ocean';
 
 interface Settings {
@@ -202,7 +204,7 @@ export default function TimerPage() {
       <header className="flex items-center justify-between p-4 bg-gray-800 text-white shadow-md">
         <div>
           <h1 className="text-sm font-light opacity-80 hover:opacity-100 transition-opacity">
-            <a href="/">ひみっちゃんのKAMIツール</a>
+            <Link href="/">ひみっちゃんのKAMIツール</Link>
           </h1>
           <h2 className="text-xl font-bold mt-1">タイマーツール</h2>
         </div>
