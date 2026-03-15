@@ -327,14 +327,24 @@
     {
       "id": "income-tax",
       "title": "所得税計算",
-      "version": "1.0.0",
+      "version": "1.0.2",
       "updatedAt": "2026-03-16",
-      "changeSummary": "Initial registration",
+      "changeSummary": "Refine chart layout and switch to linear axis",
       "history": [
         {
           "version": "1.0.0",
           "updatedAt": "2026-03-16",
           "summary": "Initial registration"
+        },
+        {
+          "version": "1.0.1",
+          "updatedAt": "2026-03-16",
+          "summary": "Add pie and log-scale tax charts"
+        },
+        {
+          "version": "1.0.2",
+          "updatedAt": "2026-03-16",
+          "summary": "Refine chart layout and switch to linear axis"
         }
       ]
     },

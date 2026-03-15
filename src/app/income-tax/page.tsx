@@ -19,6 +19,8 @@ const TAX_BRACKETS: TaxBracket[] = [
   { min: 40_000_000, max: null, rate: 0.45, deduction: 4_796_000 },
 ];
 
+const CHART_COLORS = ["#0ea5e9", "#10b981", "#f59e0b"];
+
 const formatYen = (value: number) => `${Math.floor(value).toLocaleString("ja-JP")}円`;
 
 const parseAmount = (value: string) => {
@@ -42,6 +44,26 @@ const findBracket = (taxableIncome: number): TaxBracket | null => {
   );
 };
 
+const toPolarPoint = (cx: number, cy: number, r: number, angleDeg: number) => {
+  const rad = ((angleDeg - 90) * Math.PI) / 180;
+  return {
+    x: cx + r * Math.cos(rad),
+    y: cy + r * Math.sin(rad),
+  };
+};
+
+const describeSlicePath = (cx: number, cy: number, r: number, startAngle: number, endAngle: number) => {
+  const start = toPolarPoint(cx, cy, r, endAngle);
+  const end = toPolarPoint(cx, cy, r, startAngle);
+  const largeArc = endAngle - startAngle <= 180 ? "0" : "1";
+  return `M ${cx} ${cy} L ${start.x} ${start.y} A ${r} ${r} 0 ${largeArc} 0 ${end.x} ${end.y} Z`;
+};
+
+const linearScaleX = (value: number, min: number, max: number) => {
+  const clamped = Math.max(min, Math.min(value, max));
+  return (clamped - min) / (max - min);
+};
+
 export default function IncomeTaxPage() {
   const [income, setIncome] = useState("");
   const [deduction, setDeduction] = useState("");
@@ -63,6 +85,79 @@ export default function IncomeTaxPage() {
       taxRate,
     };
   }, [income, deduction]);
+
+  const pieSegments = useMemo(() => {
+    const totalIncome = Math.max(0, result.incomeValue);
+    if (totalIncome === 0) {
+      return [] as Array<{ label: string; value: number; color: string; ratio: number }>;
+    }
+
+    const deductionPart = Math.min(result.deductionValue, totalIncome);
+    const taxablePart = Math.max(0, Math.min(result.taxableIncome, totalIncome - deductionPart));
+    const taxPart = Math.min(result.incomeTax, taxablePart);
+    const netPart = Math.max(0, totalIncome - deductionPart - taxPart);
+
+    const raw = [
+      { label: "控除額", value: deductionPart, color: CHART_COLORS[0] },
+      { label: "所得税", value: taxPart, color: CHART_COLORS[2] },
+      { label: "課税所得（税引後）", value: netPart, color: CHART_COLORS[1] },
+    ];
+
+    return raw
+      .filter((item) => item.value > 0)
+      .map((item) => ({
+        ...item,
+        ratio: item.value / totalIncome,
+      }));
+  }, [result.deductionValue, result.incomeTax, result.incomeValue, result.taxableIncome]);
+
+  const piePaths = useMemo(() => {
+    let current = 0;
+    return pieSegments.map((segment) => {
+      const start = current;
+      const end = current + segment.ratio * 360;
+      current = end;
+      return {
+        ...segment,
+        path: describeSlicePath(110, 110, 92, start, end),
+      };
+    });
+  }, [pieSegments]);
+
+  const taxRateChart = useMemo(() => {
+    const xMin = 0;
+    const xMax = 50_000_000;
+    const points = [
+      { x: 0, y: 0 },
+      ...TAX_BRACKETS.map((bracket) => ({
+        x: linearScaleX(bracket.min, xMin, xMax),
+        y: bracket.rate,
+      })),
+    ];
+
+    const userIncome = Math.max(xMin, Math.min(result.taxableIncome || 0, xMax));
+    const userBracket = findBracket(userIncome);
+    const userRate = userBracket ? userBracket.rate : 0;
+    const userX = linearScaleX(userIncome, xMin, xMax);
+
+    return {
+      points,
+      userX,
+      userRate,
+      userIncome,
+      xMin,
+      xMax,
+    };
+  }, [result.taxableIncome]);
+
+  const chartXTicks = [0, 10_000_000, 20_000_000, 30_000_000, 40_000_000, 50_000_000];
+
+  const formatXTick = (tick: number) => {
+    if (tick === 0) {
+      return "0";
+    }
+    return `${tick / 10_000}万円`;
+  };
 
   return (
     <div className="max-w-4xl mx-auto space-y-6 sm:space-y-8">
@@ -120,6 +215,116 @@ export default function IncomeTaxPage() {
         <p className="text-xs sm:text-sm opacity-75">
           入力値が空欄の場合は0円として扱います。計算式は「所得税 = 課税所得金額 × 税率 - 控除額」です。
         </p>
+      </section>
+
+      <section className="rounded-2xl p-5 sm:p-7 bg-black/5 dark:bg-white/5">
+        <h2 className="text-xl sm:text-2xl font-bold">グラフ（補足）</h2>
+        <div className="mt-4 space-y-5">
+          <div className="rounded-xl p-4 sm:p-5 bg-white/60 dark:bg-black/20">
+            <h3 className="text-lg font-semibold">1. 円グラフ（収入の内訳）</h3>
+            <div className="mt-4 flex flex-row gap-4 items-center">
+              <svg viewBox="0 0 220 220" className="w-28 h-28 sm:w-32 sm:h-32 shrink-0" role="img" aria-label="収入の内訳円グラフ">
+                <circle cx="110" cy="110" r="92" fill="rgba(148, 163, 184, 0.25)" />
+                {piePaths.map((slice) => (
+                  <path key={slice.label} d={slice.path} fill={slice.color} />
+                ))}
+                <circle cx="110" cy="110" r="44" fill="rgba(255, 255, 255, 0.72)" className="dark:fill-black/45" />
+              </svg>
+
+              <div className="space-y-2 text-sm sm:text-base">
+                <p className="font-medium">収入合計: {formatYen(result.incomeValue)}</p>
+                {(pieSegments.length > 0 ? pieSegments : [{ label: "入力待ち", value: 0, color: "#94a3b8", ratio: 0 }]).map((segment) => (
+                  <div key={segment.label} className="flex items-center gap-2">
+                    <span className="inline-block w-3 h-3 rounded-full" style={{ backgroundColor: segment.color }} />
+                    <span>
+                      {segment.label}: {formatYen(segment.value)}
+                      {segment.value > 0 ? ` (${(segment.ratio * 100).toFixed(1)}%)` : ""}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-xl p-4 sm:p-5 bg-white/60 dark:bg-black/20">
+            <h3 className="text-lg font-semibold">2. 線形グラフとあなたの課税所得</h3>
+            <svg viewBox="0 0 520 280" className="w-full mt-4" role="img" aria-label="課税所得と税率グラフ">
+              <rect x="0" y="0" width="520" height="280" fill="transparent" />
+              <line x1="56" y1="230" x2="486" y2="230" stroke="currentColor" strokeOpacity="0.35" />
+              <line x1="56" y1="24" x2="56" y2="230" stroke="currentColor" strokeOpacity="0.35" />
+
+              {[0.05, 0.1, 0.2, 0.3, 0.4, 0.45].map((rate) => {
+                const y = 230 - rate * 420;
+                return (
+                  <g key={rate}>
+                    <line x1="56" y1={y} x2="486" y2={y} stroke="currentColor" strokeOpacity="0.12" />
+                    <text x="46" y={y + 4} textAnchor="end" fontSize="11" fill="currentColor" opacity="0.75">
+                      {Math.round(rate * 100)}%
+                    </text>
+                  </g>
+                );
+              })}
+
+              {chartXTicks.map((tick) => {
+                const x = 56 + linearScaleX(tick, taxRateChart.xMin, taxRateChart.xMax) * 430;
+                return (
+                  <g key={tick}>
+                    <line x1={x} y1="230" x2={x} y2="236" stroke="currentColor" strokeOpacity="0.5" />
+                    <text x={x} y="252" textAnchor="middle" fontSize="10" fill="currentColor" opacity="0.75">
+                      {formatXTick(tick)}
+                    </text>
+                  </g>
+                );
+              })}
+
+              {taxRateChart.points.map((point, index) => {
+                const x = 56 + point.x * 430;
+                const y = 230 - point.y * 420;
+                const prev = taxRateChart.points[index - 1];
+                const next = taxRateChart.points[index + 1];
+                const nextX = next ? 56 + next.x * 430 : 486;
+                const prevY = prev ? 230 - prev.y * 420 : y;
+
+                return (
+                  <g key={`${point.x}-${point.y}`}>
+                    {index > 0 && <line x1={x} y1={prevY} x2={x} y2={y} stroke="#38bdf8" strokeWidth="2" />}
+                    <line x1={x} y1={y} x2={nextX} y2={y} stroke="#38bdf8" strokeWidth="3" />
+                  </g>
+                );
+              })}
+
+              {result.taxableIncome > 0 && (
+                <g>
+                  <line
+                    x1={56 + taxRateChart.userX * 430}
+                    y1="24"
+                    x2={56 + taxRateChart.userX * 430}
+                    y2="230"
+                    stroke="#f97316"
+                    strokeDasharray="4 4"
+                  />
+                  <circle
+                    cx={56 + taxRateChart.userX * 430}
+                    cy={230 - taxRateChart.userRate * 420}
+                    r="6"
+                    fill="#f97316"
+                  />
+                </g>
+              )}
+
+              <text x="486" y="270" textAnchor="end" fontSize="11" fill="currentColor" opacity="0.8">
+                課税所得（0円〜5,000万円）
+              </text>
+              <text x="20" y="24" textAnchor="start" fontSize="11" fill="currentColor" opacity="0.8">
+                税率
+              </text>
+            </svg>
+
+            <p className="mt-3 text-sm opacity-80">
+              あなたの課税所得: {formatYen(result.taxableIncome)} / 適用税率: {result.taxRate}
+            </p>
+          </div>
+        </div>
       </section>
 
       <section className="rounded-2xl p-5 sm:p-7 bg-black/5 dark:bg-white/5">
