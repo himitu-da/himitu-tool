@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 
+import { ToolStickyHeader } from "@/components/ToolStickyHeader";
 export default function WorldClockPage() {
   const [time, setTime] = useState(new Date());
 
@@ -22,8 +23,9 @@ export default function WorldClockPage() {
   cities[5].tz = "Asia/Dubai";
 
   return (
-    <div className="max-w-4xl mx-auto p-6 rounded-xl shadow-lg border border-opacity-20 border-current bg-white/10 backdrop-blur-sm">
-      <h1 className="text-2xl font-bold mb-6 text-center">世界時計</h1>
+    <>
+      <ToolStickyHeader title="世界時計" className="bg-gray-800 text-white" />
+      <div className="max-w-4xl mx-auto p-6 rounded-xl shadow-lg border border-opacity-20 border-current bg-white/10 backdrop-blur-sm mt-4">
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {cities.map(city => {
@@ -46,5 +48,6 @@ export default function WorldClockPage() {
         })}
       </div>
     </div>
-  );
+  </>
+);
 }

@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 
+import { ToolStickyHeader } from "@/components/ToolStickyHeader";
 export default function CharCounterPage() {
   const [text, setText] = useState("");
 
@@ -14,8 +15,9 @@ export default function CharCounterPage() {
   const lineCount = text === "" ? 0 : text.split("\n").length;
 
   return (
-    <div className="max-w-2xl mx-auto p-6 rounded-xl shadow-lg border border-opacity-20 border-current bg-white/10 backdrop-blur-sm">
-      <h1 className="text-2xl font-bold mb-6 text-center">文字数・単語数カウント</h1>
+    <>
+      <ToolStickyHeader title="文字数・単語数カウント" className="bg-gray-800 text-white" />
+      <div className="max-w-2xl mx-auto p-6 rounded-xl shadow-lg border border-opacity-20 border-current bg-white/10 backdrop-blur-sm mt-4">
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         <div className="p-4 rounded-lg bg-black/20 text-center">
@@ -52,5 +54,6 @@ export default function CharCounterPage() {
         </button>
       </div>
     </div>
-  );
+  </>
+);
 }

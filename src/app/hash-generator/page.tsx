@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 
+import { ToolStickyHeader } from "@/components/ToolStickyHeader";
 export default function HashGeneratorPage() {
   const [text, setText] = useState("");
   const [hash, setHash] = useState("");
@@ -23,8 +24,9 @@ export default function HashGeneratorPage() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto p-6 rounded-xl shadow-lg border border-opacity-20 border-current bg-white/10 backdrop-blur-sm">
-      <h1 className="text-2xl font-bold mb-6 text-center">ハッシュ生成 (SHA-256)</h1>
+    <>
+      <ToolStickyHeader title="ハッシュ生成 (SHA-256)" className="bg-gray-800 text-white" />
+      <div className="max-w-2xl mx-auto p-6 rounded-xl shadow-lg border border-opacity-20 border-current bg-white/10 backdrop-blur-sm mt-4">
 
       <div className="mb-6">
         <label className="block text-sm font-semibold mb-2 opacity-80">入力テキスト</label>
@@ -49,5 +51,6 @@ export default function HashGeneratorPage() {
         </div>
       </div>
     </div>
-  );
+  </>
+);
 }

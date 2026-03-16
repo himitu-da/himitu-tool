@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 
+import { ToolStickyHeader } from "@/components/ToolStickyHeader";
 export default function DummyTextPage() {
   const [length, setLength] = useState(100);
   const [text, setText] = useState("");
@@ -22,8 +23,9 @@ export default function DummyTextPage() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto p-6 rounded-xl shadow-lg border border-opacity-20 border-current bg-white/10 backdrop-blur-sm">
-      <h1 className="text-2xl font-bold mb-6 text-center">ダミーテキスト生成</h1>
+    <>
+      <ToolStickyHeader title="ダミーテキスト生成" className="bg-gray-800 text-white" />
+      <div className="max-w-2xl mx-auto p-6 rounded-xl shadow-lg border border-opacity-20 border-current bg-white/10 backdrop-blur-sm mt-4">
 
       <div className="mb-6 flex flex-col gap-4">
         <div>
@@ -60,5 +62,6 @@ export default function DummyTextPage() {
         </div>
       </div>
     </div>
-  );
+  </>
+);
 }

@@ -1,13 +1,15 @@
 "use client";
 import React, { useState } from "react";
+import { ToolStickyHeader } from "@/components/ToolStickyHeader";
 export default function Ratio() {
   const [w, set_w] = useState("");
   const [h, set_h] = useState("");
   const [out, setOut] = useState("");
   const run = () => { try { const gcd=(a: number,b: number): number=>b?gcd(b,a%b):a; const g=gcd(Number(w),Number(h)); setOut((Number(w)/g)+":"+(Number(h)/g)) } catch(e) { setOut("エラー"); } };
   return (
-    <div className="max-w-md mx-auto p-6 rounded-xl shadow-lg border border-opacity-20 border-current bg-white/10 backdrop-blur-sm">
-      <h1 className="text-2xl font-bold mb-6 text-center">アスペクト比</h1>
+    <>
+      <ToolStickyHeader title="アスペクト比" className="bg-gray-800 text-white" />
+      <div className="max-w-md mx-auto p-6 rounded-xl shadow-lg border border-opacity-20 border-current bg-white/10 backdrop-blur-sm mt-4">
       <div className="flex flex-col gap-4">
         <input type="number" value={w} onChange={e=>set_w(e.target.value)} placeholder="w" className="p-3 bg-black/10 rounded-lg text-current border-current" />
         <input type="number" value={h} onChange={e=>set_h(e.target.value)} placeholder="h" className="p-3 bg-black/10 rounded-lg text-current border-current" />
@@ -15,5 +17,6 @@ export default function Ratio() {
         {out && <div className="p-4 bg-black/20 rounded-lg text-center text-xl font-bold break-all">{out}</div>}
       </div>
     </div>
-  );
+  </>
+);
 }

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 
+import { ToolStickyHeader } from "@/components/ToolStickyHeader";
 export default function ColorConverterPage() {
   const [hex, setHex] = useState("#3B82F6");
   const [rgb, setRgb] = useState("rgb(59, 130, 246)");
@@ -47,8 +48,9 @@ export default function ColorConverterPage() {
   };
 
   return (
-    <div className="max-w-md mx-auto p-6 rounded-xl shadow-lg border border-opacity-20 border-current bg-white/10 backdrop-blur-sm">
-      <h1 className="text-2xl font-bold mb-6 text-center">カラーコード変換</h1>
+    <>
+      <ToolStickyHeader title="カラーコード変換" className="bg-gray-800 text-white" />
+      <div className="max-w-md mx-auto p-6 rounded-xl shadow-lg border border-opacity-20 border-current bg-white/10 backdrop-blur-sm mt-4">
 
       <div 
         className="w-full h-32 rounded-lg mb-8 shadow-inner border border-white/20"
@@ -81,5 +83,6 @@ export default function ColorConverterPage() {
         </div>
       </div>
     </div>
-  );
+  </>
+);
 }

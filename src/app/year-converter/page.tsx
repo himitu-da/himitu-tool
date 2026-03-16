@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 
+import { ToolStickyHeader } from "@/components/ToolStickyHeader";
 export default function YearConverterPage() {
   const [year, setYear] = useState<string>("2024");
   const [result, setResult] = useState<string>("");
@@ -37,8 +38,9 @@ export default function YearConverterPage() {
   };
 
   return (
-    <div className="max-w-md mx-auto p-6 rounded-xl shadow-lg border border-opacity-20 border-current bg-white/10 backdrop-blur-sm">
-      <h1 className="text-2xl font-bold mb-6 text-center">西暦 / 元号変換</h1>
+    <>
+      <ToolStickyHeader title="西暦 / 元号変換" className="bg-gray-800 text-white" />
+      <div className="max-w-md mx-auto p-6 rounded-xl shadow-lg border border-opacity-20 border-current bg-white/10 backdrop-blur-sm mt-4">
 
       <div className="flex flex-col gap-4">
         <div>
@@ -66,5 +68,6 @@ export default function YearConverterPage() {
         </div>
       </div>
     </div>
-  );
+  </>
+);
 }

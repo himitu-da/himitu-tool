@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 
+import { ToolStickyHeader } from "@/components/ToolStickyHeader";
 export default function RepeatTimerPage() {
   const [timeSetting, setTimeSetting] = useState(10);
   const [time, setTime] = useState(10);
@@ -40,8 +41,9 @@ export default function RepeatTimerPage() {
   const seconds = time % 60;
 
   return (
-    <div className="max-w-md mx-auto p-6 rounded-xl shadow-lg border border-opacity-20 border-current bg-white/10 backdrop-blur-sm">
-      <h1 className="text-2xl font-bold mb-6 text-center">リピートタイマー</h1>
+    <>
+      <ToolStickyHeader title="リピートタイマー" className="bg-gray-800 text-white" />
+      <div className="max-w-md mx-auto p-6 rounded-xl shadow-lg border border-opacity-20 border-current bg-white/10 backdrop-blur-sm mt-4">
       
       <div className="flex justify-center gap-2 mb-6">
         {[10, 30, 60, 300].map(sec => (
@@ -83,5 +85,6 @@ export default function RepeatTimerPage() {
         </button>
       </div>
     </div>
-  );
+  </>
+);
 }

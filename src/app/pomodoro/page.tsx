@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 
+import { ToolStickyHeader } from "@/components/ToolStickyHeader";
 export default function PomodoroPage() {
   const [time, setTime] = useState(25 * 60);
   const [isRunning, setIsRunning] = useState(false);
@@ -39,8 +40,9 @@ export default function PomodoroPage() {
   const seconds = time % 60;
 
   return (
-    <div className="max-w-md mx-auto p-6 rounded-xl shadow-lg border border-opacity-20 border-current bg-white/10 backdrop-blur-sm">
-      <h1 className="text-2xl font-bold mb-6 text-center">ポモドーロタイマー</h1>
+    <>
+      <ToolStickyHeader title="ポモドーロタイマー" className="bg-gray-800 text-white" />
+      <div className="max-w-md mx-auto p-6 rounded-xl shadow-lg border border-opacity-20 border-current bg-white/10 backdrop-blur-sm mt-4">
       
       <div className="text-center mb-6">
         <h2 className={`text-xl font-bold ${isBreak ? 'text-green-400' : 'text-red-400'}`}>
@@ -71,5 +73,6 @@ export default function PomodoroPage() {
         </button>
       </div>
     </div>
-  );
+  </>
+);
 }

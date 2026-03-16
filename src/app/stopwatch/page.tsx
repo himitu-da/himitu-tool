@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 
+import { ToolStickyHeader } from "@/components/ToolStickyHeader";
 export default function StopwatchPage() {
   const [time, setTime] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
@@ -34,8 +35,9 @@ export default function StopwatchPage() {
   };
 
   return (
-    <div className="max-w-md mx-auto p-6 rounded-xl shadow-lg border border-opacity-20 border-current bg-white/10 backdrop-blur-sm">
-      <h1 className="text-2xl font-bold mb-6 text-center">ストップウォッチ</h1>
+    <>
+      <ToolStickyHeader title="ストップウォッチ" className="bg-gray-800 text-white" />
+      <div className="max-w-md mx-auto p-6 rounded-xl shadow-lg border border-opacity-20 border-current bg-white/10 backdrop-blur-sm mt-4">
 
       <div className="text-center mb-8">
         <div className="text-5xl font-mono font-bold tracking-wider">
@@ -86,5 +88,6 @@ export default function StopwatchPage() {
         </div>
       )}
     </div>
-  );
+  </>
+);
 }

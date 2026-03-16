@@ -1,13 +1,15 @@
 "use client";
 import React, { useState } from "react";
+import { ToolStickyHeader } from "@/components/ToolStickyHeader";
 export default function Rand() {
   const [min, set_min] = useState("");
   const [max, set_max] = useState("");
   const [out, setOut] = useState("");
   const run = () => { try { setOut((Math.floor(Math.random()*(Number(max)-Number(min)+1))+Number(min)).toString()) } catch(e) { setOut("エラー"); } };
   return (
-    <div className="max-w-md mx-auto p-6 rounded-xl shadow-lg border border-opacity-20 border-current bg-white/10 backdrop-blur-sm">
-      <h1 className="text-2xl font-bold mb-6 text-center">乱数生成</h1>
+    <>
+      <ToolStickyHeader title="乱数生成" className="bg-gray-800 text-white" />
+      <div className="max-w-md mx-auto p-6 rounded-xl shadow-lg border border-opacity-20 border-current bg-white/10 backdrop-blur-sm mt-4">
       <div className="flex flex-col gap-4">
         <input type="number" value={min} onChange={e=>set_min(e.target.value)} placeholder="min" className="p-3 bg-black/10 rounded-lg text-current border-current" />
         <input type="number" value={max} onChange={e=>set_max(e.target.value)} placeholder="max" className="p-3 bg-black/10 rounded-lg text-current border-current" />
@@ -15,5 +17,6 @@ export default function Rand() {
         {out && <div className="p-4 bg-black/20 rounded-lg text-center text-xl font-bold break-all">{out}</div>}
       </div>
     </div>
-  );
+  </>
+);
 }

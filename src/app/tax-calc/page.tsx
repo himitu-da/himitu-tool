@@ -1,17 +1,20 @@
 "use client";
 import React, { useState } from "react";
+import { ToolStickyHeader } from "@/components/ToolStickyHeader";
 export default function Tax() {
   const [price, set_price] = useState("");
   const [out, setOut] = useState("");
   const run = () => { try { setOut("税込: "+Math.floor(Number(price)*1.1)+"円") } catch(e) { setOut("エラー"); } };
   return (
-    <div className="max-w-md mx-auto p-6 rounded-xl shadow-lg border border-opacity-20 border-current bg-white/10 backdrop-blur-sm">
-      <h1 className="text-2xl font-bold mb-6 text-center">消費税(10%)計算</h1>
+    <>
+      <ToolStickyHeader title="消費税(10%)計算" className="bg-gray-800 text-white" />
+      <div className="max-w-md mx-auto p-6 rounded-xl shadow-lg border border-opacity-20 border-current bg-white/10 backdrop-blur-sm mt-4">
       <div className="flex flex-col gap-4">
         <input type="number" value={price} onChange={e=>set_price(e.target.value)} placeholder="price" className="p-3 bg-black/10 rounded-lg text-current border-current" />
         <button onClick={run} className="py-3 bg-blue-500/80 hover:bg-blue-600/80 text-white rounded-lg font-bold transition-colors">計算</button>
         {out && <div className="p-4 bg-black/20 rounded-lg text-center text-xl font-bold break-all">{out}</div>}
       </div>
     </div>
-  );
+  </>
+);
 }

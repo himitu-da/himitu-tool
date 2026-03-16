@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 
+import { ToolStickyHeader } from "@/components/ToolStickyHeader";
 export default function CalendarPage() {
   const [currentDate, setCurrentDate] = useState(new Date());
 
@@ -38,8 +39,9 @@ export default function CalendarPage() {
   const today = new Date();
 
   return (
-    <div className="max-w-xl mx-auto p-6 rounded-xl shadow-lg border border-opacity-20 border-current bg-white/10 backdrop-blur-sm">
-      <h1 className="text-2xl font-bold mb-6 text-center">カレンダー</h1>
+    <>
+      <ToolStickyHeader title="カレンダー" className="bg-gray-800 text-white" />
+      <div className="max-w-xl mx-auto p-6 rounded-xl shadow-lg border border-opacity-20 border-current bg-white/10 backdrop-blur-sm mt-4">
 
       <div className="flex justify-between items-center mb-6">
         <button onClick={prevMonth} className="p-2 rounded bg-black/20 hover:bg-black/30 transition-colors">&lt; 前月</button>
@@ -69,5 +71,6 @@ export default function CalendarPage() {
         })}
       </div>
     </div>
-  );
+  </>
+);
 }

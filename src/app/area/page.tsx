@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 
+import { ToolStickyHeader } from "@/components/ToolStickyHeader";
 const conversionRates: Record<string, number> = {
   m2: 1,
   a: 100,
@@ -40,8 +41,9 @@ export default function AreaConverterPage() {
   }, [inputValue, fromUnit, toUnit]);
 
   return (
-    <div className="max-w-xl mx-auto p-6 rounded-xl shadow-lg border border-opacity-20 border-current bg-white/10 backdrop-blur-sm">
-      <h1 className="text-2xl font-bold mb-6 text-center">面積の変換</h1>
+    <>
+      <ToolStickyHeader title="面積の変換" className="bg-gray-800 text-white" />
+      <div className="max-w-xl mx-auto p-6 rounded-xl shadow-lg border border-opacity-20 border-current bg-white/10 backdrop-blur-sm mt-4">
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="flex flex-col gap-2">
@@ -80,5 +82,6 @@ export default function AreaConverterPage() {
         </div>
       </div>
     </div>
-  );
+  </>
+);
 }

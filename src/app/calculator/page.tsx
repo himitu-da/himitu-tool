@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 
+import { ToolStickyHeader } from "@/components/ToolStickyHeader";
 export default function CalculatorPage() {
   const [display, setDisplay] = useState("0");
   const [previousValue, setPreviousValue] = useState<number | null>(null);
@@ -68,8 +69,9 @@ export default function CalculatorPage() {
   };
 
   return (
-    <div className="max-w-md mx-auto p-6 rounded-xl shadow-lg border border-opacity-20 border-current bg-white/10 backdrop-blur-sm">
-      <h1 className="text-2xl font-bold mb-6 text-center">電卓</h1>
+    <>
+      <ToolStickyHeader title="電卓" className="bg-gray-800 text-white" />
+      <div className="max-w-md mx-auto p-6 rounded-xl shadow-lg border border-opacity-20 border-current bg-white/10 backdrop-blur-sm mt-4">
       
       <div className="w-full bg-black/20 p-4 rounded-lg mb-6 text-right text-3xl font-mono overflow-x-auto whitespace-nowrap">
         {display}
@@ -104,5 +106,6 @@ export default function CalculatorPage() {
         <button onClick={() => performOperation("=")} className="p-4 rounded-lg font-bold bg-green-500/80 hover:bg-green-600/80 text-white transition-colors">=</button>
       </div>
     </div>
-  );
+  </>
+);
 }

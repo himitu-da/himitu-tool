@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 
+import { ToolStickyHeader } from "@/components/ToolStickyHeader";
 export default function QrCodePage() {
   const [text, setText] = useState("");
   const [qrUrl, setQrUrl] = useState("");
@@ -17,8 +18,9 @@ export default function QrCodePage() {
   };
 
   return (
-    <div className="max-w-md mx-auto p-6 rounded-xl shadow-lg border border-opacity-20 border-current bg-white/10 backdrop-blur-sm">
-      <h1 className="text-2xl font-bold mb-6 text-center">QRコード生成</h1>
+    <>
+      <ToolStickyHeader title="QRコード生成" className="bg-gray-800 text-white" />
+      <div className="max-w-md mx-auto p-6 rounded-xl shadow-lg border border-opacity-20 border-current bg-white/10 backdrop-blur-sm mt-4">
 
       <div className="mb-6 flex flex-col gap-4">
         <div>
@@ -58,5 +60,6 @@ export default function QrCodePage() {
         </div>
       )}
     </div>
-  );
+  </>
+);
 }
