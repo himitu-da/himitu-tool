@@ -70,6 +70,7 @@ export default function Home() {
         { title: "タイマーツール", path: "/timer", icon: "⏲️", desc: "ブラウザで使える便利なタイマー。" },
         { title: "リピートタイマー", path: "/repeat-timer", icon: "🔁", desc: "繰り返し計測" },
         { title: "ポモドーロタイマー", path: "/pomodoro", icon: "🍅", desc: "25分作業＋5分休憩" },
+        { title: "給料タイマー", path: "/salary-timer", icon: "💰", desc: "時間あたりの稼ぎを可視化" },
       ],
     },
     {

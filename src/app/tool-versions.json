@@ -536,6 +536,45 @@
       ]
     },
     {
+      "id": "salary-timer",
+      "title": "salary-timer",
+      "version": "1.0.4",
+      "updatedAt": "2026-03-16",
+      "changeSummary": "Fix periodic drift with fixed-step accumulation",
+      "history": [
+        {
+          "version": "1.0.0",
+          "updatedAt": "2026-03-16",
+          "summary": "Initial registration"
+        },
+        {
+          "version": "1.0.0",
+          "updatedAt": "2026-03-16",
+          "summary": "Initial registration"
+        },
+        {
+          "version": "1.0.1",
+          "updatedAt": "2026-03-16",
+          "summary": "Adopt timer-style settings UI and realtime update frequency"
+        },
+        {
+          "version": "1.0.2",
+          "updatedAt": "2026-03-16",
+          "summary": "Switch to woff2 and enforce U+00A5 yen sign"
+        },
+        {
+          "version": "1.0.3",
+          "updatedAt": "2026-03-16",
+          "summary": "Use DSEG14 for yen sign while keeping DSEG7 for digits"
+        },
+        {
+          "version": "1.0.4",
+          "updatedAt": "2026-03-16",
+          "summary": "Fix periodic drift with fixed-step accumulation"
+        }
+      ]
+    },
+    {
       "id": "shuffle-lines",
       "title": "行シャッフル",
       "version": "1.0.0",
