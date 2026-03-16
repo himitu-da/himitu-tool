@@ -9,6 +9,7 @@ import { ToolStickyHeader } from "@/components/ToolStickyHeader";
 
 type AdjustMode = "none" | "auto" | "modules" | "percent";
 type PrefixMode = "free" | "https" | "http";
+type CenterOverlayMode = "none" | "char" | "image";
 
 const MIN_QR_SIZE = 240;
 const MAX_QR_SIZE = 720;
@@ -77,6 +78,13 @@ export default function QrCodePage() {
   const [dotColorInput, setDotColorInput] = useState("#000000");
   const [backgroundColor, setBackgroundColor] = useState("#ffffff");
   const [backgroundColorInput, setBackgroundColorInput] = useState("#ffffff");
+  const [centerOverlayMode, setCenterOverlayMode] = useState<CenterOverlayMode>("none");
+  const [centerOverlayText, setCenterOverlayText] = useState("");
+  const [centerOverlayImageDataUrl, setCenterOverlayImageDataUrl] = useState("");
+  const [centerOverlayCharWithBadge, setCenterOverlayCharWithBadge] = useState(true);
+  const [centerOverlayTextColor, setCenterOverlayTextColor] = useState("#000000");
+  const [centerOverlayTextColorInput, setCenterOverlayTextColorInput] = useState("#000000");
+  const [centerOverlaySizePercent, setCenterOverlaySizePercent] = useState(8);
   const [isLoading, setIsLoading] = useState(true);
   const [statusMessage, setStatusMessage] = useState("");
 
@@ -208,6 +216,56 @@ export default function QrCodePage() {
       ctx.fillRect(0, 0, qrSize, qrSize);
       ctx.imageSmoothingEnabled = false;
       ctx.drawImage(moduleCanvas, padding, padding, innerSize, innerSize);
+
+      const overlayChar = Array.from(centerOverlayText.trim()).slice(0, 1).join("");
+      const hasImageOverlay = centerOverlayMode === "image" && !!centerOverlayImageDataUrl;
+      const hasCharOverlay = centerOverlayMode === "char" && (centerOverlayCharWithBadge || !!overlayChar);
+
+      if (hasImageOverlay || hasCharOverlay) {
+        const badgeSize = Math.round(qrSize * (clamp(centerOverlaySizePercent, 5, 30) / 100));
+        const cx = qrSize / 2;
+        const cy = qrSize / 2;
+        const badgeRadius = badgeSize / 2;
+
+        if (hasImageOverlay) {
+          ctx.save();
+          ctx.beginPath();
+          ctx.arc(cx, cy, badgeRadius, 0, Math.PI * 2);
+          ctx.closePath();
+          ctx.clip();
+          ctx.fillStyle = backgroundColor;
+          ctx.fillRect(cx - badgeRadius, cy - badgeRadius, badgeSize, badgeSize);
+
+          const overlayImage = await new Promise<HTMLImageElement>((resolve, reject) => {
+            const img = new Image();
+            img.onload = () => resolve(img);
+            img.onerror = () => reject(new Error("中央画像の読み込みに失敗しました。"));
+            img.src = centerOverlayImageDataUrl;
+          });
+          ctx.imageSmoothingEnabled = true;
+          ctx.drawImage(overlayImage, cx - badgeRadius, cy - badgeRadius, badgeSize, badgeSize);
+          ctx.restore();
+        } else {
+          if (centerOverlayCharWithBadge) {
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(cx, cy, badgeRadius, 0, Math.PI * 2);
+            ctx.closePath();
+            ctx.clip();
+            ctx.fillStyle = backgroundColor;
+            ctx.fillRect(cx - badgeRadius, cy - badgeRadius, badgeSize, badgeSize);
+            ctx.restore();
+          }
+
+          const fontSize = Math.round(badgeSize * 0.66);
+          ctx.fillStyle = centerOverlayTextColor;
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.font = `${fontSize}px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif`;
+          ctx.fillText(overlayChar, cx, cy);
+        }
+      }
+
       ctx.restore();
 
       if (latestTaskRef.current !== taskId) {
@@ -224,7 +282,20 @@ export default function QrCodePage() {
       setIsLoading(false);
       setStatusMessage(error instanceof Error ? error.message : "QRコードの生成に失敗しました。");
     }
-  }, [backgroundColor, composedText, dotColor, getCornerRadiusPx, getPaddingSize, qrSize]);
+  }, [
+    backgroundColor,
+    centerOverlayCharWithBadge,
+    centerOverlayImageDataUrl,
+    centerOverlayMode,
+    centerOverlaySizePercent,
+    centerOverlayText,
+    centerOverlayTextColor,
+    composedText,
+    dotColor,
+    getCornerRadiusPx,
+    getPaddingSize,
+    qrSize,
+  ]);
 
   const scheduleAutoGenerate = useCallback(
     (delayMs: number) => {
@@ -896,6 +967,195 @@ export default function QrCodePage() {
                       />
                     </div>
                   </div>
+                </div>
+              </div>
+
+              <div className={`rounded-2xl px-4 py-5 sm:px-5 sm:py-6 space-y-4 text-center ${getSettingBlockClasses()}`}>
+                <p className="text-lg font-bold">中央アイコン・絵文字</p>
+                <div className="max-w-3xl mx-auto space-y-3">
+                  <div className="grid grid-cols-3 gap-2 max-w-2xl mx-auto">
+                    <label className={`rounded-xl px-3 py-3 text-base cursor-pointer transition-colors ${getRadioLabelClasses(centerOverlayMode === "none")}`}>
+                      <input
+                        type="radio"
+                        name="center-overlay-mode"
+                        checked={centerOverlayMode === "none"}
+                        onChange={() => {
+                          setCenterOverlayMode("none");
+                          scheduleAutoGenerate(500);
+                        }}
+                        className="mr-2"
+                      />
+                      なし
+                    </label>
+                    <label className={`rounded-xl px-3 py-3 text-base cursor-pointer transition-colors ${getRadioLabelClasses(centerOverlayMode === "char")}`}>
+                      <input
+                        type="radio"
+                        name="center-overlay-mode"
+                        checked={centerOverlayMode === "char"}
+                        onChange={() => {
+                          setCenterOverlayMode("char");
+                          scheduleAutoGenerate(500);
+                        }}
+                        className="mr-2"
+                      />
+                      1文字
+                    </label>
+                    <label className={`rounded-xl px-3 py-3 text-base cursor-pointer transition-colors ${getRadioLabelClasses(centerOverlayMode === "image")}`}>
+                      <input
+                        type="radio"
+                        name="center-overlay-mode"
+                        checked={centerOverlayMode === "image"}
+                        onChange={() => {
+                          setCenterOverlayMode("image");
+                          scheduleAutoGenerate(500);
+                        }}
+                        className="mr-2"
+                      />
+                      画像
+                    </label>
+                  </div>
+
+                  <div className="max-w-xl mx-auto text-center">
+                    {centerOverlayMode === "none" ? (
+                      <></>
+                    ) : centerOverlayMode === "char" ? (
+                      <>
+                        <label className="block text-base font-semibold mb-1">表示する文字（1文字）</label>
+                        <input
+                          type="text"
+                          value={centerOverlayText}
+                          onChange={(e) => {
+                            setCenterOverlayText(e.target.value);
+                            scheduleAutoGenerate(500);
+                          }}
+                          onBlur={() => {
+                            const nextChar = Array.from(centerOverlayText.trim()).slice(0, 1).join("");
+                            setCenterOverlayText(nextChar);
+                            scheduleAutoGenerate(500);
+                          }}
+                          className={`w-full p-3 rounded-xl border outline-none text-base sm:text-lg focus:ring-2 transition ${getInputClasses()}`}
+                          placeholder="例: ★"
+                        />
+
+                        <div className="grid grid-cols-2 gap-2 mt-3">
+                          <label className={`rounded-xl px-3 py-3 text-base cursor-pointer transition-colors ${getRadioLabelClasses(centerOverlayCharWithBadge)}`}>
+                            <input
+                              type="radio"
+                              name="center-char-badge"
+                              checked={centerOverlayCharWithBadge}
+                              onChange={() => {
+                                setCenterOverlayCharWithBadge(true);
+                                scheduleAutoGenerate(500);
+                              }}
+                              className="mr-2"
+                            />
+                            バッジあり
+                          </label>
+                          <label className={`rounded-xl px-3 py-3 text-base cursor-pointer transition-colors ${getRadioLabelClasses(!centerOverlayCharWithBadge)}`}>
+                            <input
+                              type="radio"
+                              name="center-char-badge"
+                              checked={!centerOverlayCharWithBadge}
+                              onChange={() => {
+                                setCenterOverlayCharWithBadge(false);
+                                scheduleAutoGenerate(500);
+                              }}
+                              className="mr-2"
+                            />
+                            バッジなし
+                          </label>
+                        </div>
+
+                        <div className="mt-3">
+                          <label className="block text-base font-semibold mb-1">文字色</label>
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="color"
+                              value={centerOverlayTextColor}
+                              onChange={(e) => {
+                                const next = normalizeHexColor(e.target.value, centerOverlayTextColor);
+                                setCenterOverlayTextColor(next);
+                                setCenterOverlayTextColorInput(next);
+                                scheduleAutoGenerate(500);
+                              }}
+                              className="h-12 w-16 rounded-xl cursor-pointer"
+                              aria-label="中央文字色"
+                            />
+                            <input
+                              type="text"
+                              value={centerOverlayTextColorInput}
+                              onChange={(e) => setCenterOverlayTextColorInput(e.target.value)}
+                              onBlur={() => {
+                                const next = normalizeHexColor(centerOverlayTextColorInput, centerOverlayTextColor);
+                                setCenterOverlayTextColor(next);
+                                setCenterOverlayTextColorInput(next);
+                                scheduleAutoGenerate(500);
+                              }}
+                              className={`w-full p-3 rounded-xl border outline-none text-base sm:text-lg focus:ring-2 transition ${getInputClasses()}`}
+                              placeholder="#000000"
+                            />
+                          </div>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <label className="block text-base font-semibold mb-1">中央に表示する画像</label>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (!file) {
+                              return;
+                            }
+                            const reader = new FileReader();
+                            reader.onload = () => {
+                              const result = typeof reader.result === "string" ? reader.result : "";
+                              setCenterOverlayImageDataUrl(result);
+                              scheduleAutoGenerate(500);
+                            };
+                            reader.readAsDataURL(file);
+                          }}
+                          className={`w-full p-3 rounded-xl border outline-none text-base sm:text-lg focus:ring-2 transition ${getInputClasses()}`}
+                        />
+                        {centerOverlayImageDataUrl && (
+                          <div className="mt-3 flex items-center justify-center gap-3">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img src={centerOverlayImageDataUrl} alt="中央画像プレビュー" className="w-12 h-12 rounded-full object-cover" />
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setCenterOverlayImageDataUrl("");
+                                scheduleAutoGenerate(500);
+                              }}
+                              className={`px-3 py-2 rounded-xl text-sm font-semibold transition-colors ${getSecondaryButtonClasses()}`}
+                            >
+                              画像をクリア
+                            </button>
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </div>
+
+                  {centerOverlayMode !== "none" && (
+                    <div className="max-w-xl mx-auto text-center">
+                      <label className="block text-base font-semibold mb-1">サイズ（5〜25%）</label>
+                      <input
+                        type="range"
+                        min={5}
+                        max={25}
+                        step={1}
+                        value={centerOverlaySizePercent}
+                        onChange={(e) => {
+                          setCenterOverlaySizePercent(Number(e.target.value));
+                          scheduleAutoGenerate(500);
+                        }}
+                        className="w-full h-3 cursor-pointer"
+                      />
+                      <p className={`mt-2 text-base ${getMutedTextClasses()}`}>{centerOverlaySizePercent}%</p>
+                    </div>
+                  )}
                 </div>
               </div>
 
