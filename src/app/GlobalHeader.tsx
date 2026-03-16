@@ -34,14 +34,14 @@ export function GlobalHeader() {
 
   if (!mounted) {
     return (
-      <header className="sticky top-0 z-50 bg-gray-100 h-16 shadow-sm">
+      <header id="global-site-header" className="sticky top-0 z-50 bg-gray-100 h-16 shadow-sm">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center"></div>
       </header>
     );
   }
 
   return (
-    <header className={`sticky top-0 z-50 shadow-sm transition-colors duration-300 ${getHeaderStyle()}`}>
+    <header id="global-site-header" className={`sticky top-0 z-50 shadow-sm transition-colors duration-300 ${getHeaderStyle()}`}>
       <div className="container mx-auto px-4 py-4 flex justify-between items-center">
         <h1 className="text-xl font-bold">
           <Link href="/" className={`transition-colors ${getLinkStyle()}`}>
