@@ -90,7 +90,7 @@ export default function Home() {
 
   return (
     <div>
-      <section className="p-6 sm:p-8 bg-black/5 dark:bg-white/5 rounded-xl shadow-sm backdrop-blur-sm text-center">
+      <section className="p-6 sm:p-8 bg-black/5 dark:bg-white/5 rounded-xl backdrop-blur-sm text-center">
         <p className="text-lg sm:text-xl font-medium opacity-90 mb-3">
           日常の『ちょっと困った』を1つのサイトで解決したい。
         </p>
@@ -136,7 +136,7 @@ export default function Home() {
                     <li key={tool.path}>
                       <Link
                         href={tool.path}
-                        className="inline-block px-4 py-2 bg-black/5 dark:bg-white/5 rounded-md shadow-sm hover:opacity-75 transition-opacity"
+                        className="inline-block px-4 py-2 bg-black/5 dark:bg-white/5 rounded-md hover:opacity-75 transition-opacity"
                       >
                         <span className="text-sm font-medium">{tool.title}</span>
                       </Link>
@@ -156,7 +156,7 @@ export default function Home() {
                     <li key={tool.path}>
                       <Link
                         href={tool.path}
-                        className="flex flex-col items-center justify-center p-6 bg-black/5 dark:bg-white/5 rounded-xl shadow-sm hover:-translate-y-1 transition-transform h-full backdrop-blur-sm"
+                        className="flex flex-col items-center justify-center p-6 bg-black/5 dark:bg-white/5 rounded-xl hover:-translate-y-1 transition-transform h-full backdrop-blur-sm"
                       >
                         <div className="text-4xl mb-3">{tool.icon}</div>
                         <h3 className="text-xl font-bold mb-2 text-current">{tool.title}</h3>

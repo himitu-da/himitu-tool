@@ -15,7 +15,7 @@ export function ThemeWrapper({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <div className={`flex flex-col min-h-screen transition-colors duration-300 ${mounted ? getThemeClasses() : 'bg-white text-gray-900'}`}>
+    <div className={`flex flex-col min-h-screen transition-colors duration-300 ${mounted ? getThemeClasses() : 'bg-white text-gray-900'} ${mounted && (theme === 'dark' || theme === 'ocean') ? 'dark' : ''}`}>
       {children}
     </div>
   );
