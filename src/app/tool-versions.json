@@ -496,9 +496,9 @@
     {
       "id": "qr-code",
       "title": "QRコード生成",
-      "version": "1.0.10",
+      "version": "1.0.13",
       "updatedAt": "2026-03-17",
-      "changeSummary": "Refine center overlay UX: hide none-mode controls, badge-only char, and size up to 30%",
+      "changeSummary": "Reorder char overlay controls and show badge size only when badge is enabled",
       "history": [
         {
           "version": "1.0.0",
@@ -554,6 +554,21 @@
           "version": "1.0.10",
           "updatedAt": "2026-03-17",
           "summary": "Refine center overlay UX: hide none-mode controls, badge-only char, and size up to 30%"
+        },
+        {
+          "version": "1.0.11",
+          "updatedAt": "2026-03-17",
+          "summary": "Improve center character alignment using font metric baseline correction"
+        },
+        {
+          "version": "1.0.12",
+          "updatedAt": "2026-03-17",
+          "summary": "Split center overlay controls into separate badge size and text size settings"
+        },
+        {
+          "version": "1.0.13",
+          "updatedAt": "2026-03-17",
+          "summary": "Reorder char overlay controls and show badge size only when badge is enabled"
         }
       ]
     },

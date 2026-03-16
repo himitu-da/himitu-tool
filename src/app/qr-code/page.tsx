@@ -84,7 +84,8 @@ export default function QrCodePage() {
   const [centerOverlayCharWithBadge, setCenterOverlayCharWithBadge] = useState(true);
   const [centerOverlayTextColor, setCenterOverlayTextColor] = useState("#000000");
   const [centerOverlayTextColorInput, setCenterOverlayTextColorInput] = useState("#000000");
-  const [centerOverlaySizePercent, setCenterOverlaySizePercent] = useState(8);
+  const [centerOverlayBadgeSizePercent, setCenterOverlayBadgeSizePercent] = useState(8);
+  const [centerOverlayTextSizePercent, setCenterOverlayTextSizePercent] = useState(7);
   const [isLoading, setIsLoading] = useState(true);
   const [statusMessage, setStatusMessage] = useState("");
 
@@ -222,7 +223,7 @@ export default function QrCodePage() {
       const hasCharOverlay = centerOverlayMode === "char" && (centerOverlayCharWithBadge || !!overlayChar);
 
       if (hasImageOverlay || hasCharOverlay) {
-        const badgeSize = Math.round(qrSize * (clamp(centerOverlaySizePercent, 5, 30) / 100));
+        const badgeSize = Math.round(qrSize * (clamp(centerOverlayBadgeSizePercent, 5, 30) / 100));
         const cx = qrSize / 2;
         const cy = qrSize / 2;
         const badgeRadius = badgeSize / 2;
@@ -257,12 +258,16 @@ export default function QrCodePage() {
             ctx.restore();
           }
 
-          const fontSize = Math.round(badgeSize * 0.66);
+          const fontSize = Math.round(qrSize * (clamp(centerOverlayTextSizePercent, 3, 30) / 100));
           ctx.fillStyle = centerOverlayTextColor;
           ctx.textAlign = "center";
-          ctx.textBaseline = "middle";
           ctx.font = `${fontSize}px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif`;
-          ctx.fillText(overlayChar, cx, cy);
+          const metrics = ctx.measureText(overlayChar);
+          const ascent = metrics.actualBoundingBoxAscent || fontSize * 0.8;
+          const descent = metrics.actualBoundingBoxDescent || fontSize * 0.2;
+          const baselineY = cy + (ascent - descent) / 2;
+          ctx.textBaseline = "alphabetic";
+          ctx.fillText(overlayChar, cx, baselineY);
         }
       }
 
@@ -287,7 +292,8 @@ export default function QrCodePage() {
     centerOverlayCharWithBadge,
     centerOverlayImageDataUrl,
     centerOverlayMode,
-    centerOverlaySizePercent,
+    centerOverlayBadgeSizePercent,
+    centerOverlayTextSizePercent,
     centerOverlayText,
     centerOverlayTextColor,
     composedText,
@@ -971,7 +977,7 @@ export default function QrCodePage() {
               </div>
 
               <div className={`rounded-2xl px-4 py-5 sm:px-5 sm:py-6 space-y-4 text-center ${getSettingBlockClasses()}`}>
-                <p className="text-lg font-bold">中央アイコン・絵文字</p>
+                <p className="text-lg font-bold">中央アイコン・絵文字・画像</p>
                 <div className="max-w-3xl mx-auto space-y-3">
                   <div className="grid grid-cols-3 gap-2 max-w-2xl mx-auto">
                     <label className={`rounded-xl px-3 py-3 text-base cursor-pointer transition-colors ${getRadioLabelClasses(centerOverlayMode === "none")}`}>
@@ -1037,35 +1043,6 @@ export default function QrCodePage() {
                           placeholder="例: ★"
                         />
 
-                        <div className="grid grid-cols-2 gap-2 mt-3">
-                          <label className={`rounded-xl px-3 py-3 text-base cursor-pointer transition-colors ${getRadioLabelClasses(centerOverlayCharWithBadge)}`}>
-                            <input
-                              type="radio"
-                              name="center-char-badge"
-                              checked={centerOverlayCharWithBadge}
-                              onChange={() => {
-                                setCenterOverlayCharWithBadge(true);
-                                scheduleAutoGenerate(500);
-                              }}
-                              className="mr-2"
-                            />
-                            バッジあり
-                          </label>
-                          <label className={`rounded-xl px-3 py-3 text-base cursor-pointer transition-colors ${getRadioLabelClasses(!centerOverlayCharWithBadge)}`}>
-                            <input
-                              type="radio"
-                              name="center-char-badge"
-                              checked={!centerOverlayCharWithBadge}
-                              onChange={() => {
-                                setCenterOverlayCharWithBadge(false);
-                                scheduleAutoGenerate(500);
-                              }}
-                              className="mr-2"
-                            />
-                            バッジなし
-                          </label>
-                        </div>
-
                         <div className="mt-3">
                           <label className="block text-base font-semibold mb-1">文字色</label>
                           <div className="flex items-center gap-2">
@@ -1096,6 +1073,71 @@ export default function QrCodePage() {
                             />
                           </div>
                         </div>
+
+                        <div className="mt-3">
+                          <label className="block text-base font-semibold mb-1">文字サイズ（3〜25%）</label>
+                          <input
+                            type="range"
+                            min={3}
+                            max={25}
+                            step={1}
+                            value={centerOverlayTextSizePercent}
+                            onChange={(e) => {
+                              setCenterOverlayTextSizePercent(Number(e.target.value));
+                              scheduleAutoGenerate(500);
+                            }}
+                            className="w-full h-3 cursor-pointer"
+                          />
+                          <p className={`mt-2 text-base ${getMutedTextClasses()}`}>{centerOverlayTextSizePercent}%</p>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-2 mt-3">
+                          <label className={`rounded-xl px-3 py-3 text-base cursor-pointer transition-colors ${getRadioLabelClasses(centerOverlayCharWithBadge)}`}>
+                            <input
+                              type="radio"
+                              name="center-char-badge"
+                              checked={centerOverlayCharWithBadge}
+                              onChange={() => {
+                                setCenterOverlayCharWithBadge(true);
+                                scheduleAutoGenerate(500);
+                              }}
+                              className="mr-2"
+                            />
+                            バッジあり
+                          </label>
+                          <label className={`rounded-xl px-3 py-3 text-base cursor-pointer transition-colors ${getRadioLabelClasses(!centerOverlayCharWithBadge)}`}>
+                            <input
+                              type="radio"
+                              name="center-char-badge"
+                              checked={!centerOverlayCharWithBadge}
+                              onChange={() => {
+                                setCenterOverlayCharWithBadge(false);
+                                scheduleAutoGenerate(500);
+                              }}
+                              className="mr-2"
+                            />
+                            バッジなし
+                          </label>
+                        </div>
+
+                        {centerOverlayCharWithBadge && (
+                          <div className="mt-3">
+                            <label className="block text-base font-semibold mb-1">バッジサイズ（5〜30%）</label>
+                            <input
+                              type="range"
+                              min={5}
+                              max={30}
+                              step={1}
+                              value={centerOverlayBadgeSizePercent}
+                              onChange={(e) => {
+                                setCenterOverlayBadgeSizePercent(Number(e.target.value));
+                                scheduleAutoGenerate(500);
+                              }}
+                              className="w-full h-3 cursor-pointer"
+                            />
+                            <p className={`mt-2 text-base ${getMutedTextClasses()}`}>{centerOverlayBadgeSizePercent}%</p>
+                          </div>
+                        )}
                       </>
                     ) : (
                       <>
@@ -1134,28 +1176,26 @@ export default function QrCodePage() {
                             </button>
                           </div>
                         )}
+
+                        <div className="mt-3">
+                          <label className="block text-base font-semibold mb-1">表示サイズ（5〜25%）</label>
+                          <input
+                            type="range"
+                            min={5}
+                            max={25}
+                            step={1}
+                            value={centerOverlayBadgeSizePercent}
+                            onChange={(e) => {
+                              setCenterOverlayBadgeSizePercent(Number(e.target.value));
+                              scheduleAutoGenerate(500);
+                            }}
+                            className="w-full h-3 cursor-pointer"
+                          />
+                          <p className={`mt-2 text-base ${getMutedTextClasses()}`}>{centerOverlayBadgeSizePercent}%</p>
+                        </div>
                       </>
                     )}
                   </div>
-
-                  {centerOverlayMode !== "none" && (
-                    <div className="max-w-xl mx-auto text-center">
-                      <label className="block text-base font-semibold mb-1">サイズ（5〜25%）</label>
-                      <input
-                        type="range"
-                        min={5}
-                        max={25}
-                        step={1}
-                        value={centerOverlaySizePercent}
-                        onChange={(e) => {
-                          setCenterOverlaySizePercent(Number(e.target.value));
-                          scheduleAutoGenerate(500);
-                        }}
-                        className="w-full h-3 cursor-pointer"
-                      />
-                      <p className={`mt-2 text-base ${getMutedTextClasses()}`}>{centerOverlaySizePercent}%</p>
-                    </div>
-                  )}
                 </div>
               </div>
 
