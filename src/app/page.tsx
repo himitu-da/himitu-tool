@@ -78,6 +78,7 @@ export default function Home() {
       tools: [
         { title: "パスワード生成", path: "/password-generator", icon: "🔑", desc: "安全なパスワードを自動生成" },
         { title: "QRコード生成", path: "/qr-code", icon: "📱", desc: "URLからQRを生成" },
+        { title: "画像変換", path: "/image-conv", icon: "🖼️", desc: "画像形式を相互変換" },
         { title: "ハッシュ生成", path: "/hash-generator", icon: "🔒", desc: "テキストからSHA-256を生成" },
         { title: "UUID生成", path: "/uuid", icon: "🆔", desc: "v4フォーマット" },
         { title: "ダミーテキスト生成", path: "/dummy-text", icon: "📃", desc: "文字数指定で生成" },

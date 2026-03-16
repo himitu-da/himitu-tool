@@ -330,6 +330,20 @@
       ]
     },
     {
+      "id": "image-conv",
+      "title": "画像変換",
+      "version": "1.0.0",
+      "updatedAt": "2026-03-16",
+      "changeSummary": "Initial registration",
+      "history": [
+        {
+          "version": "1.0.0",
+          "updatedAt": "2026-03-16",
+          "summary": "Initial registration"
+        }
+      ]
+    },
+    {
       "id": "income-tax",
       "title": "所得税計算",
       "version": "1.0.2",
@@ -537,7 +551,7 @@
     },
     {
       "id": "salary-timer",
-      "title": "salary-timer",
+      "title": "給料タイマー",
       "version": "1.0.6",
       "updatedAt": "2026-03-16",
       "changeSummary": "Adjust display-to-icon size balance",
