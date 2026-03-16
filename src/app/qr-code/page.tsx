@@ -7,37 +7,102 @@ import { ClipboardPaste, Copy } from "lucide-react";
 import { useTheme } from "../ThemeProvider";
 import { ToolStickyHeader } from "@/components/ToolStickyHeader";
 
-type MarginMode = "modules" | "percent" | "auto";
+type AdjustMode = "modules" | "percent" | "auto";
+type PrefixMode = "free" | "https" | "http";
 
 const MIN_QR_SIZE = 240;
 const MAX_QR_SIZE = 720;
 const QR_STEP = 40;
 
 const pxToMm = (px: number, dpi = 300) => (px / dpi) * 25.4;
+const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
+
+const normalizeHexColor = (value: string, fallback: string) => {
+  const normalized = value.trim().toLowerCase();
+  const shortMatch = normalized.match(/^#([0-9a-f]{3})$/i);
+  if (shortMatch) {
+    const [r, g, b] = shortMatch[1].split("");
+    return `#${r}${r}${g}${g}${b}${b}`;
+  }
+  if (/^#([0-9a-f]{6})$/i.test(normalized)) {
+    return normalized;
+  }
+  return fallback;
+};
+
+const drawRoundedRect = (
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  radius: number
+) => {
+  const safeRadius = Math.min(radius, width / 2, height / 2);
+  if (safeRadius <= 0) {
+    ctx.fillRect(x, y, width, height);
+    return;
+  }
+
+  ctx.beginPath();
+  ctx.moveTo(x + safeRadius, y);
+  ctx.lineTo(x + width - safeRadius, y);
+  ctx.arcTo(x + width, y, x + width, y + safeRadius, safeRadius);
+  ctx.lineTo(x + width, y + height - safeRadius);
+  ctx.arcTo(x + width, y + height, x + width - safeRadius, y + height, safeRadius);
+  ctx.lineTo(x + safeRadius, y + height);
+  ctx.arcTo(x, y + height, x, y + height - safeRadius, safeRadius);
+  ctx.lineTo(x, y + safeRadius);
+  ctx.arcTo(x, y, x + safeRadius, y, safeRadius);
+  ctx.closePath();
+  ctx.fill();
+};
 
 export default function QrCodePage() {
   const { theme } = useTheme();
-  const [text, setText] = useState("https://example.com");
+  const [prefixMode, setPrefixMode] = useState<PrefixMode>("https");
+  const [text, setText] = useState("example.com");
   const [qrDataUrl, setQrDataUrl] = useState("");
   const [qrSize, setQrSize] = useState(360);
   const [autoGenerate, setAutoGenerate] = useState(true);
-  const [marginMode, setMarginMode] = useState<MarginMode>("modules");
+  const [marginMode, setMarginMode] = useState<AdjustMode>("modules");
   const [marginModules, setMarginModules] = useState(4);
   const [marginPercent, setMarginPercent] = useState(10);
+  const [roundMode, setRoundMode] = useState<AdjustMode>("auto");
+  const [roundModules, setRoundModules] = useState(0.22);
+  const [roundPercent, setRoundPercent] = useState(22);
+  const [dotColor, setDotColor] = useState("#000000");
+  const [dotColorInput, setDotColorInput] = useState("#000000");
+  const [backgroundColor, setBackgroundColor] = useState("#ffffff");
+  const [backgroundColorInput, setBackgroundColorInput] = useState("#ffffff");
   const [isLoading, setIsLoading] = useState(true);
   const [statusMessage, setStatusMessage] = useState("");
 
   const generateTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const latestTaskRef = useRef(0);
 
+  const composedText = useMemo(() => {
+    const value = text.trim();
+    if (!value) {
+      return "";
+    }
+
+    if (prefixMode === "free") {
+      return value;
+    }
+
+    const stripped = value.replace(/^https?:\/\//i, "");
+    return `${prefixMode}://${stripped}`;
+  }, [prefixMode, text]);
+
   const getPaddingSize = useCallback(
     (moduleCount: number) => {
       if (marginMode === "modules") {
-        const safeModules = Math.min(20, Math.max(0, marginModules));
+        const safeModules = clamp(marginModules, 0, 20);
         return (qrSize * safeModules) / (moduleCount + safeModules * 2);
       }
       if (marginMode === "percent") {
-        const safePercent = Math.min(30, Math.max(0, marginPercent));
+        const safePercent = clamp(marginPercent, 0, 30);
         return qrSize * (safePercent / 100);
       }
       return qrSize * 0.08;
@@ -45,12 +110,22 @@ export default function QrCodePage() {
     [marginMode, marginModules, marginPercent, qrSize]
   );
 
+  const getRoundRatio = useCallback(() => {
+    if (roundMode === "modules") {
+      return clamp(roundModules, 0, 1.5);
+    }
+    if (roundMode === "percent") {
+      return clamp(roundPercent, 0, 95) / 100;
+    }
+    return 0.22;
+  }, [roundMode, roundModules, roundPercent]);
+
   const generateQrCode = useCallback(async () => {
     const taskId = latestTaskRef.current + 1;
     latestTaskRef.current = taskId;
     setStatusMessage("");
 
-    const value = text.trim();
+    const value = composedText.trim();
     if (!value) {
       setQrDataUrl("");
       setIsLoading(false);
@@ -63,11 +138,29 @@ export default function QrCodePage() {
       await new Promise((resolve) => setTimeout(resolve, 160));
       const qr = QRCode.create(value, { errorCorrectionLevel: "M" });
       const moduleCount = qr.modules.size;
-      const padding = getPaddingSize(moduleCount);
-      const innerSize = qrSize - padding * 2;
 
-      if (innerSize <= 0) {
-        throw new Error("QRサイズに対して余白が大きすぎます。");
+      let padding = getPaddingSize(moduleCount);
+      let innerSize = qrSize - padding * 2;
+      let cellSize = innerSize / moduleCount;
+      let cornerRadius = Math.min(cellSize * getRoundRatio(), cellSize * 0.95);
+
+      // Keep enough quiet zone so rounded modules are not clipped at the edges.
+      for (let i = 0; i < 3; i += 1) {
+        if (innerSize <= 0) {
+          throw new Error("QRサイズに対して余白が大きすぎます。");
+        }
+        const requiredPadding = cornerRadius + cellSize * 0.6;
+        if (requiredPadding <= padding) {
+          break;
+        }
+        padding = requiredPadding;
+        innerSize = qrSize - padding * 2;
+        cellSize = innerSize / moduleCount;
+        cornerRadius = Math.min(cellSize * getRoundRatio(), cellSize * 0.95);
+      }
+
+      if (innerSize <= 0 || cellSize <= 0) {
+        throw new Error("角丸設定が大きすぎるため、余白を確保できません。");
       }
 
       const canvas = document.createElement("canvas");
@@ -79,11 +172,10 @@ export default function QrCodePage() {
         throw new Error("Canvasの初期化に失敗しました。");
       }
 
-      ctx.fillStyle = "#ffffff";
+      ctx.fillStyle = backgroundColor;
       ctx.fillRect(0, 0, qrSize, qrSize);
 
-      const cellSize = innerSize / moduleCount;
-      ctx.fillStyle = "#000000";
+      ctx.fillStyle = dotColor;
 
       for (let row = 0; row < moduleCount; row += 1) {
         for (let col = 0; col < moduleCount; col += 1) {
@@ -94,7 +186,7 @@ export default function QrCodePage() {
           const y = padding + row * cellSize;
           const nextX = padding + (col + 1) * cellSize;
           const nextY = padding + (row + 1) * cellSize;
-          ctx.fillRect(x, y, nextX - x, nextY - y);
+          drawRoundedRect(ctx, x, y, nextX - x, nextY - y, cornerRadius);
         }
       }
 
@@ -112,7 +204,7 @@ export default function QrCodePage() {
       setIsLoading(false);
       setStatusMessage(error instanceof Error ? error.message : "QRコードの生成に失敗しました。");
     }
-  }, [getPaddingSize, qrSize, text]);
+  }, [backgroundColor, composedText, dotColor, getPaddingSize, getRoundRatio, qrSize]);
 
   const scheduleAutoGenerate = useCallback(
     (delayMs: number) => {
@@ -142,12 +234,37 @@ export default function QrCodePage() {
   const handlePaste = async () => {
     setStatusMessage("");
     try {
-      const pastedText = await navigator.clipboard.readText();
-      setText(pastedText);
+      const pastedText = (await navigator.clipboard.readText()).trim();
+      if (/^https:\/\//i.test(pastedText)) {
+        setPrefixMode("https");
+        setText(pastedText.replace(/^https:\/\//i, ""));
+      } else if (/^http:\/\//i.test(pastedText)) {
+        setPrefixMode("http");
+        setText(pastedText.replace(/^http:\/\//i, ""));
+      } else {
+        setPrefixMode("free");
+        setText(pastedText);
+      }
       scheduleAutoGenerate(500);
     } catch {
       setStatusMessage("クリップボードの読み取りに失敗しました。ブラウザの許可設定をご確認ください。");
     }
+  };
+
+  const handlePrefixModeChange = (nextMode: PrefixMode) => {
+    if (nextMode === prefixMode) {
+      return;
+    }
+
+    const currentValue = composedText;
+    if (nextMode === "free") {
+      setText(currentValue);
+    } else {
+      setText(currentValue.replace(/^https?:\/\//i, ""));
+    }
+
+    setPrefixMode(nextMode);
+    scheduleAutoGenerate(500);
   };
 
   const handleCopyImage = async () => {
@@ -237,6 +354,34 @@ export default function QrCodePage() {
     }
   };
 
+  const getCheckerboardStyle = (): React.CSSProperties => {
+    if (theme === "dark") {
+      return {
+        backgroundColor: "#1a1a1a",
+        backgroundImage:
+          "linear-gradient(45deg, #242424 25%, transparent 25%), linear-gradient(-45deg, #242424 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #242424 75%), linear-gradient(-45deg, transparent 75%, #242424 75%)",
+        backgroundSize: "24px 24px",
+        backgroundPosition: "0 0, 0 12px, 12px -12px, -12px 0px",
+      };
+    }
+    if (theme === "ocean") {
+      return {
+        backgroundColor: "#0c3f4c",
+        backgroundImage:
+          "linear-gradient(45deg, #115467 25%, transparent 25%), linear-gradient(-45deg, #115467 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #115467 75%), linear-gradient(-45deg, transparent 75%, #115467 75%)",
+        backgroundSize: "24px 24px",
+        backgroundPosition: "0 0, 0 12px, 12px -12px, -12px 0px",
+      };
+    }
+    return {
+      backgroundColor: "#f8f8f8",
+      backgroundImage:
+        "linear-gradient(45deg, #ececec 25%, transparent 25%), linear-gradient(-45deg, #ececec 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #ececec 75%), linear-gradient(-45deg, transparent 75%, #ececec 75%)",
+      backgroundSize: "24px 24px",
+      backgroundPosition: "0 0, 0 12px, 12px -12px, -12px 0px",
+    };
+  };
+
   const getRadioLabelClasses = (active: boolean) => {
     if (active) {
       switch (theme) {
@@ -280,6 +425,38 @@ export default function QrCodePage() {
             <div className="space-y-5">
               <div>
                 <label className="block text-sm font-semibold mb-2">URLまたはテキスト</label>
+                <div className="grid gap-2 sm:grid-cols-3 mb-2">
+                  <label className={`rounded-xl px-3 py-2 text-sm cursor-pointer transition-colors ${getRadioLabelClasses(prefixMode === "free")}`}>
+                    <input
+                      type="radio"
+                      name="prefix-mode"
+                      checked={prefixMode === "free"}
+                      onChange={() => handlePrefixModeChange("free")}
+                      className="mr-2"
+                    />
+                    自由入力
+                  </label>
+                  <label className={`rounded-xl px-3 py-2 text-sm cursor-pointer transition-colors ${getRadioLabelClasses(prefixMode === "https")}`}>
+                    <input
+                      type="radio"
+                      name="prefix-mode"
+                      checked={prefixMode === "https"}
+                      onChange={() => handlePrefixModeChange("https")}
+                      className="mr-2"
+                    />
+                    https://
+                  </label>
+                  <label className={`rounded-xl px-3 py-2 text-sm cursor-pointer transition-colors ${getRadioLabelClasses(prefixMode === "http")}`}>
+                    <input
+                      type="radio"
+                      name="prefix-mode"
+                      checked={prefixMode === "http"}
+                      onChange={() => handlePrefixModeChange("http")}
+                      className="mr-2"
+                    />
+                    http://
+                  </label>
+                </div>
                 <div className="flex items-center gap-2">
                   <button
                     onClick={handlePaste}
@@ -289,6 +466,11 @@ export default function QrCodePage() {
                     <ClipboardPaste size={18} />
                     <span>ペースト</span>
                   </button>
+                  {prefixMode !== "free" && (
+                    <span className={`shrink-0 px-3 py-3 rounded-xl text-sm font-semibold ${getSecondaryButtonClasses()}`}>
+                      {prefixMode}://
+                    </span>
+                  )}
                   <input
                     type="text"
                     value={text}
@@ -297,12 +479,13 @@ export default function QrCodePage() {
                       scheduleAutoGenerate(1500);
                     }}
                     className={`w-full p-3 rounded-xl border outline-none focus:ring-2 transition ${getInputClasses()}`}
-                    placeholder="https://example.com"
+                    placeholder={prefixMode === "free" ? "https://example.com" : "example.com/path"}
                   />
                 </div>
                 <p className={`mt-2 text-sm ${getMutedTextClasses()}`}>
                   手入力時は1.5秒、ペーストや設定変更時は0.5秒待って自動生成します。
                 </p>
+                <p className={`mt-1 text-sm ${getMutedTextClasses()}`}>生成対象: {composedText || "(未入力)"}</p>
               </div>
 
               <div>
@@ -407,6 +590,160 @@ export default function QrCodePage() {
                 )}
               </div>
 
+              <div>
+                <p className="text-sm font-semibold mb-2">角丸設定</p>
+                <div className="grid gap-2 sm:grid-cols-3">
+                  <label className={`rounded-xl px-3 py-2 text-sm cursor-pointer transition-colors ${getRadioLabelClasses(roundMode === "modules")}`}>
+                    <input
+                      type="radio"
+                      name="round-mode"
+                      checked={roundMode === "modules"}
+                      onChange={() => {
+                        setRoundMode("modules");
+                        scheduleAutoGenerate(500);
+                      }}
+                      className="mr-2"
+                    />
+                    ドット指定
+                  </label>
+                  <label className={`rounded-xl px-3 py-2 text-sm cursor-pointer transition-colors ${getRadioLabelClasses(roundMode === "percent")}`}>
+                    <input
+                      type="radio"
+                      name="round-mode"
+                      checked={roundMode === "percent"}
+                      onChange={() => {
+                        setRoundMode("percent");
+                        scheduleAutoGenerate(500);
+                      }}
+                      className="mr-2"
+                    />
+                    パーセント指定
+                  </label>
+                  <label className={`rounded-xl px-3 py-2 text-sm cursor-pointer transition-colors ${getRadioLabelClasses(roundMode === "auto")}`}>
+                    <input
+                      type="radio"
+                      name="round-mode"
+                      checked={roundMode === "auto"}
+                      onChange={() => {
+                        setRoundMode("auto");
+                        scheduleAutoGenerate(500);
+                      }}
+                      className="mr-2"
+                    />
+                    自動（推奨）
+                  </label>
+                </div>
+
+                {roundMode === "modules" && (
+                  <div className="mt-3">
+                    <label className="block text-sm font-semibold mb-1">角丸量（ドット数: 0〜1.5）</label>
+                    <input
+                      type="number"
+                      min={0}
+                      max={1.5}
+                      step={0.05}
+                      value={roundModules}
+                      onChange={(e) => {
+                        const next = Number(e.target.value);
+                        setRoundModules(Number.isNaN(next) ? 0 : next);
+                        scheduleAutoGenerate(500);
+                      }}
+                      className={`w-full p-3 rounded-xl border outline-none focus:ring-2 transition ${getInputClasses()}`}
+                    />
+                  </div>
+                )}
+
+                {roundMode === "percent" && (
+                  <div className="mt-3">
+                    <label className="block text-sm font-semibold mb-1">角丸率（0〜95%）</label>
+                    <input
+                      type="number"
+                      min={0}
+                      max={95}
+                      step={1}
+                      value={roundPercent}
+                      onChange={(e) => {
+                        const next = Number(e.target.value);
+                        setRoundPercent(Number.isNaN(next) ? 0 : next);
+                        scheduleAutoGenerate(500);
+                      }}
+                      className={`w-full p-3 rounded-xl border outline-none focus:ring-2 transition ${getInputClasses()}`}
+                    />
+                  </div>
+                )}
+
+                <p className={`mt-2 text-sm ${getMutedTextClasses()}`}>
+                  余白不足時は角丸を優先し、必要な余白を自動で拡張します。
+                </p>
+              </div>
+
+              <div>
+                <p className="text-sm font-semibold mb-2">カラー設定</p>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div>
+                    <label className="block text-sm font-semibold mb-1">背景色</label>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="color"
+                        value={backgroundColor}
+                        onChange={(e) => {
+                          const next = normalizeHexColor(e.target.value, backgroundColor);
+                          setBackgroundColor(next);
+                          setBackgroundColorInput(next);
+                          scheduleAutoGenerate(500);
+                        }}
+                        className="h-11 w-14 rounded-xl cursor-pointer"
+                        aria-label="背景色"
+                      />
+                      <input
+                        type="text"
+                        value={backgroundColorInput}
+                        onChange={(e) => setBackgroundColorInput(e.target.value)}
+                        onBlur={() => {
+                          const next = normalizeHexColor(backgroundColorInput, backgroundColor);
+                          setBackgroundColor(next);
+                          setBackgroundColorInput(next);
+                          scheduleAutoGenerate(500);
+                        }}
+                        className={`w-full p-3 rounded-xl border outline-none focus:ring-2 transition ${getInputClasses()}`}
+                        placeholder="#ffffff"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold mb-1">ドット色</label>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="color"
+                        value={dotColor}
+                        onChange={(e) => {
+                          const next = normalizeHexColor(e.target.value, dotColor);
+                          setDotColor(next);
+                          setDotColorInput(next);
+                          scheduleAutoGenerate(500);
+                        }}
+                        className="h-11 w-14 rounded-xl cursor-pointer"
+                        aria-label="ドット色"
+                      />
+                      <input
+                        type="text"
+                        value={dotColorInput}
+                        onChange={(e) => setDotColorInput(e.target.value)}
+                        onBlur={() => {
+                          const next = normalizeHexColor(dotColorInput, dotColor);
+                          setDotColor(next);
+                          setDotColorInput(next);
+                          scheduleAutoGenerate(500);
+                        }}
+                        className={`w-full p-3 rounded-xl border outline-none focus:ring-2 transition ${getInputClasses()}`}
+                        placeholder="#000000"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               <button
                 onClick={() => {
                   if (generateTimerRef.current) {
@@ -442,7 +779,7 @@ export default function QrCodePage() {
               </label>
 
               <div className="rounded-2xl p-4 sm:p-5 bg-white/90">
-                <div className="flex justify-center items-center min-h-[320px]">
+                <div className="flex justify-center items-center min-h-[320px] rounded-xl p-4" style={getCheckerboardStyle()}>
                   {isLoading ? (
                     <div className="w-full max-w-[320px] aspect-square rounded-xl bg-gray-200 animate-pulse" />
                   ) : qrDataUrl ? (

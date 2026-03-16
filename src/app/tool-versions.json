@@ -496,9 +496,9 @@
     {
       "id": "qr-code",
       "title": "QRコード生成",
-      "version": "1.0.1",
+      "version": "1.0.2",
       "updatedAt": "2026-03-16",
-      "changeSummary": "QR UI overhaul with auto generation, size controls, margin options, and clipboard copy",
+      "changeSummary": "Add protocol selector, color controls, rounded dots, and themed checkerboard preview",
       "history": [
         {
           "version": "1.0.0",
@@ -509,6 +509,11 @@
           "version": "1.0.1",
           "updatedAt": "2026-03-16",
           "summary": "QR UI overhaul with auto generation, size controls, margin options, and clipboard copy"
+        },
+        {
+          "version": "1.0.2",
+          "updatedAt": "2026-03-16",
+          "summary": "Add protocol selector, color controls, rounded dots, and themed checkerboard preview"
         }
       ]
     },
