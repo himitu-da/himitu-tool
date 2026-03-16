@@ -496,9 +496,9 @@
     {
       "id": "qr-code",
       "title": "QRコード生成",
-      "version": "1.0.3",
+      "version": "1.0.6",
       "updatedAt": "2026-03-16",
-      "changeSummary": "Fix full-image corner rounding and remove visible module gaps",
+      "changeSummary": "Refine QR UX: protocol order, clearer selection colors, and save/save-as workflow",
       "history": [
         {
           "version": "1.0.0",
@@ -519,6 +519,21 @@
           "version": "1.0.3",
           "updatedAt": "2026-03-16",
           "summary": "Fix full-image corner rounding and remove visible module gaps"
+        },
+        {
+          "version": "1.0.4",
+          "updatedAt": "2026-03-16",
+          "summary": "Improve QR UI readability, section emphasis, option order, and checkerboard visibility"
+        },
+        {
+          "version": "1.0.5",
+          "updatedAt": "2026-03-16",
+          "summary": "Make right QR panel sticky on two-column layout with header-aware offset"
+        },
+        {
+          "version": "1.0.6",
+          "updatedAt": "2026-03-16",
+          "summary": "Refine QR UX: protocol order, clearer selection colors, and save/save-as workflow"
         }
       ]
     },

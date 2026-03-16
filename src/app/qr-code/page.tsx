@@ -7,7 +7,7 @@ import { ClipboardPaste, Copy } from "lucide-react";
 import { useTheme } from "../ThemeProvider";
 import { ToolStickyHeader } from "@/components/ToolStickyHeader";
 
-type AdjustMode = "modules" | "percent" | "auto";
+type AdjustMode = "none" | "auto" | "modules" | "percent";
 type PrefixMode = "free" | "https" | "http";
 
 const MIN_QR_SIZE = 240;
@@ -57,20 +57,20 @@ const addRoundedRectPath = (
   ctx.lineTo(x, y + safeRadius);
   ctx.arcTo(x, y, x + safeRadius, y, safeRadius);
   ctx.closePath();
-  ctx.fill();
 };
 
 export default function QrCodePage() {
   const { theme } = useTheme();
+  const [rightStickyTop, setRightStickyTop] = useState(140);
   const [prefixMode, setPrefixMode] = useState<PrefixMode>("https");
   const [text, setText] = useState("example.com");
   const [qrDataUrl, setQrDataUrl] = useState("");
   const [qrSize, setQrSize] = useState(360);
   const [autoGenerate, setAutoGenerate] = useState(true);
-  const [marginMode, setMarginMode] = useState<AdjustMode>("modules");
+  const [marginMode, setMarginMode] = useState<AdjustMode>("auto");
   const [marginModules, setMarginModules] = useState(4);
   const [marginPercent, setMarginPercent] = useState(10);
-  const [roundMode, setRoundMode] = useState<AdjustMode>("auto");
+  const [roundMode, setRoundMode] = useState<AdjustMode>("none");
   const [roundModules, setRoundModules] = useState(2.5);
   const [roundPercent, setRoundPercent] = useState(22);
   const [dotColor, setDotColor] = useState("#000000");
@@ -99,6 +99,9 @@ export default function QrCodePage() {
 
   const getPaddingSize = useCallback(
     (moduleCount: number) => {
+      if (marginMode === "none") {
+        return 0;
+      }
       if (marginMode === "modules") {
         const safeModules = clamp(marginModules, 0, 20);
         return (qrSize * safeModules) / (moduleCount + safeModules * 2);
@@ -114,6 +117,9 @@ export default function QrCodePage() {
 
   const getCornerRadiusPx = useCallback(
     (cellSize: number) => {
+      if (roundMode === "none") {
+        return 0;
+      }
       if (roundMode === "modules") {
         return cellSize * clamp(roundModules, 0, 20);
       }
@@ -124,16 +130,6 @@ export default function QrCodePage() {
     },
     [qrSize, roundMode, roundModules, roundPercent]
   );
-
-  const getRoundRatio = useCallback(() => {
-    if (roundMode === "modules") {
-      return clamp(roundModules, 0, 20);
-    }
-    if (roundMode === "percent") {
-      return clamp(roundPercent, 0, 45) / 100;
-    }
-    return 0.08;
-  }, [roundMode, roundModules, roundPercent]);
 
   const generateQrCode = useCallback(async () => {
     const taskId = latestTaskRef.current + 1;
@@ -228,7 +224,7 @@ export default function QrCodePage() {
       setIsLoading(false);
       setStatusMessage(error instanceof Error ? error.message : "QRコードの生成に失敗しました。");
     }
-  }, [backgroundColor, composedText, dotColor, getCornerRadiusPx, getPaddingSize, getRoundRatio, qrSize]);
+  }, [backgroundColor, composedText, dotColor, getCornerRadiusPx, getPaddingSize, qrSize]);
 
   const scheduleAutoGenerate = useCallback(
     (delayMs: number) => {
@@ -254,6 +250,36 @@ export default function QrCodePage() {
       }
     };
   }, [scheduleAutoGenerate]);
+
+  useEffect(() => {
+    const globalHeader = document.getElementById("global-site-header");
+    const toolHeader = document.querySelector(".qr-tool-sticky-header");
+
+    const updateStickyTop = () => {
+      const globalHeight = globalHeader?.getBoundingClientRect().height ?? 0;
+      const toolHeight = toolHeader?.getBoundingClientRect().height ?? 0;
+      setRightStickyTop(Math.ceil(globalHeight + toolHeight + 16));
+    };
+
+    updateStickyTop();
+
+    const resizeObserver = new ResizeObserver(() => {
+      updateStickyTop();
+    });
+
+    if (globalHeader) {
+      resizeObserver.observe(globalHeader);
+    }
+    if (toolHeader instanceof Element) {
+      resizeObserver.observe(toolHeader);
+    }
+
+    window.addEventListener("resize", updateStickyTop);
+    return () => {
+      resizeObserver.disconnect();
+      window.removeEventListener("resize", updateStickyTop);
+    };
+  }, []);
 
   const handlePaste = async () => {
     setStatusMessage("");
@@ -312,6 +338,75 @@ export default function QrCodePage() {
     }
   };
 
+  const getDownloadFileName = useCallback(() => {
+    const raw = composedText.trim();
+    const base = raw
+      .replace(/^https?:\/\//i, "")
+      .replace(/[\\/:*?"<>|]/g, "_")
+      .replace(/\s+/g, "_")
+      .slice(0, 80);
+    return `qr_${base || "qrcode"}.png`;
+  }, [composedText]);
+
+  const triggerDownload = useCallback(
+    (fileName: string) => {
+      if (!qrDataUrl) {
+        setStatusMessage("保存対象のQRコードがまだありません。");
+        return;
+      }
+
+      const anchor = document.createElement("a");
+      anchor.href = qrDataUrl;
+      anchor.download = fileName;
+      document.body.appendChild(anchor);
+      anchor.click();
+      document.body.removeChild(anchor);
+    },
+    [qrDataUrl]
+  );
+
+  const handleSaveImage = () => {
+    setStatusMessage("");
+    triggerDownload(getDownloadFileName());
+  };
+
+  const handleSaveImageAs = async () => {
+    setStatusMessage("");
+    if (!qrDataUrl) {
+      setStatusMessage("保存対象のQRコードがまだありません。");
+      return;
+    }
+
+    const suggestedName = getDownloadFileName();
+    const windowWithPicker = window as Window & {
+      showSaveFilePicker?: (options?: {
+        suggestedName?: string;
+        types?: Array<{ description: string; accept: Record<string, string[]> }>;
+      }) => Promise<{
+        createWritable: () => Promise<{ write: (data: Blob) => Promise<void>; close: () => Promise<void> }>;
+      }>;
+    };
+
+    if (!windowWithPicker.showSaveFilePicker) {
+      triggerDownload(suggestedName);
+      setStatusMessage("このブラウザでは保存先指定に未対応のため、通常ダウンロードを実行しました。");
+      return;
+    }
+
+    try {
+      const handle = await windowWithPicker.showSaveFilePicker({
+        suggestedName,
+        types: [{ description: "PNG画像", accept: { "image/png": [".png"] } }],
+      });
+      const blob = await fetch(qrDataUrl).then((res) => res.blob());
+      const writable = await handle.createWritable();
+      await writable.write(blob);
+      await writable.close();
+    } catch {
+      setStatusMessage("保存先指定をキャンセル、または保存に失敗しました。");
+    }
+  };
+
   const getPageClasses = () => {
     switch (theme) {
       case "dark":
@@ -331,6 +426,17 @@ export default function QrCodePage() {
         return "bg-cyan-900/80";
       default:
         return "bg-white";
+    }
+  };
+
+  const getSettingBlockClasses = () => {
+    switch (theme) {
+      case "dark":
+        return "bg-gray-700/70";
+      case "ocean":
+        return "bg-cyan-800/70";
+      default:
+        return "bg-gray-100";
     }
   };
 
@@ -370,39 +476,39 @@ export default function QrCodePage() {
   const getSecondaryButtonClasses = () => {
     switch (theme) {
       case "dark":
-        return "bg-gray-700 hover:bg-gray-600 text-gray-100";
+        return "bg-sky-600 hover:bg-sky-500 text-white";
       case "ocean":
-        return "bg-cyan-800 hover:bg-cyan-700 text-cyan-50";
+        return "bg-teal-600 hover:bg-teal-500 text-white";
       default:
-        return "bg-gray-100 hover:bg-gray-200 text-gray-900";
+        return "bg-slate-700 hover:bg-slate-600 text-white";
     }
   };
 
   const getCheckerboardStyle = (): React.CSSProperties => {
     if (theme === "dark") {
       return {
-        backgroundColor: "#1a1a1a",
+        backgroundColor: "#111111",
         backgroundImage:
-          "linear-gradient(45deg, #242424 25%, transparent 25%), linear-gradient(-45deg, #242424 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #242424 75%), linear-gradient(-45deg, transparent 75%, #242424 75%)",
-        backgroundSize: "24px 24px",
-        backgroundPosition: "0 0, 0 12px, 12px -12px, -12px 0px",
+          "linear-gradient(45deg, #2f2f2f 25%, transparent 25%), linear-gradient(-45deg, #2f2f2f 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #2f2f2f 75%), linear-gradient(-45deg, transparent 75%, #2f2f2f 75%)",
+        backgroundSize: "28px 28px",
+        backgroundPosition: "0 0, 0 14px, 14px -14px, -14px 0px",
       };
     }
     if (theme === "ocean") {
       return {
-        backgroundColor: "#0c3f4c",
+        backgroundColor: "#093640",
         backgroundImage:
-          "linear-gradient(45deg, #115467 25%, transparent 25%), linear-gradient(-45deg, #115467 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #115467 75%), linear-gradient(-45deg, transparent 75%, #115467 75%)",
-        backgroundSize: "24px 24px",
-        backgroundPosition: "0 0, 0 12px, 12px -12px, -12px 0px",
+          "linear-gradient(45deg, #15718a 25%, transparent 25%), linear-gradient(-45deg, #15718a 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #15718a 75%), linear-gradient(-45deg, transparent 75%, #15718a 75%)",
+        backgroundSize: "28px 28px",
+        backgroundPosition: "0 0, 0 14px, 14px -14px, -14px 0px",
       };
     }
     return {
-      backgroundColor: "#f8f8f8",
+      backgroundColor: "#f6f6f6",
       backgroundImage:
-        "linear-gradient(45deg, #ececec 25%, transparent 25%), linear-gradient(-45deg, #ececec 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #ececec 75%), linear-gradient(-45deg, transparent 75%, #ececec 75%)",
-      backgroundSize: "24px 24px",
-      backgroundPosition: "0 0, 0 12px, 12px -12px, -12px 0px",
+        "linear-gradient(45deg, #d6d6d6 25%, transparent 25%), linear-gradient(-45deg, #d6d6d6 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #d6d6d6 75%), linear-gradient(-45deg, transparent 75%, #d6d6d6 75%)",
+      backgroundSize: "28px 28px",
+      backgroundPosition: "0 0, 0 14px, 14px -14px, -14px 0px",
     };
   };
 
@@ -410,11 +516,11 @@ export default function QrCodePage() {
     if (active) {
       switch (theme) {
         case "dark":
-          return "bg-gray-700 text-white";
+          return "bg-sky-600 text-white";
         case "ocean":
-          return "bg-cyan-800 text-cyan-50";
+          return "bg-teal-600 text-white";
         default:
-          return "bg-gray-100 text-gray-900";
+          return "bg-slate-700 text-white";
       }
     }
     switch (theme) {
@@ -442,25 +548,15 @@ export default function QrCodePage() {
 
   return (
     <div className={`min-h-screen transition-colors duration-300 ${getPageClasses()}`}>
-      <ToolStickyHeader title="QRコード生成" className="bg-gray-800 text-white" />
-      <main className="w-full max-w-6xl mx-auto px-4 pt-4 pb-10">
+      <ToolStickyHeader title="QRコード生成" className="qr-tool-sticky-header bg-gray-800 text-white" />
+      <main className="w-full max-w-6xl mx-auto px-4 pt-4 pb-10 text-base sm:text-lg">
         <div className="grid gap-4 lg:grid-cols-2">
-          <section className={`rounded-2xl p-5 sm:p-6 shadow-sm ${getPanelClasses()}`}>
-            <div className="space-y-5">
-              <div>
-                <label className="block text-sm font-semibold mb-2">URLまたはテキスト</label>
-                <div className="grid gap-2 sm:grid-cols-3 mb-2">
-                  <label className={`rounded-xl px-3 py-2 text-sm cursor-pointer transition-colors ${getRadioLabelClasses(prefixMode === "free")}`}>
-                    <input
-                      type="radio"
-                      name="prefix-mode"
-                      checked={prefixMode === "free"}
-                      onChange={() => handlePrefixModeChange("free")}
-                      className="mr-2"
-                    />
-                    自由入力
-                  </label>
-                  <label className={`rounded-xl px-3 py-2 text-sm cursor-pointer transition-colors ${getRadioLabelClasses(prefixMode === "https")}`}>
+          <section className={`rounded-2xl p-5 sm:p-7 shadow-sm ${getPanelClasses()}`}>
+            <div className="space-y-6">
+              <div className={`rounded-2xl px-4 py-5 sm:px-5 sm:py-6 space-y-4 text-center ${getSettingBlockClasses()}`}>
+                <label className="block text-lg font-bold">URLまたはテキスト</label>
+                <div className="grid gap-2 sm:grid-cols-3 mb-2 max-w-2xl mx-auto">
+                  <label className={`rounded-xl px-3 py-3 text-base cursor-pointer transition-colors ${getRadioLabelClasses(prefixMode === "https")}`}>
                     <input
                       type="radio"
                       name="prefix-mode"
@@ -470,7 +566,7 @@ export default function QrCodePage() {
                     />
                     https://
                   </label>
-                  <label className={`rounded-xl px-3 py-2 text-sm cursor-pointer transition-colors ${getRadioLabelClasses(prefixMode === "http")}`}>
+                  <label className={`rounded-xl px-3 py-3 text-base cursor-pointer transition-colors ${getRadioLabelClasses(prefixMode === "http")}`}>
                     <input
                       type="radio"
                       name="prefix-mode"
@@ -480,18 +576,28 @@ export default function QrCodePage() {
                     />
                     http://
                   </label>
+                  <label className={`rounded-xl px-3 py-3 text-base cursor-pointer transition-colors ${getRadioLabelClasses(prefixMode === "free")}`}>
+                    <input
+                      type="radio"
+                      name="prefix-mode"
+                      checked={prefixMode === "free"}
+                      onChange={() => handlePrefixModeChange("free")}
+                      className="mr-2"
+                    />
+                    自由入力
+                  </label>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 max-w-2xl mx-auto">
                   <button
                     onClick={handlePaste}
-                    className={`shrink-0 px-4 py-3 rounded-xl font-semibold flex items-center gap-2 transition-colors ${getSecondaryButtonClasses()}`}
+                    className={`shrink-0 px-4 py-3 rounded-xl font-semibold text-base flex items-center gap-2 transition-colors ${getSecondaryButtonClasses()}`}
                     aria-label="クリップボードからペースト"
                   >
                     <ClipboardPaste size={18} />
                     <span>ペースト</span>
                   </button>
                   {prefixMode !== "free" && (
-                    <span className={`shrink-0 px-3 py-3 rounded-xl text-sm font-semibold ${getSecondaryButtonClasses()}`}>
+                    <span className={`shrink-0 px-3 py-3 rounded-xl text-base font-semibold ${getSecondaryButtonClasses()}`}>
                       {prefixMode}://
                     </span>
                   )}
@@ -502,18 +608,17 @@ export default function QrCodePage() {
                       setText(e.target.value);
                       scheduleAutoGenerate(1500);
                     }}
-                    className={`w-full p-3 rounded-xl border outline-none focus:ring-2 transition ${getInputClasses()}`}
+                    className={`w-full p-3 rounded-xl border outline-none text-base sm:text-lg focus:ring-2 transition ${getInputClasses()}`}
                     placeholder={prefixMode === "free" ? "https://example.com" : "example.com/path"}
                   />
                 </div>
-                <p className={`mt-2 text-sm ${getMutedTextClasses()}`}>
+                <p className={`mt-2 text-base ${getMutedTextClasses()}`}>
                   手入力時は1.5秒、ペーストや設定変更時は0.5秒待って自動生成します。
                 </p>
-                <p className={`mt-1 text-sm ${getMutedTextClasses()}`}>生成対象: {composedText || "(未入力)"}</p>
               </div>
 
-              <div>
-                <label className="block text-sm font-semibold mb-2">QRサイズ</label>
+              <div className={`rounded-2xl px-4 py-5 sm:px-5 sm:py-6 space-y-3 text-center ${getSettingBlockClasses()}`}>
+                <label className="block text-lg font-bold">QRサイズ</label>
                 <input
                   type="range"
                   min={MIN_QR_SIZE}
@@ -524,15 +629,41 @@ export default function QrCodePage() {
                     setQrSize(Number(e.target.value));
                     scheduleAutoGenerate(500);
                   }}
-                  className="w-full h-2 cursor-pointer"
+                  className="w-full h-3 cursor-pointer max-w-2xl mx-auto"
                 />
-                <p className={`mt-2 text-sm ${getMutedTextClasses()}`}>{printHint}</p>
+                <p className={`mt-2 text-base ${getMutedTextClasses()}`}>{printHint}</p>
               </div>
 
-              <div>
-                <p className="text-sm font-semibold mb-2">外周余白</p>
-                <div className="grid gap-2 sm:grid-cols-3">
-                  <label className={`rounded-xl px-3 py-2 text-sm cursor-pointer transition-colors ${getRadioLabelClasses(marginMode === "modules")}`}>
+              <div className={`rounded-2xl px-4 py-5 sm:px-5 sm:py-6 space-y-3 text-center ${getSettingBlockClasses()}`}>
+                <p className="text-lg font-bold">外周余白</p>
+                <div className="grid grid-cols-2 gap-2 max-w-2xl mx-auto">
+                  <label className={`rounded-xl px-3 py-3 text-base cursor-pointer transition-colors ${getRadioLabelClasses(marginMode === "none")}`}>
+                    <input
+                      type="radio"
+                      name="margin-mode"
+                      checked={marginMode === "none"}
+                      onChange={() => {
+                        setMarginMode("none");
+                        scheduleAutoGenerate(500);
+                      }}
+                      className="mr-2"
+                    />
+                    最小
+                  </label>
+                  <label className={`rounded-xl px-3 py-3 text-base cursor-pointer transition-colors ${getRadioLabelClasses(marginMode === "auto")}`}>
+                    <input
+                      type="radio"
+                      name="margin-mode"
+                      checked={marginMode === "auto"}
+                      onChange={() => {
+                        setMarginMode("auto");
+                        scheduleAutoGenerate(500);
+                      }}
+                      className="mr-2"
+                    />
+                    自動
+                  </label>
+                  <label className={`rounded-xl px-3 py-3 text-base cursor-pointer transition-colors ${getRadioLabelClasses(marginMode === "modules")}`}>
                     <input
                       type="radio"
                       name="margin-mode"
@@ -545,7 +676,7 @@ export default function QrCodePage() {
                     />
                     ドット数指定
                   </label>
-                  <label className={`rounded-xl px-3 py-2 text-sm cursor-pointer transition-colors ${getRadioLabelClasses(marginMode === "percent")}`}>
+                  <label className={`rounded-xl px-3 py-3 text-base cursor-pointer transition-colors ${getRadioLabelClasses(marginMode === "percent")}`}>
                     <input
                       type="radio"
                       name="margin-mode"
@@ -558,24 +689,11 @@ export default function QrCodePage() {
                     />
                     パーセント指定
                   </label>
-                  <label className={`rounded-xl px-3 py-2 text-sm cursor-pointer transition-colors ${getRadioLabelClasses(marginMode === "auto")}`}>
-                    <input
-                      type="radio"
-                      name="margin-mode"
-                      checked={marginMode === "auto"}
-                      onChange={() => {
-                        setMarginMode("auto");
-                        scheduleAutoGenerate(500);
-                      }}
-                      className="mr-2"
-                    />
-                    自動（推奨）
-                  </label>
                 </div>
 
                 {marginMode === "modules" && (
-                  <div className="mt-3">
-                    <label className="block text-sm font-semibold mb-1">余白（ドット数: 0〜20）</label>
+                  <div className="mt-3 max-w-xl mx-auto text-center">
+                    <label className="block text-base font-semibold mb-1">余白（ドット数: 0〜20）</label>
                     <input
                       type="number"
                       min={0}
@@ -587,15 +705,15 @@ export default function QrCodePage() {
                         setMarginModules(Number.isNaN(next) ? 0 : next);
                         scheduleAutoGenerate(500);
                       }}
-                      className={`w-full p-3 rounded-xl border outline-none focus:ring-2 transition ${getInputClasses()}`}
+                      className={`w-full p-3 rounded-xl border outline-none text-base sm:text-lg focus:ring-2 transition ${getInputClasses()}`}
                     />
-                    <p className={`mt-2 text-sm ${getMutedTextClasses()}`}>QRの1セル単位で周囲余白を広げます。</p>
+                    <p className={`mt-2 text-base ${getMutedTextClasses()}`}>QRの1セル単位で周囲余白を広げます。</p>
                   </div>
                 )}
 
                 {marginMode === "percent" && (
-                  <div className="mt-3">
-                    <label className="block text-sm font-semibold mb-1">余白率（0〜30%）</label>
+                  <div className="mt-3 max-w-xl mx-auto text-center">
+                    <label className="block text-base font-semibold mb-1">余白率（0〜30%）</label>
                     <input
                       type="number"
                       min={0}
@@ -607,17 +725,43 @@ export default function QrCodePage() {
                         setMarginPercent(Number.isNaN(next) ? 0 : next);
                         scheduleAutoGenerate(500);
                       }}
-                      className={`w-full p-3 rounded-xl border outline-none focus:ring-2 transition ${getInputClasses()}`}
+                      className={`w-full p-3 rounded-xl border outline-none text-base sm:text-lg focus:ring-2 transition ${getInputClasses()}`}
                     />
-                    <p className={`mt-2 text-sm ${getMutedTextClasses()}`}>上下左右に同率の余白を確保します。</p>
+                    <p className={`mt-2 text-base ${getMutedTextClasses()}`}>上下左右に同率の余白を確保します。</p>
                   </div>
                 )}
               </div>
 
-              <div>
-                <p className="text-sm font-semibold mb-2">角丸設定</p>
-                <div className="grid gap-2 sm:grid-cols-3">
-                  <label className={`rounded-xl px-3 py-2 text-sm cursor-pointer transition-colors ${getRadioLabelClasses(roundMode === "modules")}`}>
+              <div className={`rounded-2xl px-4 py-5 sm:px-5 sm:py-6 space-y-3 text-center ${getSettingBlockClasses()}`}>
+                <p className="text-lg font-bold">角丸設定</p>
+                <div className="grid grid-cols-2 gap-2 max-w-2xl mx-auto">
+                  <label className={`rounded-xl px-3 py-3 text-base cursor-pointer transition-colors ${getRadioLabelClasses(roundMode === "none")}`}>
+                    <input
+                      type="radio"
+                      name="round-mode"
+                      checked={roundMode === "none"}
+                      onChange={() => {
+                        setRoundMode("none");
+                        scheduleAutoGenerate(500);
+                      }}
+                      className="mr-2"
+                    />
+                    なし
+                  </label>
+                  <label className={`rounded-xl px-3 py-3 text-base cursor-pointer transition-colors ${getRadioLabelClasses(roundMode === "auto")}`}>
+                    <input
+                      type="radio"
+                      name="round-mode"
+                      checked={roundMode === "auto"}
+                      onChange={() => {
+                        setRoundMode("auto");
+                        scheduleAutoGenerate(500);
+                      }}
+                      className="mr-2"
+                    />
+                    自動
+                  </label>
+                  <label className={`rounded-xl px-3 py-3 text-base cursor-pointer transition-colors ${getRadioLabelClasses(roundMode === "modules")}`}>
                     <input
                       type="radio"
                       name="round-mode"
@@ -630,7 +774,7 @@ export default function QrCodePage() {
                     />
                     ドット指定
                   </label>
-                  <label className={`rounded-xl px-3 py-2 text-sm cursor-pointer transition-colors ${getRadioLabelClasses(roundMode === "percent")}`}>
+                  <label className={`rounded-xl px-3 py-3 text-base cursor-pointer transition-colors ${getRadioLabelClasses(roundMode === "percent")}`}>
                     <input
                       type="radio"
                       name="round-mode"
@@ -643,24 +787,11 @@ export default function QrCodePage() {
                     />
                     パーセント指定
                   </label>
-                  <label className={`rounded-xl px-3 py-2 text-sm cursor-pointer transition-colors ${getRadioLabelClasses(roundMode === "auto")}`}>
-                    <input
-                      type="radio"
-                      name="round-mode"
-                      checked={roundMode === "auto"}
-                      onChange={() => {
-                        setRoundMode("auto");
-                        scheduleAutoGenerate(500);
-                      }}
-                      className="mr-2"
-                    />
-                    自動（推奨）
-                  </label>
                 </div>
 
                 {roundMode === "modules" && (
-                  <div className="mt-3">
-                    <label className="block text-sm font-semibold mb-1">角丸量（ドット数: 0〜20）</label>
+                  <div className="mt-3 max-w-xl mx-auto text-center">
+                    <label className="block text-base font-semibold mb-1">角丸量（ドット数: 0〜20）</label>
                     <input
                       type="number"
                       min={0}
@@ -672,14 +803,14 @@ export default function QrCodePage() {
                         setRoundModules(Number.isNaN(next) ? 0 : next);
                         scheduleAutoGenerate(500);
                       }}
-                      className={`w-full p-3 rounded-xl border outline-none focus:ring-2 transition ${getInputClasses()}`}
+                      className={`w-full p-3 rounded-xl border outline-none text-base sm:text-lg focus:ring-2 transition ${getInputClasses()}`}
                     />
                   </div>
                 )}
 
                 {roundMode === "percent" && (
-                  <div className="mt-3">
-                    <label className="block text-sm font-semibold mb-1">角丸率（0〜45%）</label>
+                  <div className="mt-3 max-w-xl mx-auto text-center">
+                    <label className="block text-base font-semibold mb-1">角丸率（0〜45%）</label>
                     <input
                       type="number"
                       min={0}
@@ -691,21 +822,21 @@ export default function QrCodePage() {
                         setRoundPercent(Number.isNaN(next) ? 0 : next);
                         scheduleAutoGenerate(500);
                       }}
-                      className={`w-full p-3 rounded-xl border outline-none focus:ring-2 transition ${getInputClasses()}`}
+                      className={`w-full p-3 rounded-xl border outline-none text-base sm:text-lg focus:ring-2 transition ${getInputClasses()}`}
                     />
                   </div>
                 )}
 
-                <p className={`mt-2 text-sm ${getMutedTextClasses()}`}>
+                <p className={`mt-2 text-base ${getMutedTextClasses()}`}>
                   画像全体に角丸を適用します。余白不足時は角丸を優先し、必要な余白を自動で拡張します。
                 </p>
               </div>
 
-              <div>
-                <p className="text-sm font-semibold mb-2">カラー設定</p>
-                <div className="grid gap-3 sm:grid-cols-2">
+              <div className={`rounded-2xl px-4 py-5 sm:px-5 sm:py-6 space-y-4 text-center ${getSettingBlockClasses()}`}>
+                <p className="text-lg font-bold">カラー設定</p>
+                <div className="grid gap-4 sm:grid-cols-2 max-w-3xl mx-auto">
                   <div>
-                    <label className="block text-sm font-semibold mb-1">背景色</label>
+                    <label className="block text-base font-semibold mb-1">背景色</label>
                     <div className="flex items-center gap-2">
                       <input
                         type="color"
@@ -716,7 +847,7 @@ export default function QrCodePage() {
                           setBackgroundColorInput(next);
                           scheduleAutoGenerate(500);
                         }}
-                        className="h-11 w-14 rounded-xl cursor-pointer"
+                        className="h-12 w-16 rounded-xl cursor-pointer"
                         aria-label="背景色"
                       />
                       <input
@@ -729,14 +860,14 @@ export default function QrCodePage() {
                           setBackgroundColorInput(next);
                           scheduleAutoGenerate(500);
                         }}
-                        className={`w-full p-3 rounded-xl border outline-none focus:ring-2 transition ${getInputClasses()}`}
+                        className={`w-full p-3 rounded-xl border outline-none text-base sm:text-lg focus:ring-2 transition ${getInputClasses()}`}
                         placeholder="#ffffff"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold mb-1">ドット色</label>
+                    <label className="block text-base font-semibold mb-1">ドット色</label>
                     <div className="flex items-center gap-2">
                       <input
                         type="color"
@@ -747,7 +878,7 @@ export default function QrCodePage() {
                           setDotColorInput(next);
                           scheduleAutoGenerate(500);
                         }}
-                        className="h-11 w-14 rounded-xl cursor-pointer"
+                        className="h-12 w-16 rounded-xl cursor-pointer"
                         aria-label="ドット色"
                       />
                       <input
@@ -760,7 +891,7 @@ export default function QrCodePage() {
                           setDotColorInput(next);
                           scheduleAutoGenerate(500);
                         }}
-                        className={`w-full p-3 rounded-xl border outline-none focus:ring-2 transition ${getInputClasses()}`}
+                        className={`w-full p-3 rounded-xl border outline-none text-base sm:text-lg focus:ring-2 transition ${getInputClasses()}`}
                         placeholder="#000000"
                       />
                     </div>
@@ -775,16 +906,19 @@ export default function QrCodePage() {
                   }
                   void generateQrCode();
                 }}
-                className={`w-full py-3 rounded-xl font-bold transition-colors ${getPrimaryButtonClasses()}`}
+                className={`w-full py-4 rounded-xl text-lg font-bold transition-colors ${getPrimaryButtonClasses()}`}
               >
                 生成する
               </button>
             </div>
           </section>
 
-          <section className={`rounded-2xl p-5 sm:p-6 shadow-sm ${getPanelClasses()}`}>
-            <div className="space-y-4">
-              <label className="inline-flex items-center gap-2 text-sm font-semibold">
+          <section
+            className={`rounded-2xl p-5 sm:p-7 shadow-sm lg:sticky lg:self-start ${getPanelClasses()}`}
+            style={{ top: `${rightStickyTop}px` }}
+          >
+            <div className="space-y-5">
+              <label className="inline-flex items-center gap-2 text-base sm:text-lg font-semibold">
                 <input
                   type="checkbox"
                   checked={autoGenerate}
@@ -802,8 +936,7 @@ export default function QrCodePage() {
                 自動生成を有効にする
               </label>
 
-              <div className="rounded-2xl p-4 sm:p-5 bg-white/90">
-                <div className="flex justify-center items-center min-h-[320px] rounded-xl p-4" style={getCheckerboardStyle()}>
+              <div className="flex justify-center items-center min-h-[360px] rounded-2xl p-5" style={getCheckerboardStyle()}>
                   {isLoading ? (
                     <div className="w-full max-w-[320px] aspect-square rounded-xl bg-gray-200 animate-pulse" />
                   ) : qrDataUrl ? (
@@ -814,32 +947,33 @@ export default function QrCodePage() {
                       URLまたはテキストを入力するとここにQRコードが表示されます。
                     </div>
                   )}
-                </div>
               </div>
 
-              <div className="flex flex-wrap gap-2">
-                <a
-                  href={qrDataUrl || "#"}
-                  download="qrcode.png"
-                  onClick={(e) => {
-                    if (!qrDataUrl) {
-                      e.preventDefault();
-                    }
-                  }}
-                  className={`px-6 py-2 rounded-xl text-sm font-bold transition-colors ${getSecondaryButtonClasses()}`}
-                >
-                  画像を保存
-                </a>
+              <div className="flex w-full flex-wrap gap-2 items-stretch">
                 <button
                   onClick={handleCopyImage}
-                  className={`px-6 py-2 rounded-xl text-sm font-bold flex items-center gap-2 transition-colors ${getSecondaryButtonClasses()}`}
+                  className={`basis-full w-full px-4 py-3 rounded-xl text-base font-bold whitespace-nowrap flex items-center justify-center gap-2 text-center transition-colors ${getSecondaryButtonClasses()}`}
                 >
                   <Copy size={16} />
                   画像をコピー
                 </button>
+                <button
+                  onClick={handleSaveImage}
+                  className={`flex-1 min-w-[11rem] px-4 py-3 rounded-xl text-base font-bold whitespace-nowrap flex items-center justify-center gap-2 text-center transition-colors ${getSecondaryButtonClasses()}`}
+                >
+                  画像を保存
+                </button>
+                <button
+                  onClick={() => {
+                    void handleSaveImageAs();
+                  }}
+                  className={`flex-1 min-w-[12.5rem] px-4 py-3 rounded-xl text-base font-bold whitespace-nowrap flex items-center justify-center gap-2 text-center transition-colors ${getSecondaryButtonClasses()}`}
+                >
+                  場所を指定して保存
+                </button>
               </div>
 
-              {statusMessage && <p className={`text-sm ${getMutedTextClasses()}`}>{statusMessage}</p>}
+              {statusMessage && <p className={`text-base ${getMutedTextClasses()}`}>{statusMessage}</p>}
             </div>
           </section>
         </div>
