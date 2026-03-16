@@ -42,6 +42,7 @@ export default function SalaryTimerPage() {
     fontFamily: "default",
   });
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isFullScreen, setIsFullScreen] = useState(false);
 
   const [isRunning, setIsRunning] = useState(false);
   const [elapsedMs, setElapsedMs] = useState(0);
@@ -296,16 +297,27 @@ export default function SalaryTimerPage() {
       </header>
 
       <main className="flex-1 w-full max-w-2xl mx-auto flex flex-col items-center justify-center p-4">
-        <div className={`w-full max-w-xl rounded-2xl p-6 sm:p-8 shadow-lg ${getPanelClasses()}`}>
+        <div className={`relative w-full max-w-xl rounded-2xl p-6 sm:p-8 shadow-lg ${getPanelClasses()}`}>
+          <button
+            onClick={() => setIsFullScreen(true)}
+            className="absolute top-4 right-4 z-10 p-2 rounded-full hover:bg-black/10 dark:hover:bg-white/10 transition-colors focus:outline-none"
+            title="全画面表示"
+            aria-label="全画面表示"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" /></svg>
+          </button>
+
           <div className="text-sm font-semibold opacity-80 text-center">発生金額</div>
           <div
-            className={`text-center mt-3 text-5xl sm:text-7xl font-bold break-all ${displayFontClassName}`}
+            className={`text-center mt-3 text-6xl sm:text-8xl font-bold break-all ${displayFontClassName}`}
             style={{ fontVariantNumeric: "tabular-nums" }}
           >
             <span className={yenFontClassName}>{YEN_SIGN}</span>
             <span>{moneyEarned.toFixed(settings.decimalPlaces)}</span>
           </div>
-          <div className="text-center mt-4 text-xl opacity-75">{formatElapsed(elapsedMs)}</div>
+          <div className={`text-center mt-4 text-2xl sm:text-3xl opacity-75 ${displayFontClassName}`} style={{ fontVariantNumeric: "tabular-nums" }}>
+            {formatElapsed(elapsedMs)}
+          </div>
 
           <div className="mt-8">
             <label className="block text-sm font-semibold mb-2 opacity-90">1時間あたりのお金 (時給)</label>
@@ -326,17 +338,58 @@ export default function SalaryTimerPage() {
 
           <div className="mt-8 flex flex-wrap justify-center gap-3">
             <button onClick={handleStart} disabled={isRunning} className={getButtonClass("primary")}>
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="6 3 20 12 6 21 6 3" /></svg>
               スタート
             </button>
             <button onClick={handleStop} disabled={!isRunning} className={getButtonClass("danger")}>
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" /></svg>
               ストップ
             </button>
             <button onClick={handleReset} className={getButtonClass("secondary")}>
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" /><path d="M3 3v5h5" /></svg>
               リセット
             </button>
           </div>
         </div>
       </main>
+
+      {isFullScreen && (
+        <div className={`fixed inset-0 z-50 flex flex-col items-center justify-center p-4 transition-colors duration-300 ${getThemeClasses()}`}>
+          <button
+            onClick={() => setIsFullScreen(false)}
+            className="absolute top-6 right-6 p-3 rounded-full hover:bg-black/10 dark:hover:bg-white/10 transition-colors focus:outline-none z-50"
+            title="元に戻す"
+            aria-label="全画面を終了"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3" />
+            </svg>
+          </button>
+
+          <div className="w-full max-w-4xl flex flex-col items-center text-center px-4">
+            <div className="text-base sm:text-lg font-semibold opacity-75">発生金額</div>
+            <div className={`mt-4 text-[13vw] sm:text-[15vh] font-bold break-all leading-none ${displayFontClassName}`} style={{ fontVariantNumeric: "tabular-nums" }}>
+              <span className={yenFontClassName}>{YEN_SIGN}</span>
+              <span>{moneyEarned.toFixed(settings.decimalPlaces)}</span>
+            </div>
+            <div className={`mt-5 text-[8vw] sm:text-[9vh] opacity-80 ${displayFontClassName}`} style={{ fontVariantNumeric: "tabular-nums" }}>
+              {formatElapsed(elapsedMs)}
+            </div>
+
+            <div className="flex justify-center gap-8 mt-12 z-10">
+              <button onClick={handleStart} disabled={isRunning} className="flex items-center justify-center w-16 h-16 rounded-full bg-green-600 hover:bg-green-700 text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed transform active:scale-95 shadow-lg" title="スタート" aria-label="スタート">
+                <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="6 3 20 12 6 21 6 3" /></svg>
+              </button>
+              <button onClick={handleStop} disabled={!isRunning} className="flex items-center justify-center w-16 h-16 rounded-full bg-red-600 hover:bg-red-700 text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed transform active:scale-95 shadow-lg" title="ストップ" aria-label="ストップ">
+                <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" /></svg>
+              </button>
+              <button onClick={handleReset} className="flex items-center justify-center w-16 h-16 rounded-full bg-blue-600 hover:bg-blue-700 text-white transition-all transform active:scale-95 shadow-lg" title="リセット" aria-label="リセット">
+                <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" /><path d="M3 3v5h5" /></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {isSettingsOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={() => setIsSettingsOpen(false)}>

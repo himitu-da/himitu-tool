@@ -538,9 +538,9 @@
     {
       "id": "salary-timer",
       "title": "salary-timer",
-      "version": "1.0.4",
+      "version": "1.0.6",
       "updatedAt": "2026-03-16",
-      "changeSummary": "Fix periodic drift with fixed-step accumulation",
+      "changeSummary": "Adjust display-to-icon size balance",
       "history": [
         {
           "version": "1.0.0",
@@ -571,6 +571,16 @@
           "version": "1.0.4",
           "updatedAt": "2026-03-16",
           "summary": "Fix periodic drift with fixed-step accumulation"
+        },
+        {
+          "version": "1.0.5",
+          "updatedAt": "2026-03-16",
+          "summary": "Add icon controls, fullscreen mode, and time font styling"
+        },
+        {
+          "version": "1.0.6",
+          "updatedAt": "2026-03-16",
+          "summary": "Adjust display-to-icon size balance"
         }
       ]
     },
