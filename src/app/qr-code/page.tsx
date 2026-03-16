@@ -30,7 +30,7 @@ const normalizeHexColor = (value: string, fallback: string) => {
   return fallback;
 };
 
-const drawRoundedRect = (
+const addRoundedRectPath = (
   ctx: CanvasRenderingContext2D,
   x: number,
   y: number,
@@ -40,7 +40,9 @@ const drawRoundedRect = (
 ) => {
   const safeRadius = Math.min(radius, width / 2, height / 2);
   if (safeRadius <= 0) {
-    ctx.fillRect(x, y, width, height);
+    ctx.beginPath();
+    ctx.rect(x, y, width, height);
+    ctx.closePath();
     return;
   }
 
@@ -69,7 +71,7 @@ export default function QrCodePage() {
   const [marginModules, setMarginModules] = useState(4);
   const [marginPercent, setMarginPercent] = useState(10);
   const [roundMode, setRoundMode] = useState<AdjustMode>("auto");
-  const [roundModules, setRoundModules] = useState(0.22);
+  const [roundModules, setRoundModules] = useState(2.5);
   const [roundPercent, setRoundPercent] = useState(22);
   const [dotColor, setDotColor] = useState("#000000");
   const [dotColorInput, setDotColorInput] = useState("#000000");
@@ -110,14 +112,27 @@ export default function QrCodePage() {
     [marginMode, marginModules, marginPercent, qrSize]
   );
 
+  const getCornerRadiusPx = useCallback(
+    (cellSize: number) => {
+      if (roundMode === "modules") {
+        return cellSize * clamp(roundModules, 0, 20);
+      }
+      if (roundMode === "percent") {
+        return qrSize * (clamp(roundPercent, 0, 45) / 100);
+      }
+      return qrSize * 0.08;
+    },
+    [qrSize, roundMode, roundModules, roundPercent]
+  );
+
   const getRoundRatio = useCallback(() => {
     if (roundMode === "modules") {
-      return clamp(roundModules, 0, 1.5);
+      return clamp(roundModules, 0, 20);
     }
     if (roundMode === "percent") {
-      return clamp(roundPercent, 0, 95) / 100;
+      return clamp(roundPercent, 0, 45) / 100;
     }
-    return 0.22;
+    return 0.08;
   }, [roundMode, roundModules, roundPercent]);
 
   const generateQrCode = useCallback(async () => {
@@ -142,9 +157,9 @@ export default function QrCodePage() {
       let padding = getPaddingSize(moduleCount);
       let innerSize = qrSize - padding * 2;
       let cellSize = innerSize / moduleCount;
-      let cornerRadius = Math.min(cellSize * getRoundRatio(), cellSize * 0.95);
+      let cornerRadius = Math.min(getCornerRadiusPx(cellSize), qrSize / 2);
 
-      // Keep enough quiet zone so rounded modules are not clipped at the edges.
+      // Corner radius has priority. Expand quiet zone if needed to keep modules readable.
       for (let i = 0; i < 3; i += 1) {
         if (innerSize <= 0) {
           throw new Error("QRサイズに対して余白が大きすぎます。");
@@ -156,7 +171,7 @@ export default function QrCodePage() {
         padding = requiredPadding;
         innerSize = qrSize - padding * 2;
         cellSize = innerSize / moduleCount;
-        cornerRadius = Math.min(cellSize * getRoundRatio(), cellSize * 0.95);
+        cornerRadius = Math.min(getCornerRadiusPx(cellSize), qrSize / 2);
       }
 
       if (innerSize <= 0 || cellSize <= 0) {
@@ -172,23 +187,32 @@ export default function QrCodePage() {
         throw new Error("Canvasの初期化に失敗しました。");
       }
 
-      ctx.fillStyle = backgroundColor;
-      ctx.fillRect(0, 0, qrSize, qrSize);
+      const moduleCanvas = document.createElement("canvas");
+      moduleCanvas.width = moduleCount;
+      moduleCanvas.height = moduleCount;
+      const moduleCtx = moduleCanvas.getContext("2d");
+      if (!moduleCtx) {
+        throw new Error("QRデータの描画に失敗しました。");
+      }
 
-      ctx.fillStyle = dotColor;
-
+      moduleCtx.clearRect(0, 0, moduleCount, moduleCount);
+      moduleCtx.fillStyle = dotColor;
       for (let row = 0; row < moduleCount; row += 1) {
         for (let col = 0; col < moduleCount; col += 1) {
-          if (!qr.modules.get(row, col)) {
-            continue;
+          if (qr.modules.get(row, col)) {
+            moduleCtx.fillRect(col, row, 1, 1);
           }
-          const x = padding + col * cellSize;
-          const y = padding + row * cellSize;
-          const nextX = padding + (col + 1) * cellSize;
-          const nextY = padding + (row + 1) * cellSize;
-          drawRoundedRect(ctx, x, y, nextX - x, nextY - y, cornerRadius);
         }
       }
+
+      addRoundedRectPath(ctx, 0, 0, qrSize, qrSize, cornerRadius);
+      ctx.save();
+      ctx.clip();
+      ctx.fillStyle = backgroundColor;
+      ctx.fillRect(0, 0, qrSize, qrSize);
+      ctx.imageSmoothingEnabled = false;
+      ctx.drawImage(moduleCanvas, padding, padding, innerSize, innerSize);
+      ctx.restore();
 
       if (latestTaskRef.current !== taskId) {
         return;
@@ -204,7 +228,7 @@ export default function QrCodePage() {
       setIsLoading(false);
       setStatusMessage(error instanceof Error ? error.message : "QRコードの生成に失敗しました。");
     }
-  }, [backgroundColor, composedText, dotColor, getPaddingSize, getRoundRatio, qrSize]);
+  }, [backgroundColor, composedText, dotColor, getCornerRadiusPx, getPaddingSize, getRoundRatio, qrSize]);
 
   const scheduleAutoGenerate = useCallback(
     (delayMs: number) => {
@@ -636,12 +660,12 @@ export default function QrCodePage() {
 
                 {roundMode === "modules" && (
                   <div className="mt-3">
-                    <label className="block text-sm font-semibold mb-1">角丸量（ドット数: 0〜1.5）</label>
+                    <label className="block text-sm font-semibold mb-1">角丸量（ドット数: 0〜20）</label>
                     <input
                       type="number"
                       min={0}
-                      max={1.5}
-                      step={0.05}
+                      max={20}
+                      step={0.1}
                       value={roundModules}
                       onChange={(e) => {
                         const next = Number(e.target.value);
@@ -655,11 +679,11 @@ export default function QrCodePage() {
 
                 {roundMode === "percent" && (
                   <div className="mt-3">
-                    <label className="block text-sm font-semibold mb-1">角丸率（0〜95%）</label>
+                    <label className="block text-sm font-semibold mb-1">角丸率（0〜45%）</label>
                     <input
                       type="number"
                       min={0}
-                      max={95}
+                      max={45}
                       step={1}
                       value={roundPercent}
                       onChange={(e) => {
@@ -673,7 +697,7 @@ export default function QrCodePage() {
                 )}
 
                 <p className={`mt-2 text-sm ${getMutedTextClasses()}`}>
-                  余白不足時は角丸を優先し、必要な余白を自動で拡張します。
+                  画像全体に角丸を適用します。余白不足時は角丸を優先し、必要な余白を自動で拡張します。
                 </p>
               </div>
 

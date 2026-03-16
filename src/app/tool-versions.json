@@ -496,9 +496,9 @@
     {
       "id": "qr-code",
       "title": "QRコード生成",
-      "version": "1.0.2",
+      "version": "1.0.3",
       "updatedAt": "2026-03-16",
-      "changeSummary": "Add protocol selector, color controls, rounded dots, and themed checkerboard preview",
+      "changeSummary": "Fix full-image corner rounding and remove visible module gaps",
       "history": [
         {
           "version": "1.0.0",
@@ -514,6 +514,11 @@
           "version": "1.0.2",
           "updatedAt": "2026-03-16",
           "summary": "Add protocol selector, color controls, rounded dots, and themed checkerboard preview"
+        },
+        {
+          "version": "1.0.3",
+          "updatedAt": "2026-03-16",
+          "summary": "Fix full-image corner rounding and remove visible module gaps"
         }
       ]
     },
