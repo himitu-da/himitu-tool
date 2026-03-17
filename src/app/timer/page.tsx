@@ -6,6 +6,9 @@ import { useTheme } from '../ThemeProvider';
 import { ToolPageLayout } from "@/components/ToolPageLayout";
 import { ToolPanel } from "@/components/ToolPanel";
 import { useToolTheme } from "@/lib/useToolTheme";
+import { dseg7ClassicBold } from "@/lib/digitalFonts";
+
+type FontKind = 'default' | 'roman' | 'digital';
 
 interface Settings {
   defaultMinutes: number;
@@ -14,6 +17,7 @@ interface Settings {
   volume: number;
   enableMilliseconds: boolean;
   muted: boolean;
+  fontFamily: FontKind;
 }
 
 export default function TimerPage() {
@@ -35,7 +39,8 @@ export default function TimerPage() {
     alarmSound: '/alarm.mp3',
     volume: 1,
     enableMilliseconds: false,
-    muted: false
+    muted: false,
+    fontFamily: 'digital'
   });
 
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -56,6 +61,7 @@ export default function TimerPage() {
     const savedVolume = localStorage.getItem('timerVolume') || '1';
     const savedEnableMs = localStorage.getItem('timerEnableMilliseconds') === 'true';
     const savedMuted = localStorage.getItem('timerMuted') === 'true';
+    const savedFont = localStorage.getItem('timerFontFamily') as FontKind | null;
 
     const defaultMins = savedMins !== null ? parseInt(savedMins, 10) : 5;
     const defaultSecs = savedSecs !== null ? parseInt(savedSecs, 10) : 0;
@@ -66,7 +72,11 @@ export default function TimerPage() {
       alarmSound: savedAlarm,
       volume: parseFloat(savedVolume),
       enableMilliseconds: savedEnableMs,
-      muted: savedMuted
+      muted: savedMuted,
+      fontFamily:
+        savedFont === 'default' || savedFont === 'roman' || savedFont === 'digital'
+          ? savedFont
+          : 'digital'
     });
 
     setInputMinutes(defaultMins);
@@ -169,10 +179,18 @@ export default function TimerPage() {
       alarmSound: 'timerAlarmSound',
       volume: 'timerVolume',
       enableMilliseconds: 'timerEnableMilliseconds',
-      muted: 'timerMuted'
+      muted: 'timerMuted',
+      fontFamily: 'timerFontFamily'
     };
     if (mapping[key as string]) localStorage.setItem(mapping[key as string], String(value));
   };
+
+  const timerFontClassName =
+    settings.fontFamily === 'digital'
+      ? dseg7ClassicBold.className
+      : settings.fontFamily === 'roman'
+      ? 'font-serif'
+      : 'font-sans';
 
   // --- Theme Style Helpers ---
   const getButtonHoverClasses = () => {
@@ -298,7 +316,7 @@ export default function TimerPage() {
               className="transition-all duration-1000 ease-linear"
             />
           </svg>
-          <div className={`z-10 ${settings.enableMilliseconds ? 'text-3xl sm:text-4xl' : 'text-5xl sm:text-6xl'} font-bold tracking-widest transition-transform duration-300 ${isRunning ? 'scale-105 opacity-90' : 'scale-100 opacity-100'}`}>
+          <div className={`z-10 ${settings.enableMilliseconds ? 'text-3xl sm:text-4xl' : 'text-5xl sm:text-6xl'} font-bold tracking-widest transition-transform duration-300 ${timerFontClassName} ${isRunning ? 'scale-105 opacity-90' : 'scale-100 opacity-100'}`} style={{ fontVariantNumeric: 'tabular-nums' }}>
             {formatTime(timeLeft)}
           </div>
         </div>
@@ -513,6 +531,18 @@ export default function TimerPage() {
                       }
                     }} className={`w-20 p-2 text-center rounded-md ${getNumberInputClasses()}`} />
                   </div>
+                  <div className={`flex justify-between items-center p-3 rounded-lg border ${getSettingItemClasses()}`}>
+                    <label>表示フォント:</label>
+                    <select
+                      value={settings.fontFamily}
+                      onChange={(e) => updateSettingStore('fontFamily', e.target.value as FontKind)}
+                      className={`w-40 p-2 rounded-md focus:outline-none ${getNumberInputClasses()}`}
+                    >
+                      <option value="digital">デジタル数字</option>
+                      <option value="roman">ローマン体</option>
+                      <option value="default">デフォルト</option>
+                    </select>
+                  </div>
                 </div>
               )}
 
@@ -643,7 +673,7 @@ export default function TimerPage() {
                 className="transition-all duration-1000 ease-linear"
               />
             </svg>
-            <div className={`z-10 ${settings.enableMilliseconds ? 'text-[8vw] sm:text-[10vh]' : 'text-[12vw] sm:text-[15vh]'} font-bold tracking-widest transition-transform duration-300 ${isRunning ? 'scale-105 opacity-90' : 'scale-100 opacity-100'}`}>
+            <div className={`z-10 ${settings.enableMilliseconds ? 'text-[8vw] sm:text-[10vh]' : 'text-[12vw] sm:text-[15vh]'} font-bold tracking-widest transition-transform duration-300 ${timerFontClassName} ${isRunning ? 'scale-105 opacity-90' : 'scale-100 opacity-100'}`} style={{ fontVariantNumeric: 'tabular-nums' }}>
               {formatTime(timeLeft)}
             </div>
           </div>

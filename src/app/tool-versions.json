@@ -1018,9 +1018,9 @@
     {
       "id": "timer",
       "title": "タイマーツール",
-      "version": "1.0.1",
+      "version": "1.0.2",
       "updatedAt": "2026-03-17",
-      "changeSummary": "Apply ToolPageLayout and ToolPanel",
+      "changeSummary": "Add shared digital font toggle options",
       "history": [
         {
           "version": "1.0.0",
@@ -1031,6 +1031,11 @@
           "version": "1.0.1",
           "updatedAt": "2026-03-17",
           "summary": "Apply ToolPageLayout and ToolPanel"
+        },
+        {
+          "version": "1.0.2",
+          "updatedAt": "2026-03-17",
+          "summary": "Add shared digital font toggle options"
         }
       ]
     },

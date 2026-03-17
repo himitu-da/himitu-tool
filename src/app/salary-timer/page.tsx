@@ -1,23 +1,9 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import localFont from "next/font/local";
 import { useTheme } from "../ThemeProvider";
 import { ToolStickyHeader } from "@/components/ToolStickyHeader";
-
-const dseg7ClassicBold = localFont({
-  src: "./DSEG7Classic-Bold.woff2",
-  weight: "700",
-  style: "normal",
-  display: "swap",
-});
-
-const dseg14ClassicBold = localFont({
-  src: "./DSEG14Classic-Bold.woff2",
-  weight: "700",
-  style: "normal",
-  display: "swap",
-});
+import { dseg7ClassicBold, dseg14ClassicBold } from "@/lib/digitalFonts";
 
 type FrequencyPreset = "60fps" | "10fps" | "2fps" | "1fps" | "custom";
 type DecimalPlaces = 0 | 1 | 2 | 3;
