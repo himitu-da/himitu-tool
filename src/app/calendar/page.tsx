@@ -1,10 +1,13 @@
 "use client";
 
 import React, { useState } from "react";
+import { ToolPageLayout } from "@/components/ToolPageLayout";
+import { ToolPanel } from "@/components/ToolPanel";
+import { useToolTheme } from "@/lib/useToolTheme";
 
-import { ToolStickyHeader } from "@/components/ToolStickyHeader";
 export default function CalendarPage() {
   const [currentDate, setCurrentDate] = useState(new Date());
+  const { blockCls, primaryBtnCls } = useToolTheme();
 
   const getDaysInMonth = (year: number, month: number) => {
     return new Date(year, month + 1, 0).getDate();
@@ -39,38 +42,41 @@ export default function CalendarPage() {
   const today = new Date();
 
   return (
-    <>
-      <ToolStickyHeader title="カレンダー" className="bg-gray-800 text-white" />
-      <div className="max-w-xl mx-auto p-6 rounded-xl shadow-lg border border-opacity-20 border-current bg-white/10 backdrop-blur-sm mt-4">
+    <ToolPageLayout title="カレンダー" maxWidth="xl">
+      <ToolPanel className="max-w-xl mx-auto">
+        <div className="flex justify-between items-center mb-6">
+          <button onClick={prevMonth} className={`p-2 rounded transition-colors ${blockCls} hover:opacity-80`}>&lt; 前月</button>
+          <h2 className="text-xl font-bold">{year}年 {month + 1}月</h2>
+          <button onClick={nextMonth} className={`p-2 rounded transition-colors ${blockCls} hover:opacity-80`}>次月 &gt;</button>
+        </div>
 
-      <div className="flex justify-between items-center mb-6">
-        <button onClick={prevMonth} className="p-2 rounded bg-black/20 hover:bg-black/30 transition-colors">&lt; 前月</button>
-        <h2 className="text-xl font-bold">{year}年 {month + 1}月</h2>
-        <button onClick={nextMonth} className="p-2 rounded bg-black/20 hover:bg-black/30 transition-colors">次月 &gt;</button>
-      </div>
-
-      <div className="grid grid-cols-7 gap-2 text-center mb-2">
-        {weekDays.map((day, i) => (
-          <div key={i} className={`font-semibold opacity-80 ${i === 0 ? 'text-red-400' : i === 6 ? 'text-blue-400' : ''}`}>
-            {day}
-          </div>
-        ))}
-      </div>
-
-      <div className="grid grid-cols-7 gap-2 text-center">
-        {days.map((day, i) => {
-          const isToday = day !== null && year === today.getFullYear() && month === today.getMonth() && day === today.getDate();
-          return (
-            <div 
-              key={i} 
-              className={`p-3 rounded-lg ${day ? 'bg-black/10' : ''} ${isToday ? 'bg-blue-500/80 text-white font-bold' : ''}`}
-            >
-              {day || ''}
+        <div className="grid grid-cols-7 gap-2 text-center mb-2">
+          {weekDays.map((day, i) => (
+            <div key={i} className={`font-semibold opacity-80 ${i === 0 ? 'text-red-400' : i === 6 ? 'text-blue-400' : ''}`}>
+              {day}
             </div>
-          );
-        })}
-      </div>
-    </div>
-  </>
-);
+          ))}
+        </div>
+
+        <div className="grid grid-cols-7 gap-2 text-center">
+          {days.map((day, i) => {
+            const isToday = day !== null && year === today.getFullYear() && month === today.getMonth() && day === today.getDate();
+            return (
+              <div
+                key={i}
+                className={`p-3 rounded-lg transition-colors ${day
+                    ? isToday
+                      ? `${primaryBtnCls} font-bold`
+                      : blockCls
+                    : 'bg-transparent'
+                  }`}
+              >
+                {day || ''}
+              </div>
+            );
+          })}
+        </div>
+      </ToolPanel>
+    </ToolPageLayout>
+  );
 }

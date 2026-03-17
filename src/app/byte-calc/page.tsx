@@ -1,20 +1,47 @@
 "use client";
 import React, { useState } from "react";
-import { ToolStickyHeader } from "@/components/ToolStickyHeader";
+import { ToolPageLayout } from "@/components/ToolPageLayout";
+import { ToolPanel } from "@/components/ToolPanel";
+import { useToolTheme } from "@/lib/useToolTheme";
+
 export default function Byte() {
   const [bytes, set_bytes] = useState("");
   const [out, setOut] = useState("");
-  const run = () => { try { const b=Number(bytes); setOut("MB: "+(b/1024**2).toFixed(2)) } catch(e) { setOut("エラー"); } };
+  const { inputCls, primaryBtnCls, blockCls } = useToolTheme();
+
+  const run = () => {
+    try {
+      const b = Number(bytes);
+      setOut("MB: " + (b / 1024 ** 2).toFixed(2))
+    } catch (e) {
+      setOut("エラー");
+    }
+  };
+
   return (
-    <>
-      <ToolStickyHeader title="バイト単位変換" className="bg-gray-800 text-white" />
-      <div className="max-w-md mx-auto p-6 rounded-xl shadow-lg border border-opacity-20 border-current bg-white/10 backdrop-blur-sm mt-4">
-      <div className="flex flex-col gap-4">
-        <input type="number" value={bytes} onChange={e=>set_bytes(e.target.value)} placeholder="bytes" className="p-3 bg-black/10 rounded-lg text-current border-current" />
-        <button onClick={run} className="py-3 bg-blue-500/80 hover:bg-blue-600/80 text-white rounded-lg font-bold transition-colors">計算</button>
-        {out && <div className="p-4 bg-black/20 rounded-lg text-center text-xl font-bold break-all">{out}</div>}
-      </div>
-    </div>
-  </>
-);
+    <ToolPageLayout title="バイト単位変換" maxWidth="md">
+      <ToolPanel className="max-w-md mx-auto">
+        <div className="flex flex-col gap-4">
+          <input
+            type="number"
+            value={bytes}
+            onChange={e => set_bytes(e.target.value)}
+            placeholder="バイト数"
+            className={`p-3 rounded-lg focus:ring-2 outline-none transition-colors ${inputCls}`}
+          />
+          <button
+            onClick={run}
+            className={`py-3 rounded-lg font-bold transition-colors ${primaryBtnCls}`}
+          >
+            計算
+          </button>
+          {out && (
+            <div className={`p-4 rounded-lg text-center text-xl font-bold break-all transition-colors ${blockCls}`}>
+              {out}
+            </div>
+          )}
+        </div>
+      </ToolPanel>
+    </ToolPageLayout>
+  );
 }
