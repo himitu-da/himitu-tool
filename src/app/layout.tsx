@@ -3,6 +3,7 @@ import Script from "next/script";
 import { ThemeProvider } from "./ThemeProvider";
 import { GlobalHeader } from "./GlobalHeader";
 import { ThemeWrapper } from "./ThemeWrapper";
+import { GoogleAd } from "../components/GoogleAd";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -26,6 +27,12 @@ export default function RootLayout({
           src={`https://www.googletagmanager.com/gtag/js?id=G-7YK9QB157S`}
         />
         <Script
+          async
+          strategy="afterInteractive"
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8970659787384533"
+          crossOrigin="anonymous"
+        />
+        <Script
           id="gtag-init"
           strategy="afterInteractive"
           dangerouslySetInnerHTML={{
@@ -45,6 +52,7 @@ export default function RootLayout({
 
             <main className="container mx-auto px-4 py-8 flex-1">
               {children}
+              <GoogleAd className="mt-16 sm:mt-20" />
             </main>
 
             <footer className="bg-gray-800 text-white py-6 mt-auto shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { GoogleAd } from "../components/GoogleAd";
 
 export default function Home() {
   const [isMinimized, setIsMinimized] = useState(false);
@@ -101,6 +102,8 @@ export default function Home() {
           かゆいところに手が届くツールを、この1つのウェブサイトで完結させることを目指しています。
         </p>
       </section>
+
+      <GoogleAd className="mt-10 sm:mt-12" />
 
       <section className="mt-16 sm:mt-20">
         <div className="flex items-center justify-center gap-2 my-6 sm:my-8">
