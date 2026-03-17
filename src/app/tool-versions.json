@@ -38,14 +38,19 @@
     {
       "id": "ascii-enc",
       "title": "ASCII変換",
-      "version": "1.0.0",
-      "updatedAt": "2026-03-15",
-      "changeSummary": "Initial registration",
+      "version": "1.0.1",
+      "updatedAt": "2026-03-17",
+      "changeSummary": "Refactor UI",
       "history": [
         {
           "version": "1.0.0",
           "updatedAt": "2026-03-15",
           "summary": "Initial registration"
+        },
+        {
+          "version": "1.0.1",
+          "updatedAt": "2026-03-17",
+          "summary": "Refactor UI"
         }
       ]
     },
@@ -104,14 +109,19 @@
     {
       "id": "bin-enc",
       "title": "2進数変換",
-      "version": "1.0.0",
-      "updatedAt": "2026-03-15",
-      "changeSummary": "Initial registration",
+      "version": "1.0.1",
+      "updatedAt": "2026-03-17",
+      "changeSummary": "Refactor UI",
       "history": [
         {
           "version": "1.0.0",
           "updatedAt": "2026-03-15",
           "summary": "Initial registration"
+        },
+        {
+          "version": "1.0.1",
+          "updatedAt": "2026-03-17",
+          "summary": "Refactor UI"
         }
       ]
     },
@@ -339,28 +349,38 @@
     {
       "id": "hex-enc",
       "title": "16進数変換",
-      "version": "1.0.0",
-      "updatedAt": "2026-03-15",
-      "changeSummary": "Initial registration",
+      "version": "1.0.1",
+      "updatedAt": "2026-03-17",
+      "changeSummary": "Refactor UI",
       "history": [
         {
           "version": "1.0.0",
           "updatedAt": "2026-03-15",
           "summary": "Initial registration"
+        },
+        {
+          "version": "1.0.1",
+          "updatedAt": "2026-03-17",
+          "summary": "Refactor UI"
         }
       ]
     },
     {
       "id": "html-enc",
       "title": "HTMLエスケープ",
-      "version": "1.0.0",
-      "updatedAt": "2026-03-15",
-      "changeSummary": "Initial registration",
+      "version": "1.0.1",
+      "updatedAt": "2026-03-17",
+      "changeSummary": "Refactor UI",
       "history": [
         {
           "version": "1.0.0",
           "updatedAt": "2026-03-15",
           "summary": "Initial registration"
+        },
+        {
+          "version": "1.0.1",
+          "updatedAt": "2026-03-17",
+          "summary": "Refactor UI"
         }
       ]
     },
@@ -466,14 +486,19 @@
     {
       "id": "lower",
       "title": "小文字変換",
-      "version": "1.0.0",
-      "updatedAt": "2026-03-15",
-      "changeSummary": "Initial registration",
+      "version": "1.0.1",
+      "updatedAt": "2026-03-17",
+      "changeSummary": "Refactor UI",
       "history": [
         {
           "version": "1.0.0",
           "updatedAt": "2026-03-15",
           "summary": "Initial registration"
+        },
+        {
+          "version": "1.0.1",
+          "updatedAt": "2026-03-17",
+          "summary": "Refactor UI"
         }
       ]
     },
