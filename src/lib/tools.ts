@@ -48,6 +48,7 @@ export const categorizedTools = [
       { title: "速度変換", path: "/speed-calc", icon: "🚗", desc: "km/h > m/s" },
       { title: "温度変換", path: "/temp-calc", icon: "🌡️", desc: "C > F" },
       { title: "アスペクト比", path: "/aspect-ratio", icon: "🖼️", desc: "W/Hの比率" },
+      { title: "紙の大きさ比較", path: "/paper-size-compare", icon: "📄", desc: "紙や身近なモノを重ねて比較" },
     ],
   },
   {

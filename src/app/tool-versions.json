@@ -593,6 +593,20 @@
       ]
     },
     {
+      "id": "paper-size-compare",
+      "title": "紙の大きさ比較",
+      "version": "1.0.0",
+      "updatedAt": "2026-03-18",
+      "changeSummary": "Initial registration",
+      "history": [
+        {
+          "version": "1.0.0",
+          "updatedAt": "2026-03-18",
+          "summary": "Initial registration"
+        }
+      ]
+    },
+    {
       "id": "password-generator",
       "title": "パスワード生成",
       "version": "1.0.2",
