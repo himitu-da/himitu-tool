@@ -4,6 +4,7 @@ import { ThemeProvider } from "./ThemeProvider";
 import { GlobalHeader } from "./GlobalHeader";
 import { ThemeWrapper } from "./ThemeWrapper";
 import { GoogleAd } from "../components/GoogleAd";
+import { RelatedTools } from "../components/RelatedTools";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -52,6 +53,7 @@ export default function RootLayout({
 
             <main className="container mx-auto px-4 py-8 flex-1">
               {children}
+              <RelatedTools />
               <GoogleAd className="mt-16 sm:mt-20" />
             </main>
 

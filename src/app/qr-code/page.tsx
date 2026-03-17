@@ -1,11 +1,12 @@
-"use client";
+﻿"use client";
 
 import QRCode from "qrcode";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ClipboardPaste, Copy } from "lucide-react";
 
-import { useTheme } from "../ThemeProvider";
-import { ToolStickyHeader } from "@/components/ToolStickyHeader";
+import { useToolTheme } from "@/lib/useToolTheme";
+import { ToolPageLayout } from "@/components/ToolPageLayout";
+import { ToolPanel } from "@/components/ToolPanel";
 
 type AdjustMode = "none" | "auto" | "modules" | "percent";
 type PrefixMode = "free" | "https" | "http";
@@ -61,7 +62,7 @@ const addRoundedRectPath = (
 };
 
 export default function QrCodePage() {
-  const { theme } = useTheme();
+  const { theme, panelCls: _panelCls, blockCls, mutedTextCls, inputCls, primaryBtnCls, secondaryBtnCls, radioLabelCls } = useToolTheme();
   const [rightStickyTop, setRightStickyTop] = useState(140);
   const [prefixMode, setPrefixMode] = useState<PrefixMode>("https");
   const [text, setText] = useState("example.com");
@@ -484,83 +485,6 @@ export default function QrCodePage() {
     }
   };
 
-  const getPageClasses = () => {
-    switch (theme) {
-      case "dark":
-        return "bg-gray-900 text-gray-100";
-      case "ocean":
-        return "bg-cyan-950 text-cyan-50";
-      default:
-        return "bg-gray-50 text-gray-900";
-    }
-  };
-
-  const getPanelClasses = () => {
-    switch (theme) {
-      case "dark":
-        return "bg-gray-800";
-      case "ocean":
-        return "bg-cyan-900/80";
-      default:
-        return "bg-white";
-    }
-  };
-
-  const getSettingBlockClasses = () => {
-    switch (theme) {
-      case "dark":
-        return "bg-gray-700/70";
-      case "ocean":
-        return "bg-cyan-800/70";
-      default:
-        return "bg-gray-100";
-    }
-  };
-
-  const getMutedTextClasses = () => {
-    switch (theme) {
-      case "dark":
-        return "text-gray-300";
-      case "ocean":
-        return "text-cyan-100/90";
-      default:
-        return "text-gray-600";
-    }
-  };
-
-  const getInputClasses = () => {
-    switch (theme) {
-      case "dark":
-        return "bg-gray-700 border-gray-600 text-white placeholder:text-gray-400 focus:ring-blue-400";
-      case "ocean":
-        return "bg-cyan-800 border-cyan-700 text-cyan-50 placeholder:text-cyan-200/70 focus:ring-cyan-300";
-      default:
-        return "bg-white border-gray-300 text-gray-900 placeholder:text-gray-500 focus:ring-blue-500";
-    }
-  };
-
-  const getPrimaryButtonClasses = () => {
-    switch (theme) {
-      case "dark":
-        return "bg-blue-500 hover:bg-blue-400 text-white";
-      case "ocean":
-        return "bg-cyan-400 hover:bg-cyan-300 text-cyan-950";
-      default:
-        return "bg-blue-600 hover:bg-blue-700 text-white";
-    }
-  };
-
-  const getSecondaryButtonClasses = () => {
-    switch (theme) {
-      case "dark":
-        return "bg-sky-600 hover:bg-sky-500 text-white";
-      case "ocean":
-        return "bg-teal-600 hover:bg-teal-500 text-white";
-      default:
-        return "bg-slate-700 hover:bg-slate-600 text-white";
-    }
-  };
-
   const getCheckerboardStyle = (): React.CSSProperties => {
     if (theme === "dark") {
       return {
@@ -589,27 +513,6 @@ export default function QrCodePage() {
     };
   };
 
-  const getRadioLabelClasses = (active: boolean) => {
-    if (active) {
-      switch (theme) {
-        case "dark":
-          return "bg-sky-600 text-white";
-        case "ocean":
-          return "bg-teal-600 text-white";
-        default:
-          return "bg-slate-700 text-white";
-      }
-    }
-    switch (theme) {
-      case "dark":
-        return "bg-gray-800 text-gray-300";
-      case "ocean":
-        return "bg-cyan-900/60 text-cyan-100";
-      default:
-        return "bg-gray-50 text-gray-600";
-    }
-  };
-
   const printHint = useMemo(() => {
     const mm = pxToMm(qrSize);
     let useCase = "ポスターや掲示物";
@@ -624,565 +527,507 @@ export default function QrCodePage() {
   }, [qrSize]);
 
   return (
-    <div className={`min-h-screen transition-colors duration-300 ${getPageClasses()}`}>
-      <ToolStickyHeader title="QRコード生成" className="qr-tool-sticky-header bg-gray-800 text-white" />
-      <main className="w-full max-w-6xl mx-auto px-4 pt-4 pb-10 text-base sm:text-lg">
-        <div className="grid gap-4 lg:grid-cols-2">
-          <section className={`rounded-2xl p-5 sm:p-7 shadow-sm ${getPanelClasses()}`}>
-            <div className="space-y-6">
-              <div className={`rounded-2xl px-4 py-5 sm:px-5 sm:py-6 space-y-4 text-center ${getSettingBlockClasses()}`}>
-                <label className="block text-lg font-bold">URLまたはテキスト</label>
-                <div className="grid gap-2 sm:grid-cols-3 mb-2 max-w-2xl mx-auto">
-                  <label className={`rounded-xl px-3 py-3 text-base cursor-pointer transition-colors ${getRadioLabelClasses(prefixMode === "https")}`}>
-                    <input
-                      type="radio"
-                      name="prefix-mode"
-                      checked={prefixMode === "https"}
-                      onChange={() => handlePrefixModeChange("https")}
-                      className="mr-2"
-                    />
-                    https://
-                  </label>
-                  <label className={`rounded-xl px-3 py-3 text-base cursor-pointer transition-colors ${getRadioLabelClasses(prefixMode === "http")}`}>
-                    <input
-                      type="radio"
-                      name="prefix-mode"
-                      checked={prefixMode === "http"}
-                      onChange={() => handlePrefixModeChange("http")}
-                      className="mr-2"
-                    />
-                    http://
-                  </label>
-                  <label className={`rounded-xl px-3 py-3 text-base cursor-pointer transition-colors ${getRadioLabelClasses(prefixMode === "free")}`}>
-                    <input
-                      type="radio"
-                      name="prefix-mode"
-                      checked={prefixMode === "free"}
-                      onChange={() => handlePrefixModeChange("free")}
-                      className="mr-2"
-                    />
-                    自由入力
-                  </label>
-                </div>
-                <div className="flex items-center gap-2 max-w-2xl mx-auto">
-                  <button
-                    onClick={handlePaste}
-                    className={`shrink-0 px-4 py-3 rounded-xl font-semibold text-base flex items-center gap-2 transition-colors ${getSecondaryButtonClasses()}`}
-                    aria-label="クリップボードからペースト"
-                  >
-                    <ClipboardPaste size={18} />
-                    <span>ペースト</span>
-                  </button>
-                  {prefixMode !== "free" && (
-                    <span className={`shrink-0 px-3 py-3 rounded-xl text-base font-semibold ${getSecondaryButtonClasses()}`}>
-                      {prefixMode}://
-                    </span>
-                  )}
+    <ToolPageLayout title="QRコード生成" maxWidth="6xl" headerClassName="qr-tool-sticky-header">
+      <div className="grid gap-4 lg:grid-cols-2">
+        <ToolPanel>
+          <div className="space-y-6">
+            <div className={`rounded-2xl px-4 py-5 sm:px-5 sm:py-6 space-y-4 text-center ${blockCls}`}>
+              <label className="block text-lg font-bold">URLまたはテキスト</label>
+              <div className="grid gap-2 sm:grid-cols-3 mb-2 max-w-2xl mx-auto">
+                <label className={`rounded-xl px-3 py-3 text-base cursor-pointer transition-colors ${radioLabelCls(prefixMode === "https")}`}>
                   <input
-                    type="text"
-                    value={text}
-                    onChange={(e) => {
-                      setText(e.target.value);
-                      scheduleAutoGenerate(1500);
+                    type="radio"
+                    name="prefix-mode"
+                    checked={prefixMode === "https"}
+                    onChange={() => handlePrefixModeChange("https")}
+                    className="mr-2"
+                  />
+                  https://
+                </label>
+                <label className={`rounded-xl px-3 py-3 text-base cursor-pointer transition-colors ${radioLabelCls(prefixMode === "http")}`}>
+                  <input
+                    type="radio"
+                    name="prefix-mode"
+                    checked={prefixMode === "http"}
+                    onChange={() => handlePrefixModeChange("http")}
+                    className="mr-2"
+                  />
+                  http://
+                </label>
+                <label className={`rounded-xl px-3 py-3 text-base cursor-pointer transition-colors ${radioLabelCls(prefixMode === "free")}`}>
+                  <input
+                    type="radio"
+                    name="prefix-mode"
+                    checked={prefixMode === "free"}
+                    onChange={() => handlePrefixModeChange("free")}
+                    className="mr-2"
+                  />
+                  自由入力
+                </label>
+              </div>
+              <div className="flex items-center gap-2 max-w-2xl mx-auto">
+                <button
+                  onClick={handlePaste}
+                  className={`shrink-0 px-4 py-3 rounded-xl font-semibold text-base flex items-center gap-2 transition-colors ${secondaryBtnCls}`}
+                  aria-label="クリップボードからペースト"
+                >
+                  <ClipboardPaste size={18} />
+                  <span>ペースト</span>
+                </button>
+                {prefixMode !== "free" && (
+                  <span className={`shrink-0 px-3 py-3 rounded-xl text-base font-semibold ${secondaryBtnCls}`}>
+                    {prefixMode}://
+                  </span>
+                )}
+                <input
+                  type="text"
+                  value={text}
+                  onChange={(e) => {
+                    setText(e.target.value);
+                    scheduleAutoGenerate(1500);
+                  }}
+                  className={`w-full p-3 rounded-xl border outline-none text-base sm:text-lg focus:ring-2 transition ${inputCls}`}
+                  placeholder={prefixMode === "free" ? "https://example.com" : "example.com/path"}
+                />
+              </div>
+              <p className={`mt-2 text-base ${mutedTextCls}`}>
+                手入力時は1.5秒、ペーストや設定変更時は0.5秒待って自動生成します。
+              </p>
+            </div>
+
+            <div className={`rounded-2xl px-4 py-5 sm:px-5 sm:py-6 space-y-3 text-center ${blockCls}`}>
+              <label className="block text-lg font-bold">QRサイズ</label>
+              <input
+                type="range"
+                min={MIN_QR_SIZE}
+                max={MAX_QR_SIZE}
+                step={QR_STEP}
+                value={qrSize}
+                onChange={(e) => {
+                  setQrSize(Number(e.target.value));
+                  scheduleAutoGenerate(500);
+                }}
+                className="w-full h-3 cursor-pointer max-w-2xl mx-auto"
+              />
+              <p className={`mt-2 text-base ${mutedTextCls}`}>{printHint}</p>
+            </div>
+
+            <div className={`rounded-2xl px-4 py-5 sm:px-5 sm:py-6 space-y-3 text-center ${blockCls}`}>
+              <p className="text-lg font-bold">外周余白</p>
+              <div className="grid grid-cols-2 gap-2 max-w-2xl mx-auto">
+                <label className={`rounded-xl px-3 py-3 text-base cursor-pointer transition-colors ${radioLabelCls(marginMode === "none")}`}>
+                  <input
+                    type="radio"
+                    name="margin-mode"
+                    checked={marginMode === "none"}
+                    onChange={() => {
+                      setMarginMode("none");
+                      scheduleAutoGenerate(500);
                     }}
-                    className={`w-full p-3 rounded-xl border outline-none text-base sm:text-lg focus:ring-2 transition ${getInputClasses()}`}
-                    placeholder={prefixMode === "free" ? "https://example.com" : "example.com/path"}
+                    className="mr-2"
+                  />
+                  最小
+                </label>
+                <label className={`rounded-xl px-3 py-3 text-base cursor-pointer transition-colors ${radioLabelCls(marginMode === "auto")}`}>
+                  <input
+                    type="radio"
+                    name="margin-mode"
+                    checked={marginMode === "auto"}
+                    onChange={() => {
+                      setMarginMode("auto");
+                      scheduleAutoGenerate(500);
+                    }}
+                    className="mr-2"
+                  />
+                  自動
+                </label>
+                <label className={`rounded-xl px-3 py-3 text-base cursor-pointer transition-colors ${radioLabelCls(marginMode === "modules")}`}>
+                  <input
+                    type="radio"
+                    name="margin-mode"
+                    checked={marginMode === "modules"}
+                    onChange={() => {
+                      setMarginMode("modules");
+                      scheduleAutoGenerate(500);
+                    }}
+                    className="mr-2"
+                  />
+                  ドット数指定
+                </label>
+                <label className={`rounded-xl px-3 py-3 text-base cursor-pointer transition-colors ${radioLabelCls(marginMode === "percent")}`}>
+                  <input
+                    type="radio"
+                    name="margin-mode"
+                    checked={marginMode === "percent"}
+                    onChange={() => {
+                      setMarginMode("percent");
+                      scheduleAutoGenerate(500);
+                    }}
+                    className="mr-2"
+                  />
+                  パーセント指定
+                </label>
+              </div>
+
+              {marginMode === "modules" && (
+                <div className="mt-3 max-w-xl mx-auto text-center">
+                  <label className="block text-base font-semibold mb-1">余白（ドット数: 0〜20）</label>
+                  <input
+                    type="number"
+                    min={0}
+                    max={20}
+                    step={0.1}
+                    value={marginModules}
+                    onChange={(e) => {
+                      const next = Number(e.target.value);
+                      setMarginModules(Number.isNaN(next) ? 0 : next);
+                      scheduleAutoGenerate(500);
+                    }}
+                    className={`w-full p-3 rounded-xl border outline-none text-base sm:text-lg focus:ring-2 transition ${inputCls}`}
+                  />
+                  <p className={`mt-2 text-base ${mutedTextCls}`}>QRの1セル単位で周囲余白を広げます。</p>
+                </div>
+              )}
+
+              {marginMode === "percent" && (
+                <div className="mt-3 max-w-xl mx-auto text-center">
+                  <label className="block text-base font-semibold mb-1">余白率（0〜30%）</label>
+                  <input
+                    type="number"
+                    min={0}
+                    max={30}
+                    step={0.1}
+                    value={marginPercent}
+                    onChange={(e) => {
+                      const next = Number(e.target.value);
+                      setMarginPercent(Number.isNaN(next) ? 0 : next);
+                      scheduleAutoGenerate(500);
+                    }}
+                    className={`w-full p-3 rounded-xl border outline-none text-base sm:text-lg focus:ring-2 transition ${inputCls}`}
+                  />
+                  <p className={`mt-2 text-base ${mutedTextCls}`}>上下左右に同率の余白を確保します。</p>
+                </div>
+              )}
+            </div>
+
+            <div className={`rounded-2xl px-4 py-5 sm:px-5 sm:py-6 space-y-3 text-center ${blockCls}`}>
+              <p className="text-lg font-bold">角丸設定</p>
+              <div className="grid grid-cols-2 gap-2 max-w-2xl mx-auto">
+                <label className={`rounded-xl px-3 py-3 text-base cursor-pointer transition-colors ${radioLabelCls(roundMode === "none")}`}>
+                  <input
+                    type="radio"
+                    name="round-mode"
+                    checked={roundMode === "none"}
+                    onChange={() => {
+                      setRoundMode("none");
+                      scheduleAutoGenerate(500);
+                    }}
+                    className="mr-2"
+                  />
+                  なし
+                </label>
+                <label className={`rounded-xl px-3 py-3 text-base cursor-pointer transition-colors ${radioLabelCls(roundMode === "auto")}`}>
+                  <input
+                    type="radio"
+                    name="round-mode"
+                    checked={roundMode === "auto"}
+                    onChange={() => {
+                      setRoundMode("auto");
+                      scheduleAutoGenerate(500);
+                    }}
+                    className="mr-2"
+                  />
+                  自動
+                </label>
+                <label className={`rounded-xl px-3 py-3 text-base cursor-pointer transition-colors ${radioLabelCls(roundMode === "modules")}`}>
+                  <input
+                    type="radio"
+                    name="round-mode"
+                    checked={roundMode === "modules"}
+                    onChange={() => {
+                      setRoundMode("modules");
+                      scheduleAutoGenerate(500);
+                    }}
+                    className="mr-2"
+                  />
+                  ドット指定
+                </label>
+                <label className={`rounded-xl px-3 py-3 text-base cursor-pointer transition-colors ${radioLabelCls(roundMode === "percent")}`}>
+                  <input
+                    type="radio"
+                    name="round-mode"
+                    checked={roundMode === "percent"}
+                    onChange={() => {
+                      setRoundMode("percent");
+                      scheduleAutoGenerate(500);
+                    }}
+                    className="mr-2"
+                  />
+                  パーセント指定
+                </label>
+              </div>
+
+              {roundMode === "modules" && (
+                <div className="mt-3 max-w-xl mx-auto text-center">
+                  <label className="block text-base font-semibold mb-1">角丸量（ドット数: 0〜20）</label>
+                  <input
+                    type="number"
+                    min={0}
+                    max={20}
+                    step={0.1}
+                    value={roundModules}
+                    onChange={(e) => {
+                      const next = Number(e.target.value);
+                      setRoundModules(Number.isNaN(next) ? 0 : next);
+                      scheduleAutoGenerate(500);
+                    }}
+                    className={`w-full p-3 rounded-xl border outline-none text-base sm:text-lg focus:ring-2 transition ${inputCls}`}
                   />
                 </div>
-                <p className={`mt-2 text-base ${getMutedTextClasses()}`}>
-                  手入力時は1.5秒、ペーストや設定変更時は0.5秒待って自動生成します。
-                </p>
-              </div>
+              )}
 
-              <div className={`rounded-2xl px-4 py-5 sm:px-5 sm:py-6 space-y-3 text-center ${getSettingBlockClasses()}`}>
-                <label className="block text-lg font-bold">QRサイズ</label>
-                <input
-                  type="range"
-                  min={MIN_QR_SIZE}
-                  max={MAX_QR_SIZE}
-                  step={QR_STEP}
-                  value={qrSize}
-                  onChange={(e) => {
-                    setQrSize(Number(e.target.value));
-                    scheduleAutoGenerate(500);
-                  }}
-                  className="w-full h-3 cursor-pointer max-w-2xl mx-auto"
-                />
-                <p className={`mt-2 text-base ${getMutedTextClasses()}`}>{printHint}</p>
-              </div>
+              {roundMode === "percent" && (
+                <div className="mt-3 max-w-xl mx-auto text-center">
+                  <label className="block text-base font-semibold mb-1">角丸率（0〜45%）</label>
+                  <input
+                    type="number"
+                    min={0}
+                    max={45}
+                    step={1}
+                    value={roundPercent}
+                    onChange={(e) => {
+                      const next = Number(e.target.value);
+                      setRoundPercent(Number.isNaN(next) ? 0 : next);
+                      scheduleAutoGenerate(500);
+                    }}
+                    className={`w-full p-3 rounded-xl border outline-none text-base sm:text-lg focus:ring-2 transition ${inputCls}`}
+                  />
+                </div>
+              )}
 
-              <div className={`rounded-2xl px-4 py-5 sm:px-5 sm:py-6 space-y-3 text-center ${getSettingBlockClasses()}`}>
-                <p className="text-lg font-bold">外周余白</p>
-                <div className="grid grid-cols-2 gap-2 max-w-2xl mx-auto">
-                  <label className={`rounded-xl px-3 py-3 text-base cursor-pointer transition-colors ${getRadioLabelClasses(marginMode === "none")}`}>
+              <p className={`mt-2 text-base ${mutedTextCls}`}>
+                画像全体に角丸を適用します。余白不足時は角丸を優先し、必要な余白を自動で拡張します。
+              </p>
+            </div>
+
+            <div className={`rounded-2xl px-4 py-5 sm:px-5 sm:py-6 space-y-4 text-center ${blockCls}`}>
+              <p className="text-lg font-bold">カラー設定</p>
+              <div className="grid gap-4 sm:grid-cols-2 max-w-3xl mx-auto">
+                <div>
+                  <label className="block text-base font-semibold mb-1">背景色</label>
+                  <div className="flex items-center gap-2">
                     <input
-                      type="radio"
-                      name="margin-mode"
-                      checked={marginMode === "none"}
-                      onChange={() => {
-                        setMarginMode("none");
+                      type="color"
+                      value={backgroundColor}
+                      onChange={(e) => {
+                        const next = normalizeHexColor(e.target.value, backgroundColor);
+                        setBackgroundColor(next);
+                        setBackgroundColorInput(next);
                         scheduleAutoGenerate(500);
                       }}
-                      className="mr-2"
+                      className="h-12 w-16 rounded-xl cursor-pointer"
+                      aria-label="背景色"
                     />
-                    最小
-                  </label>
-                  <label className={`rounded-xl px-3 py-3 text-base cursor-pointer transition-colors ${getRadioLabelClasses(marginMode === "auto")}`}>
                     <input
-                      type="radio"
-                      name="margin-mode"
-                      checked={marginMode === "auto"}
-                      onChange={() => {
-                        setMarginMode("auto");
+                      type="text"
+                      value={backgroundColorInput}
+                      onChange={(e) => setBackgroundColorInput(e.target.value)}
+                      onBlur={() => {
+                        const next = normalizeHexColor(backgroundColorInput, backgroundColor);
+                        setBackgroundColor(next);
+                        setBackgroundColorInput(next);
                         scheduleAutoGenerate(500);
                       }}
-                      className="mr-2"
+                      className={`w-full p-3 rounded-xl border outline-none text-base sm:text-lg focus:ring-2 transition ${inputCls}`}
+                      placeholder="#ffffff"
                     />
-                    自動
-                  </label>
-                  <label className={`rounded-xl px-3 py-3 text-base cursor-pointer transition-colors ${getRadioLabelClasses(marginMode === "modules")}`}>
-                    <input
-                      type="radio"
-                      name="margin-mode"
-                      checked={marginMode === "modules"}
-                      onChange={() => {
-                        setMarginMode("modules");
-                        scheduleAutoGenerate(500);
-                      }}
-                      className="mr-2"
-                    />
-                    ドット数指定
-                  </label>
-                  <label className={`rounded-xl px-3 py-3 text-base cursor-pointer transition-colors ${getRadioLabelClasses(marginMode === "percent")}`}>
-                    <input
-                      type="radio"
-                      name="margin-mode"
-                      checked={marginMode === "percent"}
-                      onChange={() => {
-                        setMarginMode("percent");
-                        scheduleAutoGenerate(500);
-                      }}
-                      className="mr-2"
-                    />
-                    パーセント指定
-                  </label>
+                  </div>
                 </div>
 
-                {marginMode === "modules" && (
-                  <div className="mt-3 max-w-xl mx-auto text-center">
-                    <label className="block text-base font-semibold mb-1">余白（ドット数: 0〜20）</label>
+                <div>
+                  <label className="block text-base font-semibold mb-1">ドット色</label>
+                  <div className="flex items-center gap-2">
                     <input
-                      type="number"
-                      min={0}
-                      max={20}
-                      step={0.1}
-                      value={marginModules}
+                      type="color"
+                      value={dotColor}
                       onChange={(e) => {
-                        const next = Number(e.target.value);
-                        setMarginModules(Number.isNaN(next) ? 0 : next);
+                        const next = normalizeHexColor(e.target.value, dotColor);
+                        setDotColor(next);
+                        setDotColorInput(next);
                         scheduleAutoGenerate(500);
                       }}
-                      className={`w-full p-3 rounded-xl border outline-none text-base sm:text-lg focus:ring-2 transition ${getInputClasses()}`}
+                      className="h-12 w-16 rounded-xl cursor-pointer"
+                      aria-label="ドット色"
                     />
-                    <p className={`mt-2 text-base ${getMutedTextClasses()}`}>QRの1セル単位で周囲余白を広げます。</p>
-                  </div>
-                )}
-
-                {marginMode === "percent" && (
-                  <div className="mt-3 max-w-xl mx-auto text-center">
-                    <label className="block text-base font-semibold mb-1">余白率（0〜30%）</label>
                     <input
-                      type="number"
-                      min={0}
-                      max={30}
-                      step={0.1}
-                      value={marginPercent}
-                      onChange={(e) => {
-                        const next = Number(e.target.value);
-                        setMarginPercent(Number.isNaN(next) ? 0 : next);
+                      type="text"
+                      value={dotColorInput}
+                      onChange={(e) => setDotColorInput(e.target.value)}
+                      onBlur={() => {
+                        const next = normalizeHexColor(dotColorInput, dotColor);
+                        setDotColor(next);
+                        setDotColorInput(next);
                         scheduleAutoGenerate(500);
                       }}
-                      className={`w-full p-3 rounded-xl border outline-none text-base sm:text-lg focus:ring-2 transition ${getInputClasses()}`}
+                      className={`w-full p-3 rounded-xl border outline-none text-base sm:text-lg focus:ring-2 transition ${inputCls}`}
+                      placeholder="#000000"
                     />
-                    <p className={`mt-2 text-base ${getMutedTextClasses()}`}>上下左右に同率の余白を確保します。</p>
                   </div>
-                )}
+                </div>
               </div>
+            </div>
 
-              <div className={`rounded-2xl px-4 py-5 sm:px-5 sm:py-6 space-y-3 text-center ${getSettingBlockClasses()}`}>
-                <p className="text-lg font-bold">角丸設定</p>
-                <div className="grid grid-cols-2 gap-2 max-w-2xl mx-auto">
-                  <label className={`rounded-xl px-3 py-3 text-base cursor-pointer transition-colors ${getRadioLabelClasses(roundMode === "none")}`}>
+            <div className={`rounded-2xl px-4 py-5 sm:px-5 sm:py-6 space-y-4 text-center ${blockCls}`}>
+              <p className="text-lg font-bold">中央アイコン・絵文字・画像</p>
+              <div className="max-w-3xl mx-auto space-y-3">
+                <div className="grid grid-cols-3 gap-2 max-w-2xl mx-auto">
+                  <label className={`rounded-xl px-3 py-3 text-base cursor-pointer transition-colors ${radioLabelCls(centerOverlayMode === "none")}`}>
                     <input
                       type="radio"
-                      name="round-mode"
-                      checked={roundMode === "none"}
+                      name="center-overlay-mode"
+                      checked={centerOverlayMode === "none"}
                       onChange={() => {
-                        setRoundMode("none");
+                        setCenterOverlayMode("none");
                         scheduleAutoGenerate(500);
                       }}
                       className="mr-2"
                     />
                     なし
                   </label>
-                  <label className={`rounded-xl px-3 py-3 text-base cursor-pointer transition-colors ${getRadioLabelClasses(roundMode === "auto")}`}>
+                  <label className={`rounded-xl px-3 py-3 text-base cursor-pointer transition-colors ${radioLabelCls(centerOverlayMode === "char")}`}>
                     <input
                       type="radio"
-                      name="round-mode"
-                      checked={roundMode === "auto"}
+                      name="center-overlay-mode"
+                      checked={centerOverlayMode === "char"}
                       onChange={() => {
-                        setRoundMode("auto");
+                        setCenterOverlayMode("char");
                         scheduleAutoGenerate(500);
                       }}
                       className="mr-2"
                     />
-                    自動
+                    1文字
                   </label>
-                  <label className={`rounded-xl px-3 py-3 text-base cursor-pointer transition-colors ${getRadioLabelClasses(roundMode === "modules")}`}>
+                  <label className={`rounded-xl px-3 py-3 text-base cursor-pointer transition-colors ${radioLabelCls(centerOverlayMode === "image")}`}>
                     <input
                       type="radio"
-                      name="round-mode"
-                      checked={roundMode === "modules"}
+                      name="center-overlay-mode"
+                      checked={centerOverlayMode === "image"}
                       onChange={() => {
-                        setRoundMode("modules");
+                        setCenterOverlayMode("image");
                         scheduleAutoGenerate(500);
                       }}
                       className="mr-2"
                     />
-                    ドット指定
-                  </label>
-                  <label className={`rounded-xl px-3 py-3 text-base cursor-pointer transition-colors ${getRadioLabelClasses(roundMode === "percent")}`}>
-                    <input
-                      type="radio"
-                      name="round-mode"
-                      checked={roundMode === "percent"}
-                      onChange={() => {
-                        setRoundMode("percent");
-                        scheduleAutoGenerate(500);
-                      }}
-                      className="mr-2"
-                    />
-                    パーセント指定
+                    画像
                   </label>
                 </div>
 
-                {roundMode === "modules" && (
-                  <div className="mt-3 max-w-xl mx-auto text-center">
-                    <label className="block text-base font-semibold mb-1">角丸量（ドット数: 0〜20）</label>
-                    <input
-                      type="number"
-                      min={0}
-                      max={20}
-                      step={0.1}
-                      value={roundModules}
-                      onChange={(e) => {
-                        const next = Number(e.target.value);
-                        setRoundModules(Number.isNaN(next) ? 0 : next);
-                        scheduleAutoGenerate(500);
-                      }}
-                      className={`w-full p-3 rounded-xl border outline-none text-base sm:text-lg focus:ring-2 transition ${getInputClasses()}`}
-                    />
-                  </div>
-                )}
-
-                {roundMode === "percent" && (
-                  <div className="mt-3 max-w-xl mx-auto text-center">
-                    <label className="block text-base font-semibold mb-1">角丸率（0〜45%）</label>
-                    <input
-                      type="number"
-                      min={0}
-                      max={45}
-                      step={1}
-                      value={roundPercent}
-                      onChange={(e) => {
-                        const next = Number(e.target.value);
-                        setRoundPercent(Number.isNaN(next) ? 0 : next);
-                        scheduleAutoGenerate(500);
-                      }}
-                      className={`w-full p-3 rounded-xl border outline-none text-base sm:text-lg focus:ring-2 transition ${getInputClasses()}`}
-                    />
-                  </div>
-                )}
-
-                <p className={`mt-2 text-base ${getMutedTextClasses()}`}>
-                  画像全体に角丸を適用します。余白不足時は角丸を優先し、必要な余白を自動で拡張します。
-                </p>
-              </div>
-
-              <div className={`rounded-2xl px-4 py-5 sm:px-5 sm:py-6 space-y-4 text-center ${getSettingBlockClasses()}`}>
-                <p className="text-lg font-bold">カラー設定</p>
-                <div className="grid gap-4 sm:grid-cols-2 max-w-3xl mx-auto">
-                  <div>
-                    <label className="block text-base font-semibold mb-1">背景色</label>
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="color"
-                        value={backgroundColor}
-                        onChange={(e) => {
-                          const next = normalizeHexColor(e.target.value, backgroundColor);
-                          setBackgroundColor(next);
-                          setBackgroundColorInput(next);
-                          scheduleAutoGenerate(500);
-                        }}
-                        className="h-12 w-16 rounded-xl cursor-pointer"
-                        aria-label="背景色"
-                      />
+                <div className="max-w-xl mx-auto text-center">
+                  {centerOverlayMode === "none" ? (
+                    <></>
+                  ) : centerOverlayMode === "char" ? (
+                    <>
+                      <label className="block text-base font-semibold mb-1">表示する文字（1文字）</label>
                       <input
                         type="text"
-                        value={backgroundColorInput}
-                        onChange={(e) => setBackgroundColorInput(e.target.value)}
-                        onBlur={() => {
-                          const next = normalizeHexColor(backgroundColorInput, backgroundColor);
-                          setBackgroundColor(next);
-                          setBackgroundColorInput(next);
-                          scheduleAutoGenerate(500);
-                        }}
-                        className={`w-full p-3 rounded-xl border outline-none text-base sm:text-lg focus:ring-2 transition ${getInputClasses()}`}
-                        placeholder="#ffffff"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-base font-semibold mb-1">ドット色</label>
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="color"
-                        value={dotColor}
+                        value={centerOverlayText}
                         onChange={(e) => {
-                          const next = normalizeHexColor(e.target.value, dotColor);
-                          setDotColor(next);
-                          setDotColorInput(next);
+                          setCenterOverlayText(e.target.value);
                           scheduleAutoGenerate(500);
                         }}
-                        className="h-12 w-16 rounded-xl cursor-pointer"
-                        aria-label="ドット色"
-                      />
-                      <input
-                        type="text"
-                        value={dotColorInput}
-                        onChange={(e) => setDotColorInput(e.target.value)}
                         onBlur={() => {
-                          const next = normalizeHexColor(dotColorInput, dotColor);
-                          setDotColor(next);
-                          setDotColorInput(next);
+                          const nextChar = Array.from(centerOverlayText.trim()).slice(0, 1).join("");
+                          setCenterOverlayText(nextChar);
                           scheduleAutoGenerate(500);
                         }}
-                        className={`w-full p-3 rounded-xl border outline-none text-base sm:text-lg focus:ring-2 transition ${getInputClasses()}`}
-                        placeholder="#000000"
+                        className={`w-full p-3 rounded-xl border outline-none text-base sm:text-lg focus:ring-2 transition ${inputCls}`}
+                        placeholder="例: ★"
                       />
-                    </div>
-                  </div>
-                </div>
-              </div>
 
-              <div className={`rounded-2xl px-4 py-5 sm:px-5 sm:py-6 space-y-4 text-center ${getSettingBlockClasses()}`}>
-                <p className="text-lg font-bold">中央アイコン・絵文字・画像</p>
-                <div className="max-w-3xl mx-auto space-y-3">
-                  <div className="grid grid-cols-3 gap-2 max-w-2xl mx-auto">
-                    <label className={`rounded-xl px-3 py-3 text-base cursor-pointer transition-colors ${getRadioLabelClasses(centerOverlayMode === "none")}`}>
-                      <input
-                        type="radio"
-                        name="center-overlay-mode"
-                        checked={centerOverlayMode === "none"}
-                        onChange={() => {
-                          setCenterOverlayMode("none");
-                          scheduleAutoGenerate(500);
-                        }}
-                        className="mr-2"
-                      />
-                      なし
-                    </label>
-                    <label className={`rounded-xl px-3 py-3 text-base cursor-pointer transition-colors ${getRadioLabelClasses(centerOverlayMode === "char")}`}>
-                      <input
-                        type="radio"
-                        name="center-overlay-mode"
-                        checked={centerOverlayMode === "char"}
-                        onChange={() => {
-                          setCenterOverlayMode("char");
-                          scheduleAutoGenerate(500);
-                        }}
-                        className="mr-2"
-                      />
-                      1文字
-                    </label>
-                    <label className={`rounded-xl px-3 py-3 text-base cursor-pointer transition-colors ${getRadioLabelClasses(centerOverlayMode === "image")}`}>
-                      <input
-                        type="radio"
-                        name="center-overlay-mode"
-                        checked={centerOverlayMode === "image"}
-                        onChange={() => {
-                          setCenterOverlayMode("image");
-                          scheduleAutoGenerate(500);
-                        }}
-                        className="mr-2"
-                      />
-                      画像
-                    </label>
-                  </div>
-
-                  <div className="max-w-xl mx-auto text-center">
-                    {centerOverlayMode === "none" ? (
-                      <></>
-                    ) : centerOverlayMode === "char" ? (
-                      <>
-                        <label className="block text-base font-semibold mb-1">表示する文字（1文字）</label>
-                        <input
-                          type="text"
-                          value={centerOverlayText}
-                          onChange={(e) => {
-                            setCenterOverlayText(e.target.value);
-                            scheduleAutoGenerate(500);
-                          }}
-                          onBlur={() => {
-                            const nextChar = Array.from(centerOverlayText.trim()).slice(0, 1).join("");
-                            setCenterOverlayText(nextChar);
-                            scheduleAutoGenerate(500);
-                          }}
-                          className={`w-full p-3 rounded-xl border outline-none text-base sm:text-lg focus:ring-2 transition ${getInputClasses()}`}
-                          placeholder="例: ★"
-                        />
-
-                        <div className="mt-3">
-                          <label className="block text-base font-semibold mb-1">文字色</label>
-                          <div className="flex items-center gap-2">
-                            <input
-                              type="color"
-                              value={centerOverlayTextColor}
-                              onChange={(e) => {
-                                const next = normalizeHexColor(e.target.value, centerOverlayTextColor);
-                                setCenterOverlayTextColor(next);
-                                setCenterOverlayTextColorInput(next);
-                                scheduleAutoGenerate(500);
-                              }}
-                              className="h-12 w-16 rounded-xl cursor-pointer"
-                              aria-label="中央文字色"
-                            />
-                            <input
-                              type="text"
-                              value={centerOverlayTextColorInput}
-                              onChange={(e) => setCenterOverlayTextColorInput(e.target.value)}
-                              onBlur={() => {
-                                const next = normalizeHexColor(centerOverlayTextColorInput, centerOverlayTextColor);
-                                setCenterOverlayTextColor(next);
-                                setCenterOverlayTextColorInput(next);
-                                scheduleAutoGenerate(500);
-                              }}
-                              className={`w-full p-3 rounded-xl border outline-none text-base sm:text-lg focus:ring-2 transition ${getInputClasses()}`}
-                              placeholder="#000000"
-                            />
-                          </div>
-                        </div>
-
-                        <div className="mt-3">
-                          <label className="block text-base font-semibold mb-1">文字サイズ（3〜25%）</label>
+                      <div className="mt-3">
+                        <label className="block text-base font-semibold mb-1">文字色</label>
+                        <div className="flex items-center gap-2">
                           <input
-                            type="range"
-                            min={3}
-                            max={25}
-                            step={1}
-                            value={centerOverlayTextSizePercent}
+                            type="color"
+                            value={centerOverlayTextColor}
                             onChange={(e) => {
-                              setCenterOverlayTextSizePercent(Number(e.target.value));
+                              const next = normalizeHexColor(e.target.value, centerOverlayTextColor);
+                              setCenterOverlayTextColor(next);
+                              setCenterOverlayTextColorInput(next);
                               scheduleAutoGenerate(500);
                             }}
-                            className="w-full h-3 cursor-pointer"
+                            className="h-12 w-16 rounded-xl cursor-pointer"
+                            aria-label="中央文字色"
                           />
-                          <p className={`mt-2 text-base ${getMutedTextClasses()}`}>{centerOverlayTextSizePercent}%</p>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-2 mt-3">
-                          <label className={`rounded-xl px-3 py-3 text-base cursor-pointer transition-colors ${getRadioLabelClasses(centerOverlayCharWithBadge)}`}>
-                            <input
-                              type="radio"
-                              name="center-char-badge"
-                              checked={centerOverlayCharWithBadge}
-                              onChange={() => {
-                                setCenterOverlayCharWithBadge(true);
-                                scheduleAutoGenerate(500);
-                              }}
-                              className="mr-2"
-                            />
-                            バッジあり
-                          </label>
-                          <label className={`rounded-xl px-3 py-3 text-base cursor-pointer transition-colors ${getRadioLabelClasses(!centerOverlayCharWithBadge)}`}>
-                            <input
-                              type="radio"
-                              name="center-char-badge"
-                              checked={!centerOverlayCharWithBadge}
-                              onChange={() => {
-                                setCenterOverlayCharWithBadge(false);
-                                scheduleAutoGenerate(500);
-                              }}
-                              className="mr-2"
-                            />
-                            バッジなし
-                          </label>
-                        </div>
-
-                        {centerOverlayCharWithBadge && (
-                          <div className="mt-3">
-                            <label className="block text-base font-semibold mb-1">バッジサイズ（5〜30%）</label>
-                            <input
-                              type="range"
-                              min={5}
-                              max={30}
-                              step={1}
-                              value={centerOverlayBadgeSizePercent}
-                              onChange={(e) => {
-                                setCenterOverlayBadgeSizePercent(Number(e.target.value));
-                                scheduleAutoGenerate(500);
-                              }}
-                              className="w-full h-3 cursor-pointer"
-                            />
-                            <p className={`mt-2 text-base ${getMutedTextClasses()}`}>{centerOverlayBadgeSizePercent}%</p>
-                          </div>
-                        )}
-                      </>
-                    ) : (
-                      <>
-                        <label className="block text-base font-semibold mb-1">中央に表示する画像</label>
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            if (!file) {
-                              return;
-                            }
-                            const reader = new FileReader();
-                            reader.onload = () => {
-                              const result = typeof reader.result === "string" ? reader.result : "";
-                              setCenterOverlayImageDataUrl(result);
+                          <input
+                            type="text"
+                            value={centerOverlayTextColorInput}
+                            onChange={(e) => setCenterOverlayTextColorInput(e.target.value)}
+                            onBlur={() => {
+                              const next = normalizeHexColor(centerOverlayTextColorInput, centerOverlayTextColor);
+                              setCenterOverlayTextColor(next);
+                              setCenterOverlayTextColorInput(next);
                               scheduleAutoGenerate(500);
-                            };
-                            reader.readAsDataURL(file);
-                          }}
-                          className={`w-full p-3 rounded-xl border outline-none text-base sm:text-lg focus:ring-2 transition ${getInputClasses()}`}
-                        />
-                        {centerOverlayImageDataUrl && (
-                          <div className="mt-3 flex items-center justify-center gap-3">
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img src={centerOverlayImageDataUrl} alt="中央画像プレビュー" className="w-12 h-12 rounded-full object-cover" />
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setCenterOverlayImageDataUrl("");
-                                scheduleAutoGenerate(500);
-                              }}
-                              className={`px-3 py-2 rounded-xl text-sm font-semibold transition-colors ${getSecondaryButtonClasses()}`}
-                            >
-                              画像をクリア
-                            </button>
-                          </div>
-                        )}
+                            }}
+                            className={`w-full p-3 rounded-xl border outline-none text-base sm:text-lg focus:ring-2 transition ${inputCls}`}
+                            placeholder="#000000"
+                          />
+                        </div>
+                      </div>
 
+                      <div className="mt-3">
+                        <label className="block text-base font-semibold mb-1">文字サイズ（3〜25%）</label>
+                        <input
+                          type="range"
+                          min={3}
+                          max={25}
+                          step={1}
+                          value={centerOverlayTextSizePercent}
+                          onChange={(e) => {
+                            setCenterOverlayTextSizePercent(Number(e.target.value));
+                            scheduleAutoGenerate(500);
+                          }}
+                          className="w-full h-3 cursor-pointer"
+                        />
+                        <p className={`mt-2 text-base ${mutedTextCls}`}>{centerOverlayTextSizePercent}%</p>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-2 mt-3">
+                        <label className={`rounded-xl px-3 py-3 text-base cursor-pointer transition-colors ${radioLabelCls(centerOverlayCharWithBadge)}`}>
+                          <input
+                            type="radio"
+                            name="center-char-badge"
+                            checked={centerOverlayCharWithBadge}
+                            onChange={() => {
+                              setCenterOverlayCharWithBadge(true);
+                              scheduleAutoGenerate(500);
+                            }}
+                            className="mr-2"
+                          />
+                          バッジあり
+                        </label>
+                        <label className={`rounded-xl px-3 py-3 text-base cursor-pointer transition-colors ${radioLabelCls(!centerOverlayCharWithBadge)}`}>
+                          <input
+                            type="radio"
+                            name="center-char-badge"
+                            checked={!centerOverlayCharWithBadge}
+                            onChange={() => {
+                              setCenterOverlayCharWithBadge(false);
+                              scheduleAutoGenerate(500);
+                            }}
+                            className="mr-2"
+                          />
+                          バッジなし
+                        </label>
+                      </div>
+
+                      {centerOverlayCharWithBadge && (
                         <div className="mt-3">
-                          <label className="block text-base font-semibold mb-1">表示サイズ（5〜25%）</label>
+                          <label className="block text-base font-semibold mb-1">バッジサイズ（5〜30%）</label>
                           <input
                             type="range"
                             min={5}
-                            max={25}
+                            max={30}
                             step={1}
                             value={centerOverlayBadgeSizePercent}
                             onChange={(e) => {
@@ -1191,93 +1036,148 @@ export default function QrCodePage() {
                             }}
                             className="w-full h-3 cursor-pointer"
                           />
-                          <p className={`mt-2 text-base ${getMutedTextClasses()}`}>{centerOverlayBadgeSizePercent}%</p>
+                          <p className={`mt-2 text-base ${mutedTextCls}`}>{centerOverlayBadgeSizePercent}%</p>
                         </div>
-                      </>
-                    )}
-                  </div>
+                      )}
+                    </>
+                  ) : (
+                    <>
+                      <label className="block text-base font-semibold mb-1">中央に表示する画像</label>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (!file) {
+                            return;
+                          }
+                          const reader = new FileReader();
+                          reader.onload = () => {
+                            const result = typeof reader.result === "string" ? reader.result : "";
+                            setCenterOverlayImageDataUrl(result);
+                            scheduleAutoGenerate(500);
+                          };
+                          reader.readAsDataURL(file);
+                        }}
+                        className={`w-full p-3 rounded-xl border outline-none text-base sm:text-lg focus:ring-2 transition ${inputCls}`}
+                      />
+                      {centerOverlayImageDataUrl && (
+                        <div className="mt-3 flex items-center justify-center gap-3">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={centerOverlayImageDataUrl} alt="中央画像プレビュー" className="w-12 h-12 rounded-full object-cover" />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setCenterOverlayImageDataUrl("");
+                              scheduleAutoGenerate(500);
+                            }}
+                            className={`px-3 py-2 rounded-xl text-sm font-semibold transition-colors ${secondaryBtnCls}`}
+                          >
+                            画像をクリア
+                          </button>
+                        </div>
+                      )}
+
+                      <div className="mt-3">
+                        <label className="block text-base font-semibold mb-1">表示サイズ（5〜25%）</label>
+                        <input
+                          type="range"
+                          min={5}
+                          max={25}
+                          step={1}
+                          value={centerOverlayBadgeSizePercent}
+                          onChange={(e) => {
+                            setCenterOverlayBadgeSizePercent(Number(e.target.value));
+                            scheduleAutoGenerate(500);
+                          }}
+                          className="w-full h-3 cursor-pointer"
+                        />
+                        <p className={`mt-2 text-base ${mutedTextCls}`}>{centerOverlayBadgeSizePercent}%</p>
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
+            </div>
 
+            <button
+              onClick={() => {
+                if (generateTimerRef.current) {
+                  clearTimeout(generateTimerRef.current);
+                }
+                void generateQrCode();
+              }}
+              className={`w-full py-4 rounded-xl text-lg font-bold transition-colors ${primaryBtnCls}`}
+            >
+              生成する
+            </button>
+          </div>
+        </ToolPanel>
+
+        <ToolPanel
+          className="lg:sticky lg:self-start"
+          style={{ top: `${rightStickyTop}px` }}
+        >
+          <div className="space-y-5">
+            <label className="inline-flex items-center gap-2 text-base sm:text-lg font-semibold">
+              <input
+                type="checkbox"
+                checked={autoGenerate}
+                onChange={(e) => {
+                  const checked = e.target.checked;
+                  setAutoGenerate(checked);
+                  if (checked) {
+                    scheduleAutoGenerate(500);
+                  } else if (generateTimerRef.current) {
+                    clearTimeout(generateTimerRef.current);
+                    setIsLoading(false);
+                  }
+                }}
+              />
+              自動生成を有効にする
+            </label>
+
+            <div className="flex justify-center items-center min-h-[360px] rounded-2xl p-5" style={getCheckerboardStyle()}>
+              {isLoading ? (
+                <div className="w-full max-w-[320px] aspect-square rounded-xl bg-gray-200 animate-pulse" />
+              ) : qrDataUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={qrDataUrl} alt="生成されたQRコード" width={qrSize} height={qrSize} className="w-full h-auto max-w-[420px]" />
+              ) : (
+                <div className="w-full max-w-[320px] aspect-square rounded-xl bg-gray-100 flex items-center justify-center text-sm text-gray-500 text-center px-4">
+                  URLまたはテキストを入力するとここにQRコードが表示されます。
+                </div>
+              )}
+            </div>
+
+            <div className="flex w-full flex-wrap gap-2 items-stretch">
+              <button
+                onClick={handleCopyImage}
+                className={`basis-full w-full px-4 py-3 rounded-xl text-base font-bold whitespace-nowrap flex items-center justify-center gap-2 text-center transition-colors ${secondaryBtnCls}`}
+              >
+                <Copy size={16} />
+                画像をコピー
+              </button>
+              <button
+                onClick={handleSaveImage}
+                className={`flex-1 min-w-[11rem] px-4 py-3 rounded-xl text-base font-bold whitespace-nowrap flex items-center justify-center gap-2 text-center transition-colors ${secondaryBtnCls}`}
+              >
+                画像を保存
+              </button>
               <button
                 onClick={() => {
-                  if (generateTimerRef.current) {
-                    clearTimeout(generateTimerRef.current);
-                  }
-                  void generateQrCode();
+                  void handleSaveImageAs();
                 }}
-                className={`w-full py-4 rounded-xl text-lg font-bold transition-colors ${getPrimaryButtonClasses()}`}
+                className={`flex-1 min-w-[12.5rem] px-4 py-3 rounded-xl text-base font-bold whitespace-nowrap flex items-center justify-center gap-2 text-center transition-colors ${secondaryBtnCls}`}
               >
-                生成する
+                場所を指定して保存
               </button>
             </div>
-          </section>
 
-          <section
-            className={`rounded-2xl p-5 sm:p-7 shadow-sm lg:sticky lg:self-start ${getPanelClasses()}`}
-            style={{ top: `${rightStickyTop}px` }}
-          >
-            <div className="space-y-5">
-              <label className="inline-flex items-center gap-2 text-base sm:text-lg font-semibold">
-                <input
-                  type="checkbox"
-                  checked={autoGenerate}
-                  onChange={(e) => {
-                    const checked = e.target.checked;
-                    setAutoGenerate(checked);
-                    if (checked) {
-                      scheduleAutoGenerate(500);
-                    } else if (generateTimerRef.current) {
-                      clearTimeout(generateTimerRef.current);
-                      setIsLoading(false);
-                    }
-                  }}
-                />
-                自動生成を有効にする
-              </label>
-
-              <div className="flex justify-center items-center min-h-[360px] rounded-2xl p-5" style={getCheckerboardStyle()}>
-                  {isLoading ? (
-                    <div className="w-full max-w-[320px] aspect-square rounded-xl bg-gray-200 animate-pulse" />
-                  ) : qrDataUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={qrDataUrl} alt="生成されたQRコード" width={qrSize} height={qrSize} className="w-full h-auto max-w-[420px]" />
-                  ) : (
-                    <div className="w-full max-w-[320px] aspect-square rounded-xl bg-gray-100 flex items-center justify-center text-sm text-gray-500 text-center px-4">
-                      URLまたはテキストを入力するとここにQRコードが表示されます。
-                    </div>
-                  )}
-              </div>
-
-              <div className="flex w-full flex-wrap gap-2 items-stretch">
-                <button
-                  onClick={handleCopyImage}
-                  className={`basis-full w-full px-4 py-3 rounded-xl text-base font-bold whitespace-nowrap flex items-center justify-center gap-2 text-center transition-colors ${getSecondaryButtonClasses()}`}
-                >
-                  <Copy size={16} />
-                  画像をコピー
-                </button>
-                <button
-                  onClick={handleSaveImage}
-                  className={`flex-1 min-w-[11rem] px-4 py-3 rounded-xl text-base font-bold whitespace-nowrap flex items-center justify-center gap-2 text-center transition-colors ${getSecondaryButtonClasses()}`}
-                >
-                  画像を保存
-                </button>
-                <button
-                  onClick={() => {
-                    void handleSaveImageAs();
-                  }}
-                  className={`flex-1 min-w-[12.5rem] px-4 py-3 rounded-xl text-base font-bold whitespace-nowrap flex items-center justify-center gap-2 text-center transition-colors ${getSecondaryButtonClasses()}`}
-                >
-                  場所を指定して保存
-                </button>
-              </div>
-
-              {statusMessage && <p className={`text-base ${getMutedTextClasses()}`}>{statusMessage}</p>}
-            </div>
-          </section>
-        </div>
-      </main>
-    </div>
+            {statusMessage && <p className={`text-base ${mutedTextCls}`}>{statusMessage}</p>}
+          </div>
+        </ToolPanel>
+      </div>
+    </ToolPageLayout>
   );
 }
