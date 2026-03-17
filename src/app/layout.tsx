@@ -13,6 +13,11 @@ export const metadata: Metadata = {
     default: 'ひみっちゃんのKAMIツール | 便利なWebツール集',
   },
   description: "ひみっちゃんのKAMIツール一覧",
+  icons: {
+    icon: "/kamitool_icon.png",
+    shortcut: "/kamitool_icon.png",
+    apple: "/kamitool_icon.png",
+  },
 };
 
 export default function RootLayout({
