@@ -166,9 +166,6 @@ export default function YearTimerPage() {
                     <h2 className={`text-2xl sm:text-3xl font-bold font-sans tracking-wider mb-2 ${theme === 'default' ? 'text-gray-800' : 'text-white'}`}>
                         {timeState.currentYear}年の経過
                     </h2>
-                    <p className={`text-sm sm:text-base ${mutedTextCls}`}>
-                        Progress through the current year
-                    </p>
                 </div>
 
                 {/* The main Percentage Text */}
