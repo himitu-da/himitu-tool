@@ -1,20 +1,38 @@
 "use client";
+
 import React, { useState } from "react";
-import { ToolStickyHeader } from "@/components/ToolStickyHeader";
+import { ToolPageLayout } from "@/components/ToolPageLayout";
+import { ToolPanel } from "@/components/ToolPanel";
+import { useToolTheme } from "@/lib/useToolTheme";
+
 export default function SortL() {
   const [inp, setInp] = useState("");
   const [out, setOut] = useState("");
-  const run = () => { try { setOut(inp.split("\n").sort().join("\n")) } catch(e) { setOut("エラー"); } };
+  const { inputCls, primaryBtnCls } = useToolTheme();
+
+  const run = () => {
+    setOut(inp.split("\n").sort().join("\n"));
+  };
+
   return (
-    <>
-      <ToolStickyHeader title="行のソート" className="bg-gray-800 text-white" />
-      <div className="max-w-2xl mx-auto p-6 rounded-xl shadow-lg border border-opacity-20 border-current bg-white/10 backdrop-blur-sm mt-4">
-        <div className="flex flex-col gap-4">
-          <textarea value={inp} onChange={e=>setInp(e.target.value)} className="w-full h-32 p-3 bg-black/10 rounded-lg border-current focus:ring-2" placeholder="入力..."></textarea>
-          <button onClick={run} className="py-3 bg-blue-500/80 hover:bg-blue-600/80 text-white rounded-lg font-bold transition-colors">ソート</button>
-          <textarea value={out} readOnly className="w-full h-32 p-3 bg-black/20 rounded-lg opacity-80" placeholder="結果..."></textarea>
-        </div>
-      </div>
-    </>
+    <ToolPageLayout title="行のソート" maxWidth="2xl">
+      <ToolPanel className="space-y-4">
+        <textarea
+          value={inp}
+          onChange={(e) => setInp(e.target.value)}
+          className={`w-full h-40 p-3 rounded-lg border focus:ring-2 outline-none ${inputCls}`}
+          placeholder="1行ずつ入力"
+        />
+        <button onClick={run} className={`w-full py-3 rounded-lg font-bold transition-colors ${primaryBtnCls}`}>
+          ソート
+        </button>
+        <textarea
+          value={out}
+          readOnly
+          className={`w-full h-40 p-3 rounded-lg border opacity-90 ${inputCls}`}
+          placeholder="結果"
+        />
+      </ToolPanel>
+    </ToolPageLayout>
   );
 }

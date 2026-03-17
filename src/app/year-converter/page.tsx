@@ -1,11 +1,14 @@
 "use client";
 
 import React, { useState } from "react";
+import { ToolPageLayout } from "@/components/ToolPageLayout";
+import { ToolPanel } from "@/components/ToolPanel";
+import { useToolTheme } from "@/lib/useToolTheme";
 
-import { ToolStickyHeader } from "@/components/ToolStickyHeader";
 export default function YearConverterPage() {
   const [year, setYear] = useState<string>("2024");
   const [result, setResult] = useState<string>("");
+  const { inputCls, primaryBtnCls, blockCls, mutedTextCls } = useToolTheme();
 
   const convertYear = () => {
     const y = parseInt(year);
@@ -38,36 +41,29 @@ export default function YearConverterPage() {
   };
 
   return (
-    <>
-      <ToolStickyHeader title="西暦 / 元号変換" className="bg-gray-800 text-white" />
-      <div className="max-w-md mx-auto p-6 rounded-xl shadow-lg border border-opacity-20 border-current bg-white/10 backdrop-blur-sm mt-4">
-
-      <div className="flex flex-col gap-4">
+    <ToolPageLayout title="西暦 / 元号変換" maxWidth="md">
+      <ToolPanel className="space-y-4">
         <div>
-          <label className="block text-sm font-semibold mb-2 opacity-80">西暦 (年)</label>
+          <label className={`block text-sm font-semibold mb-2 ${mutedTextCls}`}>西暦 (年)</label>
           <input
             type="number"
             value={year}
             onChange={(e) => setYear(e.target.value)}
-            className="w-full p-3 rounded-lg bg-black/10 border-none focus:ring-2 focus:ring-blue-500"
+            className={`w-full p-3 rounded-lg border focus:ring-2 outline-none ${inputCls}`}
             placeholder="例: 2024"
           />
         </div>
 
-        <button
-          onClick={convertYear}
-          className="w-full py-3 rounded-lg bg-blue-500/80 hover:bg-blue-600/80 text-white font-bold transition-colors"
-        >
+        <button onClick={convertYear} className={`w-full py-3 rounded-lg font-bold transition-colors ${primaryBtnCls}`}>
           変換
         </button>
 
-        <div className="mt-6 p-6 rounded-lg bg-black/20 text-center min-h-[100px] flex items-center justify-center">
-          <div className="text-2xl font-bold text-blue-400">
-            {result || <span className="opacity-50 text-current text-base">ボタンを押して変換</span>}
+        <div className={`mt-2 p-6 rounded-lg text-center min-h-[100px] flex items-center justify-center ${blockCls}`}>
+          <div className="text-2xl font-bold">
+            {result || <span className={`text-base ${mutedTextCls}`}>ボタンを押して変換</span>}
           </div>
         </div>
-      </div>
-    </div>
-  </>
-);
+      </ToolPanel>
+    </ToolPageLayout>
+  );
 }

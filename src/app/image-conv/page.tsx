@@ -1,7 +1,9 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
-import { ToolStickyHeader } from "@/components/ToolStickyHeader";
+import { ToolPageLayout } from "@/components/ToolPageLayout";
+import { ToolPanel } from "@/components/ToolPanel";
+import { useToolTheme } from "@/lib/useToolTheme";
 
 type OutputFormat = "image/png" | "image/jpeg" | "image/webp" | "image/avif";
 
@@ -176,6 +178,7 @@ export default function ImageConvPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [note, setNote] = useState("");
+  const { inputCls, primaryBtnCls, secondaryBtnCls, blockCls, mutedTextCls } = useToolTheme();
 
   const selectedOutput = useMemo(() => {
     return OUTPUT_OPTIONS.find((item) => item.mime === outputMime) ?? OUTPUT_OPTIONS[0];
@@ -277,10 +280,9 @@ export default function ImageConvPage() {
   };
 
   return (
-    <>
-      <ToolStickyHeader title="画像変換" className="bg-gray-800 text-white" />
-      <div className="max-w-4xl mx-auto mt-4 px-4 pb-8">
-        <div className="rounded-2xl p-5 sm:p-6 bg-black/10 dark:bg-white/10 backdrop-blur-sm">
+    <ToolPageLayout title="画像変換" maxWidth="4xl">
+      <ToolPanel className="space-y-5">
+        <div className={`rounded-2xl p-5 sm:p-6 ${blockCls}`}>
           <p className="text-sm opacity-85 leading-relaxed">
             ブラウザだけで画像形式を変換します。HEIC / TIFF / ICO も入力できます。
             出力は PNG / JPEG / WebP / AVIF に対応しています。
@@ -293,7 +295,7 @@ export default function ImageConvPage() {
                 type="file"
                 accept={ACCEPT_EXTENSIONS}
                 onChange={onFileChange}
-                className="w-full p-2.5 rounded-lg bg-black/10 dark:bg-white/10 border border-current/30"
+                className={`w-full p-2.5 rounded-lg border ${inputCls}`}
               />
             </label>
 
@@ -302,7 +304,7 @@ export default function ImageConvPage() {
               <select
                 value={outputMime}
                 onChange={(e) => setOutputMime(e.target.value as OutputFormat)}
-                className="w-full p-2.5 rounded-lg bg-black/10 dark:bg-white/10 border border-current/30"
+                className={`w-full p-2.5 rounded-lg border ${inputCls}`}
               >
                 {OUTPUT_OPTIONS.map((option) => (
                   <option key={option.mime} value={option.mime}>
@@ -314,7 +316,7 @@ export default function ImageConvPage() {
           </div>
 
           {selectedOutput.lossy && (
-            <div className="mt-4 p-4 rounded-xl bg-black/5 dark:bg-white/5">
+            <div className={`mt-4 p-4 rounded-xl ${blockCls}`}>
               <label className="flex flex-col gap-2">
                 <span className="text-sm font-semibold opacity-90">画質: {Math.round(quality * 100)}%</span>
                 <input
@@ -334,52 +336,52 @@ export default function ImageConvPage() {
             <button
               onClick={convert}
               disabled={!sourceFile || loading}
-              className="px-5 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className={`px-5 py-2.5 rounded-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-colors ${primaryBtnCls}`}
             >
               {loading ? "変換中..." : "変換する"}
             </button>
             <button
               onClick={download}
               disabled={!resultBlob}
-              className="px-5 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className={`px-5 py-2.5 rounded-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-colors ${secondaryBtnCls}`}
             >
               ダウンロード
             </button>
           </div>
 
           {note && (
-            <p className="mt-4 text-sm rounded-lg p-3 bg-amber-500/15 text-amber-900 dark:text-amber-200">
+            <p className={`mt-4 text-sm rounded-lg p-3 ${blockCls}`}>
               {note}
             </p>
           )}
 
           {error && (
-            <p className="mt-4 text-sm rounded-lg p-3 bg-red-500/15 text-red-900 dark:text-red-200">
+            <p className={`mt-4 text-sm rounded-lg p-3 ${blockCls}`}>
               {error}
             </p>
           )}
         </div>
 
         <div className="mt-5 grid gap-4 md:grid-cols-2">
-          <section className="rounded-2xl p-4 bg-black/5 dark:bg-white/5">
+          <section className={`rounded-2xl p-4 ${blockCls}`}>
             <h3 className="font-semibold opacity-90 mb-3">入力プレビュー</h3>
             {sourceUrl ? (
-              <img src={sourceUrl} alt="入力画像プレビュー" className="w-full h-auto rounded-lg object-contain max-h-[360px] bg-black/10 dark:bg-white/10" />
+              <img src={sourceUrl} alt="入力画像プレビュー" className={`w-full h-auto rounded-lg object-contain max-h-[360px] ${blockCls}`} />
             ) : (
-              <p className="text-sm opacity-70">画像を選択するとプレビューが表示されます。</p>
+              <p className={`text-sm ${mutedTextCls}`}>画像を選択するとプレビューが表示されます。</p>
             )}
           </section>
 
-          <section className="rounded-2xl p-4 bg-black/5 dark:bg-white/5">
+          <section className={`rounded-2xl p-4 ${blockCls}`}>
             <h3 className="font-semibold opacity-90 mb-3">変換後プレビュー</h3>
             {resultUrl ? (
-              <img src={resultUrl} alt="変換後画像プレビュー" className="w-full h-auto rounded-lg object-contain max-h-[360px] bg-black/10 dark:bg-white/10" />
+              <img src={resultUrl} alt="変換後画像プレビュー" className={`w-full h-auto rounded-lg object-contain max-h-[360px] ${blockCls}`} />
             ) : (
-              <p className="text-sm opacity-70">変換後の画像はここに表示されます。</p>
+              <p className={`text-sm ${mutedTextCls}`}>変換後の画像はここに表示されます。</p>
             )}
           </section>
         </div>
-      </div>
-    </>
+      </ToolPanel>
+    </ToolPageLayout>
   );
 }

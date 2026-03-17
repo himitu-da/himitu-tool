@@ -1,20 +1,39 @@
 "use client";
+
 import React, { useState } from "react";
-import { ToolStickyHeader } from "@/components/ToolStickyHeader";
+import { ToolPageLayout } from "@/components/ToolPageLayout";
+import { ToolPanel } from "@/components/ToolPanel";
+import { useToolTheme } from "@/lib/useToolTheme";
+
 export default function Tax() {
   const [price, set_price] = useState("");
   const [out, setOut] = useState("");
-  const run = () => { try { setOut("税込: "+Math.floor(Number(price)*1.1)+"円") } catch(e) { setOut("エラー"); } };
+  const { inputCls, primaryBtnCls, blockCls } = useToolTheme();
+
+  const run = () => {
+    const base = Number(price);
+    if (!Number.isFinite(base)) {
+      setOut("エラー: 数値を入力してください");
+      return;
+    }
+    setOut(`税込: ${Math.floor(base * 1.1)}円`);
+  };
+
   return (
-    <>
-      <ToolStickyHeader title="消費税(10%)計算" className="bg-gray-800 text-white" />
-      <div className="max-w-md mx-auto p-6 rounded-xl shadow-lg border border-opacity-20 border-current bg-white/10 backdrop-blur-sm mt-4">
-      <div className="flex flex-col gap-4">
-        <input type="number" value={price} onChange={e=>set_price(e.target.value)} placeholder="price" className="p-3 bg-black/10 rounded-lg text-current border-current" />
-        <button onClick={run} className="py-3 bg-blue-500/80 hover:bg-blue-600/80 text-white rounded-lg font-bold transition-colors">計算</button>
-        {out && <div className="p-4 bg-black/20 rounded-lg text-center text-xl font-bold break-all">{out}</div>}
-      </div>
-    </div>
-  </>
-);
+    <ToolPageLayout title="消費税(10%)計算" maxWidth="md">
+      <ToolPanel className="space-y-4">
+        <input
+          type="number"
+          value={price}
+          onChange={(e) => set_price(e.target.value)}
+          placeholder="税抜価格"
+          className={`w-full p-3 rounded-lg border focus:ring-2 outline-none ${inputCls}`}
+        />
+        <button onClick={run} className={`w-full py-3 rounded-lg font-bold transition-colors ${primaryBtnCls}`}>
+          計算
+        </button>
+        {out && <div className={`p-4 rounded-lg text-center text-xl font-bold ${blockCls}`}>{out}</div>}
+      </ToolPanel>
+    </ToolPageLayout>
+  );
 }

@@ -1,20 +1,48 @@
 "use client";
+
 import React, { useState } from "react";
-import { ToolStickyHeader } from "@/components/ToolStickyHeader";
+import { ToolPageLayout } from "@/components/ToolPageLayout";
+import { ToolPanel } from "@/components/ToolPanel";
+import { useToolTheme } from "@/lib/useToolTheme";
+
 export default function JsonF() {
   const [inp, setInp] = useState("");
   const [out, setOut] = useState("");
-  const run = () => { try { setOut(JSON.stringify(JSON.parse(inp),null,2)) } catch(e) { setOut("エラー"); } };
+  const { inputCls, primaryBtnCls, blockCls, mutedTextCls } = useToolTheme();
+
+  const run = () => {
+    try {
+      setOut(JSON.stringify(JSON.parse(inp), null, 2));
+    } catch {
+      setOut("エラー: JSON形式が不正です");
+    }
+  };
+
   return (
-    <>
-      <ToolStickyHeader title="JSONフォーマッタ" className="bg-gray-800 text-white" />
-      <div className="max-w-2xl mx-auto p-6 rounded-xl shadow-lg border border-opacity-20 border-current bg-white/10 backdrop-blur-sm mt-4">
-        <div className="flex flex-col gap-4">
-          <textarea value={inp} onChange={e=>setInp(e.target.value)} className="w-full h-32 p-3 bg-black/10 rounded-lg border-current focus:ring-2" placeholder="入力..."></textarea>
-          <button onClick={run} className="py-3 bg-blue-500/80 hover:bg-blue-600/80 text-white rounded-lg font-bold transition-colors">整形</button>
-          <textarea value={out} readOnly className="w-full h-32 p-3 bg-black/20 rounded-lg opacity-80" placeholder="結果..."></textarea>
+    <ToolPageLayout title="JSONフォーマッタ" maxWidth="2xl">
+      <ToolPanel className="space-y-4">
+        <textarea
+          value={inp}
+          onChange={(e) => setInp(e.target.value)}
+          className={`w-full h-40 p-3 rounded-lg border focus:ring-2 outline-none ${inputCls}`}
+          placeholder="整形したいJSONを入力"
+        />
+        <button
+          onClick={run}
+          className={`w-full py-3 rounded-lg font-bold transition-colors ${primaryBtnCls}`}
+        >
+          整形
+        </button>
+        <textarea
+          value={out}
+          readOnly
+          className={`w-full h-40 p-3 rounded-lg border opacity-90 ${inputCls}`}
+          placeholder="結果"
+        />
+        <div className={`p-3 rounded-lg text-sm ${blockCls} ${mutedTextCls}`}>
+          入力されたJSONを読みやすい形に整形します。
         </div>
-      </div>
-    </>
+      </ToolPanel>
+    </ToolPageLayout>
   );
 }

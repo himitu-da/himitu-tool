@@ -1,22 +1,52 @@
 "use client";
+
 import React, { useState } from "react";
-import { ToolStickyHeader } from "@/components/ToolStickyHeader";
+import { ToolPageLayout } from "@/components/ToolPageLayout";
+import { ToolPanel } from "@/components/ToolPanel";
+import { useToolTheme } from "@/lib/useToolTheme";
+
 export default function Prof() {
   const [cost, set_cost] = useState("");
   const [sales, set_sales] = useState("");
   const [out, setOut] = useState("");
-  const run = () => { try { let c=Number(cost),s=Number(sales); setOut(((s-c)/s*100).toFixed(2)+"%") } catch(e) { setOut("エラー"); } };
+  const { inputCls, primaryBtnCls, blockCls, mutedTextCls } = useToolTheme();
+
+  const run = () => {
+    const c = Number(cost);
+    const s = Number(sales);
+    if (!Number.isFinite(c) || !Number.isFinite(s) || s === 0) {
+      setOut("エラー: 売上は0以外の数値を入力してください");
+      return;
+    }
+    setOut(`${(((s - c) / s) * 100).toFixed(2)}%`);
+  };
+
   return (
-    <>
-      <ToolStickyHeader title="利益率計算" className="bg-gray-800 text-white" />
-      <div className="max-w-md mx-auto p-6 rounded-xl shadow-lg border border-opacity-20 border-current bg-white/10 backdrop-blur-sm mt-4">
-      <div className="flex flex-col gap-4">
-        <input type="number" value={cost} onChange={e=>set_cost(e.target.value)} placeholder="cost" className="p-3 bg-black/10 rounded-lg text-current border-current" />
-        <input type="number" value={sales} onChange={e=>set_sales(e.target.value)} placeholder="sales" className="p-3 bg-black/10 rounded-lg text-current border-current" />
-        <button onClick={run} className="py-3 bg-blue-500/80 hover:bg-blue-600/80 text-white rounded-lg font-bold transition-colors">計算</button>
-        {out && <div className="p-4 bg-black/20 rounded-lg text-center text-xl font-bold break-all">{out}</div>}
-      </div>
-    </div>
-  </>
-);
+    <ToolPageLayout title="利益率計算" maxWidth="md">
+      <ToolPanel className="space-y-4">
+        <input
+          type="number"
+          value={cost}
+          onChange={(e) => set_cost(e.target.value)}
+          placeholder="原価"
+          className={`w-full p-3 rounded-lg border focus:ring-2 outline-none ${inputCls}`}
+        />
+        <input
+          type="number"
+          value={sales}
+          onChange={(e) => set_sales(e.target.value)}
+          placeholder="売上"
+          className={`w-full p-3 rounded-lg border focus:ring-2 outline-none ${inputCls}`}
+        />
+        <button
+          onClick={run}
+          className={`w-full py-3 rounded-lg font-bold transition-colors ${primaryBtnCls}`}
+        >
+          計算
+        </button>
+        {out && <div className={`p-4 rounded-lg text-center text-xl font-bold break-all ${blockCls}`}>{out}</div>}
+        <p className={`text-sm ${mutedTextCls}`}>計算式: (売上 - 原価) / 売上 × 100</p>
+      </ToolPanel>
+    </ToolPageLayout>
+  );
 }

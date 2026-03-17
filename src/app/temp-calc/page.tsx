@@ -1,20 +1,40 @@
 "use client";
+
 import React, { useState } from "react";
-import { ToolStickyHeader } from "@/components/ToolStickyHeader";
+import { ToolPageLayout } from "@/components/ToolPageLayout";
+import { ToolPanel } from "@/components/ToolPanel";
+import { useToolTheme } from "@/lib/useToolTheme";
+
 export default function Temp() {
   const [c, set_c] = useState("");
   const [out, setOut] = useState("");
-  const run = () => { try { setOut((Number(c)*9/5+32).toFixed(2)+"°F") } catch(e) { setOut("エラー"); } };
+  const { inputCls, primaryBtnCls, blockCls, mutedTextCls } = useToolTheme();
+
+  const run = () => {
+    const value = Number(c);
+    if (!Number.isFinite(value)) {
+      setOut("エラー: 数値を入力してください");
+      return;
+    }
+    setOut(`${((value * 9) / 5 + 32).toFixed(2)}°F`);
+  };
+
   return (
-    <>
-      <ToolStickyHeader title="温度変換(摂氏・華氏)" className="bg-gray-800 text-white" />
-      <div className="max-w-md mx-auto p-6 rounded-xl shadow-lg border border-opacity-20 border-current bg-white/10 backdrop-blur-sm mt-4">
-      <div className="flex flex-col gap-4">
-        <input type="number" value={c} onChange={e=>set_c(e.target.value)} placeholder="c" className="p-3 bg-black/10 rounded-lg text-current border-current" />
-        <button onClick={run} className="py-3 bg-blue-500/80 hover:bg-blue-600/80 text-white rounded-lg font-bold transition-colors">計算</button>
-        {out && <div className="p-4 bg-black/20 rounded-lg text-center text-xl font-bold break-all">{out}</div>}
-      </div>
-    </div>
-  </>
-);
+    <ToolPageLayout title="温度変換(摂氏・華氏)" maxWidth="md">
+      <ToolPanel className="space-y-4">
+        <input
+          type="number"
+          value={c}
+          onChange={(e) => set_c(e.target.value)}
+          placeholder="摂氏 (°C)"
+          className={`w-full p-3 rounded-lg border focus:ring-2 outline-none ${inputCls}`}
+        />
+        <button onClick={run} className={`w-full py-3 rounded-lg font-bold transition-colors ${primaryBtnCls}`}>
+          変換
+        </button>
+        {out && <div className={`p-4 rounded-lg text-center text-xl font-bold ${blockCls}`}>{out}</div>}
+        <p className={`text-sm ${mutedTextCls}`}>摂氏から華氏への変換式: (°C × 9/5) + 32</p>
+      </ToolPanel>
+    </ToolPageLayout>
+  );
 }
