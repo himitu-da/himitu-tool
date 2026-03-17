@@ -3,7 +3,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 
 import { useTheme } from '../ThemeProvider';
-import { ToolStickyHeader } from '@/components/ToolStickyHeader';
+import { ToolPageLayout } from "@/components/ToolPageLayout";
+import { ToolPanel } from "@/components/ToolPanel";
+import { useToolTheme } from "@/lib/useToolTheme";
 
 interface Settings {
   defaultMinutes: number;
@@ -16,7 +18,8 @@ interface Settings {
 
 export default function TimerPage() {
   const { theme, mounted: isClient } = useTheme();
-  
+  const { pageCls, panelCls, blockCls } = useToolTheme();
+
   // Timer States
   const [isRunning, setIsRunning] = useState(false);
   const [inputMinutes, setInputMinutes] = useState(5);
@@ -34,7 +37,7 @@ export default function TimerPage() {
     enableMilliseconds: false,
     muted: false
   });
-  
+
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('basic');
   const [isQuickSettingsOpen, setIsQuickSettingsOpen] = useState(false);
@@ -65,7 +68,7 @@ export default function TimerPage() {
       enableMilliseconds: savedEnableMs,
       muted: savedMuted
     });
-    
+
     setInputMinutes(defaultMins);
     setInputSeconds(defaultSecs);
     setInitialMinutes(defaultMins);
@@ -99,7 +102,7 @@ export default function TimerPage() {
         }
         return;
       }
-      
+
       setTimeLeft(remain);
       animationFrameId = requestAnimationFrame(tick);
     };
@@ -116,7 +119,7 @@ export default function TimerPage() {
   // --- Handlers ---
   const handleStart = () => {
     if (isRunning) return;
-    
+
     let currentLeftMs = timeLeft;
     // If timer is at 0, reset to input values
     if (currentLeftMs <= 0) {
@@ -124,7 +127,7 @@ export default function TimerPage() {
       setInitialMinutes(inputMinutes);
       setInitialSeconds(inputSeconds);
     }
-    
+
     if (currentLeftMs <= 0) return; // Still 0 after check? Do nothing.
 
     endTimeRef.current = Date.now() + currentLeftMs;
@@ -172,22 +175,6 @@ export default function TimerPage() {
   };
 
   // --- Theme Style Helpers ---
-  const getThemeClasses = () => {
-    switch (theme) {
-      case 'dark': return 'bg-gray-900 text-gray-100';
-      case 'ocean': return 'bg-cyan-900 text-cyan-50';
-      default: return 'bg-gray-50 text-gray-900';
-    }
-  };
-
-  const getPanelClasses = () => {
-    switch (theme) {
-      case 'dark': return 'bg-gray-800 shadow-black/40 border border-gray-700';
-      case 'ocean': return 'bg-cyan-800 shadow-black/20 border border-cyan-700';
-      default: return 'bg-white shadow-sm border border-gray-200';
-    }
-  };
-
   const getButtonHoverClasses = () => {
     switch (theme) {
       case 'dark': return 'hover:bg-white/10';
@@ -239,7 +226,7 @@ export default function TimerPage() {
   const radius = 54;
   const circumference = 2 * Math.PI * radius;
   const strokeDashoffset = circumference - progress * circumference;
-  
+
   let strokeColor = '#28a745';
   if (progress * 100 < 20) strokeColor = '#dc3545';
   else if (progress * 100 < 50) strokeColor = '#ffc107';
@@ -248,31 +235,27 @@ export default function TimerPage() {
   if (!isClient) return <div className="min-h-screen bg-gray-50 text-gray-900" />;
 
   return (
-    <div className={`min-h-screen flex flex-col font-sans transition-colors duration-300 ${getThemeClasses()}`}>
-      
-      {/* Header */}
-      <ToolStickyHeader
-        title="タイマーツール"
-        className="bg-gray-800 text-white"
-        rightSlot={
-          <button 
-            onClick={() => setIsSettingsOpen(true)}
-            className="p-2 rounded-full hover:bg-white/10 transition-colors focus:outline-none"
-            title="設定"
-            aria-label="設定を開く"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>
-              <circle cx="12" cy="12" r="3"/>
-            </svg>
-          </button>
-        }
-      />
+    <ToolPageLayout
+      title="タイマーツール"
+      maxWidth="2xl"
+      headerRightSlot={
+        <button
+          onClick={() => setIsSettingsOpen(true)}
+          className="p-2 rounded-full hover:bg-white/10 transition-colors focus:outline-none"
+          title="設定"
+          aria-label="設定を開く"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
+            <circle cx="12" cy="12" r="3" />
+          </svg>
+        </button>
+      }
+    >
+      <ToolPanel className="flex flex-col items-center justify-center w-full min-h-[60vh] max-w-xl mx-auto my-4 sm:my-8 relative overflow-hidden">
 
-      <main className="flex-1 w-full max-w-2xl mx-auto flex flex-col items-center justify-center p-4">
-        
         {/* Timer UI (Ring & Display) */}
-        <div 
+        <div
           className="relative w-80 h-80 mx-auto my-6 flex justify-center items-center select-none"
           onContextMenu={(e) => {
             e.preventDefault();
@@ -291,7 +274,7 @@ export default function TimerPage() {
             touchStartRef.current = null;
           }}
         >
-          <button 
+          <button
             onClick={(e) => {
               e.stopPropagation();
               setIsFullScreen(true);
@@ -299,15 +282,15 @@ export default function TimerPage() {
             className="absolute top-0 right-0 z-20 p-2 rounded-full hover:bg-black/10 dark:hover:bg-white/10 transition-colors focus:outline-none"
             title="全画面表示"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" /></svg>
           </button>
           <svg width="100%" height="100%" viewBox="0 0 120 120" className="absolute top-0 left-0 -rotate-90">
-            <circle 
-              cx="60" cy="60" r={radius} fill="transparent" 
+            <circle
+              cx="60" cy="60" r={radius} fill="transparent"
               stroke={theme === 'dark' ? '#333' : '#e0e0e0'} strokeWidth="8"
             />
-            <circle 
-              cx="60" cy="60" r={radius} fill="transparent" 
+            <circle
+              cx="60" cy="60" r={radius} fill="transparent"
               stroke={strokeColor} strokeWidth="8"
               strokeDasharray={circumference}
               strokeDashoffset={strokeDashoffset}
@@ -321,7 +304,7 @@ export default function TimerPage() {
         </div>
 
         {/* Time Inputs & Sliders */}
-        <div className={`w-full max-w-sm mx-auto p-5 rounded-2xl shadow-lg mb-8 transition-colors duration-300 ${getPanelClasses()} ${isSettingsDisabled ? 'opacity-50 pointer-events-none transition-opacity duration-300' : ''}`}>
+        <div className={`w-full max-w-sm mx-auto p-5 rounded-2xl mb-8 ${blockCls} ${isSettingsDisabled ? 'opacity-50 pointer-events-none transition-opacity duration-300' : ''}`}>
           {/* Minutes */}
           <div className="flex justify-between items-center mb-2">
             <label className="text-sm font-bold opacity-80">分:</label>
@@ -338,10 +321,10 @@ export default function TimerPage() {
                 disabled={isSettingsDisabled}
                 className={`w-8 h-8 flex items-center justify-center rounded-full disabled:opacity-50 transition active:scale-95 ${getButtonHoverClasses()}`}
               >
-                
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
-              <input 
-                type="number" min="0" max="99" 
+
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6" /></svg></button>
+              <input
+                type="number" min="0" max="99"
                 value={inputMinutes}
                 onChange={(e) => {
                   const val = parseInt(e.target.value) || 0;
@@ -368,11 +351,11 @@ export default function TimerPage() {
                 disabled={isSettingsDisabled}
                 className={`w-8 h-8 flex items-center justify-center rounded-full disabled:opacity-50 transition active:scale-95 ${getButtonHoverClasses()}`}
               >
-                
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m18 15-6-6-6 6"/></svg></button>
+
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m18 15-6-6-6 6" /></svg></button>
             </div>
           </div>
-          <input 
+          <input
             type="range" min="0" max="99"
             value={inputMinutes}
             onChange={(e) => {
@@ -404,10 +387,10 @@ export default function TimerPage() {
                 disabled={isSettingsDisabled}
                 className={`w-8 h-8 flex items-center justify-center rounded-full disabled:opacity-50 transition active:scale-95 ${getButtonHoverClasses()}`}
               >
-                
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
-              <input 
-                type="number" min="0" max="59" 
+
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6" /></svg></button>
+              <input
+                type="number" min="0" max="59"
                 value={inputSeconds}
                 onChange={(e) => {
                   const val = parseInt(e.target.value) || 0;
@@ -434,11 +417,11 @@ export default function TimerPage() {
                 disabled={isSettingsDisabled}
                 className={`w-8 h-8 flex items-center justify-center rounded-full disabled:opacity-50 transition active:scale-95 ${getButtonHoverClasses()}`}
               >
-                
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m18 15-6-6-6 6"/></svg></button>
+
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m18 15-6-6-6 6" /></svg></button>
             </div>
           </div>
-          <input 
+          <input
             type="range" min="0" max="59"
             value={inputSeconds}
             onChange={(e) => {
@@ -458,37 +441,37 @@ export default function TimerPage() {
         {/* Control Buttons */}
         <div className="flex justify-center gap-4 mb-4">
           <button onClick={handleStart} disabled={isRunning} className="flex items-center gap-2 px-6 py-3 rounded-full bg-green-600 hover:bg-green-700 text-white font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed transform active:scale-95 shadow-md">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="6 3 20 12 6 21 6 3"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="6 3 20 12 6 21 6 3" /></svg>
             スタート
           </button>
           <button onClick={handleStop} disabled={!isRunning} className="flex items-center gap-2 px-6 py-3 rounded-full bg-red-600 hover:bg-red-700 text-white font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed transform active:scale-95 shadow-md">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" /></svg>
             ストップ
           </button>
           <button onClick={handleReset} className="flex items-center gap-2 px-6 py-3 rounded-full bg-blue-600 hover:bg-blue-700 text-white font-semibold transition-all transform active:scale-95 shadow-md">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" /><path d="M3 3v5h5" /></svg>
             リセット
           </button>
         </div>
-      </main>
+      </ToolPanel>
 
       <audio ref={audioRef} preload="auto" />
 
       {/* Settings Modal */}
       {isSettingsOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 transition-opacity" onClick={() => setIsSettingsOpen(false)}>
-          <div 
-            className={`relative w-full max-w-lg p-6 rounded-2xl shadow-2xl transition-all ${theme === 'dark' ? 'bg-gray-800 text-white' : theme === 'ocean' ? 'bg-cyan-900 text-cyan-50' : 'bg-white text-gray-900'}`} 
+          <div
+            className={`relative w-full max-w-lg p-6 rounded-3xl shadow-2xl transition-all ${panelCls}`}
             onClick={e => e.stopPropagation()}
           >
             <button onClick={() => setIsSettingsOpen(false)} className={`absolute top-4 right-4 transition-colors ${theme === 'default' ? 'text-gray-500 hover:text-gray-800' : 'text-gray-400 hover:text-white'}`}>
-              <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
             </button>
             <h2 className="text-2xl font-bold mb-6">設定</h2>
-            
+
             <div className={`flex border-b mb-6 overflow-x-auto select-none ${theme === 'default' ? 'border-gray-300' : 'border-gray-600'}`}>
               {['basic', 'sound', 'advanced'].map(tab => (
-                <button 
+                <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
                   className={`px-4 py-2 font-medium border-b-2 whitespace-nowrap outline-none transition-colors ${activeTab === tab ? 'border-blue-500 text-blue-500' : 'border-transparent opacity-60 hover:opacity-100'}`}
@@ -507,27 +490,27 @@ export default function TimerPage() {
                   <div className={`flex justify-between items-center p-3 rounded-lg border ${getSettingItemClasses()}`}>
                     <label>デフォルト時間（分）:</label>
                     <input type="number" min="0" max="99" value={settings.defaultMinutes} onChange={e => {
-                        const val = parseInt(e.target.value) || 0;
-                        const validMin = Math.min(99, val);
-                        updateSettingStore('defaultMinutes', validMin);
-                        if (!isRunning) {
-                            setInputMinutes(validMin);
-                            setTimeLeft((validMin * 60 + inputSeconds) * 1000);
-                            setInitialMinutes(validMin);
-                        }
+                      const val = parseInt(e.target.value) || 0;
+                      const validMin = Math.min(99, val);
+                      updateSettingStore('defaultMinutes', validMin);
+                      if (!isRunning) {
+                        setInputMinutes(validMin);
+                        setTimeLeft((validMin * 60 + inputSeconds) * 1000);
+                        setInitialMinutes(validMin);
+                      }
                     }} className={`w-20 p-2 text-center rounded-md ${getNumberInputClasses()}`} />
                   </div>
                   <div className={`flex justify-between items-center p-3 rounded-lg border ${getSettingItemClasses()}`}>
                     <label>デフォルト時間（秒）:</label>
                     <input type="number" min="0" max="59" value={settings.defaultSeconds} onChange={e => {
-                        const val = parseInt(e.target.value) || 0;
-                        const validSec = Math.min(59, val);
-                        updateSettingStore('defaultSeconds', validSec);
-                        if (!isRunning) {
-                            setInputSeconds(validSec);
-                            setTimeLeft((inputMinutes * 60 + validSec) * 1000);
-                            setInitialSeconds(validSec);
-                        }
+                      const val = parseInt(e.target.value) || 0;
+                      const validSec = Math.min(59, val);
+                      updateSettingStore('defaultSeconds', validSec);
+                      if (!isRunning) {
+                        setInputSeconds(validSec);
+                        setTimeLeft((inputMinutes * 60 + validSec) * 1000);
+                        setInitialSeconds(validSec);
+                      }
                     }} className={`w-20 p-2 text-center rounded-md ${getNumberInputClasses()}`} />
                   </div>
                 </div>
@@ -538,7 +521,7 @@ export default function TimerPage() {
                   <h3 className={`font-semibold text-lg border-b border-opacity-20 pb-2 ${theme === 'default' ? 'border-gray-300' : 'border-gray-600'}`}>音声設定</h3>
                   <div className={`flex justify-between items-center p-3 rounded-lg border ${getSettingItemClasses()}`}>
                     <label>アラーム音:</label>
-                    <select 
+                    <select
                       value={settings.alarmSound}
                       onChange={(e) => updateSettingStore('alarmSound', e.target.value)}
                       className={`p-2 rounded-md focus:outline-none ${getNumberInputClasses()}`}
@@ -553,8 +536,8 @@ export default function TimerPage() {
                       <label>音量:</label>
                       <span className="font-bold">{Math.round(settings.volume * 100)}%</span>
                     </div>
-                    <input 
-                      type="range" min="0" max="1" step="0.1" 
+                    <input
+                      type="range" min="0" max="1" step="0.1"
                       value={settings.volume}
                       onChange={e => updateSettingStore('volume', parseFloat(e.target.value))}
                       className={`w-full h-2 rounded-lg appearance-none cursor-pointer ${getRangeSliderClasses()}`}
@@ -569,11 +552,11 @@ export default function TimerPage() {
                   <div className={`flex items-center justify-between p-4 rounded-lg border ${getSettingItemClasses()}`}>
                     <label>ミリ秒表示を有効にする:</label>
                     <label className="relative inline-flex items-center cursor-pointer">
-                      <input 
-                        type="checkbox" 
-                        checked={settings.enableMilliseconds} 
-                        onChange={e => updateSettingStore('enableMilliseconds', e.target.checked)} 
-                        className="sr-only peer" 
+                      <input
+                        type="checkbox"
+                        checked={settings.enableMilliseconds}
+                        onChange={e => updateSettingStore('enableMilliseconds', e.target.checked)}
+                        className="sr-only peer"
                       />
                       <div className={`w-14 h-7 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-blue-500 ${theme === 'default' ? 'bg-gray-300' : 'bg-gray-600'}`}></div>
                     </label>
@@ -581,9 +564,9 @@ export default function TimerPage() {
                 </div>
               )}
             </div>
-            
+
             <div className="mt-6 flex justify-end">
-              <button 
+              <button
                 onClick={() => setIsSettingsOpen(false)}
                 className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors shadow-md"
               >
@@ -597,23 +580,23 @@ export default function TimerPage() {
       {/* Quick Settings Context Menu */}
       {isQuickSettingsOpen && (
         <div className="fixed inset-0 z-40 transition-opacity" onClick={() => setIsQuickSettingsOpen(false)} onContextMenu={(e) => e.preventDefault()}>
-          <div 
-            className={`absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-56 rounded-xl shadow-2xl py-2 z-50 overflow-hidden ${theme === 'dark' ? 'bg-gray-800 text-white border border-gray-700' : 'bg-white text-gray-900 border border-gray-200'}`}
+          <div
+            className={`absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-56 rounded-2xl shadow-2xl py-2 z-50 overflow-hidden ${panelCls}`}
             onClick={e => e.stopPropagation()}
           >
             <button className={`w-full text-left px-5 py-3 transition-colors font-semibold ${getButtonHoverClasses()}`} onClick={() => {
-              if(!isRunning) { setInputMinutes(5); setInputSeconds(0); setTimeLeft(300000); setInitialMinutes(5); setInitialSeconds(0); }
+              if (!isRunning) { setInputMinutes(5); setInputSeconds(0); setTimeLeft(300000); setInitialMinutes(5); setInitialSeconds(0); }
               setIsQuickSettingsOpen(false);
             }}>5分セット</button>
-            
+
             <button className={`w-full text-left px-5 py-3 transition-colors font-semibold ${getButtonHoverClasses()}`} onClick={() => {
-              if(!isRunning) { setInputMinutes(10); setInputSeconds(0); setTimeLeft(600000); setInitialMinutes(10); setInitialSeconds(0); }
+              if (!isRunning) { setInputMinutes(10); setInputSeconds(0); setTimeLeft(600000); setInitialMinutes(10); setInitialSeconds(0); }
               setIsQuickSettingsOpen(false);
             }}>10分セット</button>
 
             <div className={`h-px w-full my-1 ${theme === 'default' ? 'bg-gray-200' : 'bg-gray-700'}`} />
-            
-            
+
+
             <button className={`w-full text-left px-5 py-3 transition-colors flex items-center justify-between ${getButtonHoverClasses()}`} onClick={() => {
               updateSettingStore('muted', !settings.muted);
               setIsQuickSettingsOpen(false);
@@ -629,30 +612,30 @@ export default function TimerPage() {
 
       {/* Full Screen Mode */}
       {isFullScreen && (
-        <div className={`fixed inset-0 z-50 flex flex-col items-center justify-center p-4 transition-colors duration-300 ${getThemeClasses()}`}>
+        <div className={`fixed inset-0 z-50 flex flex-col items-center justify-center p-4 transition-colors duration-300 ${pageCls}`}>
           {/* Close Full Screen Button */}
-          <button 
-            onClick={() => setIsFullScreen(false)} 
+          <button
+            onClick={() => setIsFullScreen(false)}
             className="absolute top-6 right-6 p-3 rounded-full hover:bg-black/10 dark:hover:bg-white/10 transition-colors focus:outline-none z-50"
             title="元に戻す"
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/>
+              <path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3" />
             </svg>
           </button>
 
           {/* Large Timer Display */}
-          <div 
+          <div
             className="relative w-full max-w-[80vh] aspect-square flex justify-center items-center select-none"
             onDoubleClick={() => isRunning ? handleStop() : handleStart()}
           >
             <svg width="100%" height="100%" viewBox="0 0 120 120" className="absolute top-0 left-0 -rotate-90">
-              <circle 
-                cx="60" cy="60" r={radius} fill="transparent" 
+              <circle
+                cx="60" cy="60" r={radius} fill="transparent"
                 stroke={theme === 'dark' ? '#333' : '#e0e0e0'} strokeWidth="4"
               />
-              <circle 
-                cx="60" cy="60" r={radius} fill="transparent" 
+              <circle
+                cx="60" cy="60" r={radius} fill="transparent"
                 stroke={strokeColor} strokeWidth="4"
                 strokeDasharray={circumference}
                 strokeDashoffset={strokeDashoffset}
@@ -668,18 +651,18 @@ export default function TimerPage() {
           {/* Icon Only Buttons */}
           <div className="flex justify-center gap-8 mt-12 z-10">
             <button onClick={handleStart} disabled={isRunning} className="flex items-center justify-center w-20 h-20 rounded-full bg-green-600 hover:bg-green-700 text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed transform active:scale-95 shadow-lg" title="スタート">
-              <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="6 3 20 12 6 21 6 3"/></svg>
+              <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="6 3 20 12 6 21 6 3" /></svg>
             </button>
             <button onClick={handleStop} disabled={!isRunning} className="flex items-center justify-center w-20 h-20 rounded-full bg-red-600 hover:bg-red-700 text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed transform active:scale-95 shadow-lg" title="ストップ">
-              <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/></svg>
+              <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" /></svg>
             </button>
             <button onClick={handleReset} className="flex items-center justify-center w-20 h-20 rounded-full bg-blue-600 hover:bg-blue-700 text-white transition-all transform active:scale-95 shadow-lg" title="リセット">
-              <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+              <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" /><path d="M3 3v5h5" /></svg>
             </button>
           </div>
         </div>
       )}
-    </div>
+    </ToolPageLayout>
   );
 }
 
