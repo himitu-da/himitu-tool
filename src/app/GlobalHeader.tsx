@@ -3,6 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { useTheme, Theme } from "./ThemeProvider";
+import { HamburgerMenu } from "../components/HamburgerMenu";
 
 export function GlobalHeader() {
   const { theme, setTheme, mounted } = useTheme();
@@ -43,12 +44,15 @@ export function GlobalHeader() {
   return (
     <header id="global-site-header" className={`sticky top-0 z-50 shadow-sm transition-colors duration-300 ${getHeaderStyle()}`}>
       <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-        <h1 className="text-xl font-bold">
-          <Link href="/" className={`transition-colors ${getLinkStyle()}`}>
-            ひみっちゃんのKAMIツール
-          </Link>
-        </h1>
-        
+        <div className="flex items-center gap-2 sm:gap-4">
+          <HamburgerMenu />
+          <h1 className="text-xl font-bold">
+            <Link href="/" className={`transition-colors ${getLinkStyle()}`}>
+              ひみっちゃんのKAMIツール
+            </Link>
+          </h1>
+        </div>
+
         <div className="flex items-center gap-2">
           <label htmlFor="globalThemeSelect" className="text-sm font-medium opacity-80 hidden sm:block">
             テーマ:
