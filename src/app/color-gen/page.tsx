@@ -1,1 +1,28 @@
-"use client"; import React,{useState} from "react"; export default function C(){const [c,s]=useState("#3b82f6"); return <div className="max-w-md mx-auto p-6 bg-white/10 rounded-xl border border-current border-opacity-20 text-center"><h1 className="text-2xl font-bold mb-6">ランダムカラー</h1><div className="w-full h-32 rounded-lg mb-4" style={{backgroundColor:c}}></div><div className="text-2xl font-mono mb-4">{c}</div><button onClick={()=>s("#"+Math.floor(Math.random()*16777215).toString(16).padStart(6,"0"))} className="px-8 py-3 bg-blue-500/80 text-white rounded-lg font-bold">生成</button></div>;}
+"use client";
+import React, { useState } from "react";
+import { ToolPageLayout } from "@/components/ToolPageLayout";
+import { ToolPanel } from "@/components/ToolPanel";
+import { useToolTheme } from "@/lib/useToolTheme";
+
+export default function ColorGen() {
+    const [c, s] = useState("#3b82f6");
+    const { primaryBtnCls } = useToolTheme();
+
+    return (
+        <ToolPageLayout title="ランダムカラー" maxWidth="md">
+            <ToolPanel className="max-w-md mx-auto text-center">
+                <div
+                    className="w-full h-32 rounded-lg mb-4 shadow-inner border border-white/20 transition-colors"
+                    style={{ backgroundColor: c }}
+                />
+                <div className="text-2xl font-mono mb-4">{c}</div>
+                <button
+                    onClick={() => s("#" + Math.floor(Math.random() * 16777215).toString(16).padStart(6, "0"))}
+                    className={`px-8 py-3 rounded-lg font-bold transition-colors ${primaryBtnCls}`}
+                >
+                    生成
+                </button>
+            </ToolPanel>
+        </ToolPageLayout>
+    );
+}

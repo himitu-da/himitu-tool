@@ -1,22 +1,54 @@
 "use client";
 import React, { useState } from "react";
-import { ToolStickyHeader } from "@/components/ToolStickyHeader";
+import { ToolPageLayout } from "@/components/ToolPageLayout";
+import { ToolPanel } from "@/components/ToolPanel";
+import { useToolTheme } from "@/lib/useToolTheme";
+
 export default function Disc() {
   const [price, set_price] = useState("");
   const [percent, set_percent] = useState("");
   const [out, setOut] = useState("");
-  const run = () => { try { setOut(Math.floor(Number(price)*(1-Number(percent)/100))+"円") } catch(e) { setOut("エラー"); } };
+  const { inputCls, primaryBtnCls, blockCls } = useToolTheme();
+
+  const run = () => {
+    try {
+      setOut(Math.floor(Number(price) * (1 - Number(percent) / 100)) + "円")
+    } catch (e) {
+      setOut("エラー");
+    }
+  };
+
   return (
-    <>
-      <ToolStickyHeader title="割引計算" className="bg-gray-800 text-white" />
-      <div className="max-w-md mx-auto p-6 rounded-xl shadow-lg border border-opacity-20 border-current bg-white/10 backdrop-blur-sm mt-4">
-      <div className="flex flex-col gap-4">
-        <input type="number" value={price} onChange={e=>set_price(e.target.value)} placeholder="price" className="p-3 bg-black/10 rounded-lg text-current border-current" />
-        <input type="number" value={percent} onChange={e=>set_percent(e.target.value)} placeholder="percent" className="p-3 bg-black/10 rounded-lg text-current border-current" />
-        <button onClick={run} className="py-3 bg-blue-500/80 hover:bg-blue-600/80 text-white rounded-lg font-bold transition-colors">計算</button>
-        {out && <div className="p-4 bg-black/20 rounded-lg text-center text-xl font-bold break-all">{out}</div>}
-      </div>
-    </div>
-  </>
-);
+    <ToolPageLayout title="割引計算" maxWidth="md">
+      <ToolPanel className="max-w-md mx-auto">
+        <div className="flex flex-col gap-4">
+          <input
+            type="number"
+            value={price}
+            onChange={e => set_price(e.target.value)}
+            placeholder="元の金額 (円)"
+            className={`p-3 rounded-lg focus:ring-2 outline-none transition-colors ${inputCls}`}
+          />
+          <input
+            type="number"
+            value={percent}
+            onChange={e => set_percent(e.target.value)}
+            placeholder="割引率 (%)"
+            className={`p-3 rounded-lg focus:ring-2 outline-none transition-colors ${inputCls}`}
+          />
+          <button
+            onClick={run}
+            className={`py-3 rounded-lg font-bold transition-colors ${primaryBtnCls}`}
+          >
+            計算
+          </button>
+          {out && (
+            <div className={`p-4 rounded-lg text-center text-xl font-bold break-all transition-colors ${blockCls}`}>
+              {out}
+            </div>
+          )}
+        </div>
+      </ToolPanel>
+    </ToolPageLayout>
+  );
 }

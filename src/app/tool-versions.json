@@ -262,98 +262,133 @@
     {
       "id": "color-converter",
       "title": "カラーコード変換",
-      "version": "1.0.0",
-      "updatedAt": "2026-03-15",
-      "changeSummary": "Initial registration",
+      "version": "1.0.1",
+      "updatedAt": "2026-03-17",
+      "changeSummary": "Refactor UI",
       "history": [
         {
           "version": "1.0.0",
           "updatedAt": "2026-03-15",
           "summary": "Initial registration"
+        },
+        {
+          "version": "1.0.1",
+          "updatedAt": "2026-03-17",
+          "summary": "Refactor UI"
         }
       ]
     },
     {
       "id": "color-gen",
       "title": "色生成",
-      "version": "1.0.0",
-      "updatedAt": "2026-03-15",
-      "changeSummary": "Initial registration",
+      "version": "1.0.1",
+      "updatedAt": "2026-03-17",
+      "changeSummary": "Refactor UI",
       "history": [
         {
           "version": "1.0.0",
           "updatedAt": "2026-03-15",
           "summary": "Initial registration"
+        },
+        {
+          "version": "1.0.1",
+          "updatedAt": "2026-03-17",
+          "summary": "Refactor UI"
         }
       ]
     },
     {
       "id": "days-diff",
       "title": "日付差分",
-      "version": "1.0.0",
-      "updatedAt": "2026-03-15",
-      "changeSummary": "Initial registration",
+      "version": "1.0.1",
+      "updatedAt": "2026-03-17",
+      "changeSummary": "Refactor UI",
       "history": [
         {
           "version": "1.0.0",
           "updatedAt": "2026-03-15",
           "summary": "Initial registration"
+        },
+        {
+          "version": "1.0.1",
+          "updatedAt": "2026-03-17",
+          "summary": "Refactor UI"
         }
       ]
     },
     {
       "id": "dedup",
       "title": "重複行削除",
-      "version": "1.0.0",
-      "updatedAt": "2026-03-15",
-      "changeSummary": "Initial registration",
+      "version": "1.0.1",
+      "updatedAt": "2026-03-17",
+      "changeSummary": "Refactor UI",
       "history": [
         {
           "version": "1.0.0",
           "updatedAt": "2026-03-15",
           "summary": "Initial registration"
+        },
+        {
+          "version": "1.0.1",
+          "updatedAt": "2026-03-17",
+          "summary": "Refactor UI"
         }
       ]
     },
     {
       "id": "dice",
       "title": "サイコロ",
-      "version": "1.0.0",
-      "updatedAt": "2026-03-15",
-      "changeSummary": "Initial registration",
+      "version": "1.0.1",
+      "updatedAt": "2026-03-17",
+      "changeSummary": "Refactor UI",
       "history": [
         {
           "version": "1.0.0",
           "updatedAt": "2026-03-15",
           "summary": "Initial registration"
+        },
+        {
+          "version": "1.0.1",
+          "updatedAt": "2026-03-17",
+          "summary": "Refactor UI"
         }
       ]
     },
     {
       "id": "discount-calc",
       "title": "割引計算",
-      "version": "1.0.0",
-      "updatedAt": "2026-03-15",
-      "changeSummary": "Initial registration",
+      "version": "1.0.1",
+      "updatedAt": "2026-03-17",
+      "changeSummary": "Refactor UI",
       "history": [
         {
           "version": "1.0.0",
           "updatedAt": "2026-03-15",
           "summary": "Initial registration"
+        },
+        {
+          "version": "1.0.1",
+          "updatedAt": "2026-03-17",
+          "summary": "Refactor UI"
         }
       ]
     },
     {
       "id": "dummy-text",
       "title": "ダミーテキスト生成",
-      "version": "1.0.0",
-      "updatedAt": "2026-03-15",
-      "changeSummary": "Initial registration",
+      "version": "1.0.1",
+      "updatedAt": "2026-03-17",
+      "changeSummary": "Refactor UI",
       "history": [
         {
           "version": "1.0.0",
           "updatedAt": "2026-03-15",
           "summary": "Initial registration"
+        },
+        {
+          "version": "1.0.1",
+          "updatedAt": "2026-03-17",
+          "summary": "Refactor UI"
         }
       ]
     },
