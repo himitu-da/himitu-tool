@@ -1,9 +1,13 @@
 "use client";
 
 import React, { useState } from "react";
+import { ToolPageLayout } from "@/components/ToolPageLayout";
+import { ToolPanel } from "@/components/ToolPanel";
+import { useToolTheme } from "@/lib/useToolTheme";
 
-import { ToolStickyHeader } from "@/components/ToolStickyHeader";
 export default function CalculatorPage() {
+  const { blockCls } = useToolTheme();
+
   const [display, setDisplay] = useState("0");
   const [previousValue, setPreviousValue] = useState<number | null>(null);
   const [operator, setOperator] = useState<string | null>(null);
@@ -69,43 +73,42 @@ export default function CalculatorPage() {
   };
 
   return (
-    <>
-      <ToolStickyHeader title="電卓" className="bg-gray-800 text-white" />
-      <div className="max-w-md mx-auto p-6 rounded-xl shadow-lg border border-opacity-20 border-current bg-white/10 backdrop-blur-sm mt-4">
-      
-      <div className="w-full bg-black/20 p-4 rounded-lg mb-6 text-right text-3xl font-mono overflow-x-auto whitespace-nowrap">
-        {display}
-      </div>
+    <ToolPageLayout title="電卓">
+      <ToolPanel className="max-w-md mx-auto">
 
-      <div className="grid grid-cols-4 gap-3">
-        {/* Row 1 */}
-        <button onClick={clear} className="col-span-3 p-4 rounded-lg font-bold bg-red-500/80 hover:bg-red-600/80 text-white transition-colors">C</button>
-        <button onClick={() => performOperation("/")} className="p-4 rounded-lg font-bold bg-blue-500/50 hover:bg-blue-600/50 transition-colors">÷</button>
-        
-        {/* Row 2 */}
-        <button onClick={() => inputDigit("7")} className="p-4 rounded-lg font-bold bg-white/10 hover:bg-white/20 transition-colors">7</button>
-        <button onClick={() => inputDigit("8")} className="p-4 rounded-lg font-bold bg-white/10 hover:bg-white/20 transition-colors">8</button>
-        <button onClick={() => inputDigit("9")} className="p-4 rounded-lg font-bold bg-white/10 hover:bg-white/20 transition-colors">9</button>
-        <button onClick={() => performOperation("*")} className="p-4 rounded-lg font-bold bg-blue-500/50 hover:bg-blue-600/50 transition-colors">×</button>
+        <div className={`w-full p-4 rounded-lg mb-6 text-right text-3xl font-mono overflow-x-auto whitespace-nowrap ${blockCls}`}>
+          {display}
+        </div>
 
-        {/* Row 3 */}
-        <button onClick={() => inputDigit("4")} className="p-4 rounded-lg font-bold bg-white/10 hover:bg-white/20 transition-colors">4</button>
-        <button onClick={() => inputDigit("5")} className="p-4 rounded-lg font-bold bg-white/10 hover:bg-white/20 transition-colors">5</button>
-        <button onClick={() => inputDigit("6")} className="p-4 rounded-lg font-bold bg-white/10 hover:bg-white/20 transition-colors">6</button>
-        <button onClick={() => performOperation("-")} className="p-4 rounded-lg font-bold bg-blue-500/50 hover:bg-blue-600/50 transition-colors">-</button>
+        <div className="grid grid-cols-4 gap-3">
+          {/* Row 1 */}
+          <button onClick={clear} className="col-span-3 p-4 rounded-lg font-bold bg-red-500 hover:bg-red-600 text-white transition-colors">C</button>
+          <button onClick={() => performOperation("/")} className="p-4 rounded-lg font-bold bg-blue-500 hover:bg-blue-600 text-white transition-colors">÷</button>
 
-        {/* Row 4 */}
-        <button onClick={() => inputDigit("1")} className="p-4 rounded-lg font-bold bg-white/10 hover:bg-white/20 transition-colors">1</button>
-        <button onClick={() => inputDigit("2")} className="p-4 rounded-lg font-bold bg-white/10 hover:bg-white/20 transition-colors">2</button>
-        <button onClick={() => inputDigit("3")} className="p-4 rounded-lg font-bold bg-white/10 hover:bg-white/20 transition-colors">3</button>
-        <button onClick={() => performOperation("+")} className="p-4 rounded-lg font-bold bg-blue-500/50 hover:bg-blue-600/50 transition-colors">+</button>
+          {/* Row 2 */}
+          <button onClick={() => inputDigit("7")} className="p-4 rounded-lg font-bold bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 transition-colors">7</button>
+          <button onClick={() => inputDigit("8")} className="p-4 rounded-lg font-bold bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 transition-colors">8</button>
+          <button onClick={() => inputDigit("9")} className="p-4 rounded-lg font-bold bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 transition-colors">9</button>
+          <button onClick={() => performOperation("*")} className="p-4 rounded-lg font-bold bg-blue-500 hover:bg-blue-600 text-white transition-colors">×</button>
 
-        {/* Row 5 */}
-        <button onClick={() => inputDigit("0")} className="col-span-2 p-4 rounded-lg font-bold bg-white/10 hover:bg-white/20 transition-colors">0</button>
-        <button onClick={inputDecimal} className="p-4 rounded-lg font-bold bg-white/10 hover:bg-white/20 transition-colors">.</button>
-        <button onClick={() => performOperation("=")} className="p-4 rounded-lg font-bold bg-green-500/80 hover:bg-green-600/80 text-white transition-colors">=</button>
-      </div>
-    </div>
-  </>
-);
+          {/* Row 3 */}
+          <button onClick={() => inputDigit("4")} className="p-4 rounded-lg font-bold bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 transition-colors">4</button>
+          <button onClick={() => inputDigit("5")} className="p-4 rounded-lg font-bold bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 transition-colors">5</button>
+          <button onClick={() => inputDigit("6")} className="p-4 rounded-lg font-bold bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 transition-colors">6</button>
+          <button onClick={() => performOperation("-")} className="p-4 rounded-lg font-bold bg-blue-500 hover:bg-blue-600 text-white transition-colors">-</button>
+
+          {/* Row 4 */}
+          <button onClick={() => inputDigit("1")} className="p-4 rounded-lg font-bold bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 transition-colors">1</button>
+          <button onClick={() => inputDigit("2")} className="p-4 rounded-lg font-bold bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 transition-colors">2</button>
+          <button onClick={() => inputDigit("3")} className="p-4 rounded-lg font-bold bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 transition-colors">3</button>
+          <button onClick={() => performOperation("+")} className="p-4 rounded-lg font-bold bg-blue-500 hover:bg-blue-600 text-white transition-colors">+</button>
+
+          {/* Row 5 */}
+          <button onClick={() => inputDigit("0")} className="col-span-2 p-4 rounded-lg font-bold bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 transition-colors">0</button>
+          <button onClick={inputDecimal} className="p-4 rounded-lg font-bold bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 transition-colors">.</button>
+          <button onClick={() => performOperation("=")} className="p-4 rounded-lg font-bold bg-green-500 hover:bg-green-600 text-white transition-colors">=</button>
+        </div>
+      </ToolPanel>
+    </ToolPageLayout>
+  );
 }

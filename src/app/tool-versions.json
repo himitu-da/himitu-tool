@@ -136,14 +136,24 @@
     {
       "id": "calculator",
       "title": "電卓",
-      "version": "1.0.0",
-      "updatedAt": "2026-03-15",
-      "changeSummary": "Initial registration",
+      "version": "1.0.2",
+      "updatedAt": "2026-03-17",
+      "changeSummary": "Apply new UI theme abstraction",
       "history": [
         {
           "version": "1.0.0",
           "updatedAt": "2026-03-15",
           "summary": "Initial registration"
+        },
+        {
+          "version": "1.0.1",
+          "updatedAt": "2026-03-17",
+          "summary": "Refactor UI with ToolPageLayout & ToolPanel"
+        },
+        {
+          "version": "1.0.2",
+          "updatedAt": "2026-03-17",
+          "summary": "Apply new UI theme abstraction"
         }
       ]
     },
@@ -440,14 +450,24 @@
     {
       "id": "password-generator",
       "title": "パスワード生成",
-      "version": "1.0.0",
-      "updatedAt": "2026-03-15",
-      "changeSummary": "Initial registration",
+      "version": "1.0.2",
+      "updatedAt": "2026-03-17",
+      "changeSummary": "Apply new UI theme abstraction",
       "history": [
         {
           "version": "1.0.0",
           "updatedAt": "2026-03-15",
           "summary": "Initial registration"
+        },
+        {
+          "version": "1.0.1",
+          "updatedAt": "2026-03-17",
+          "summary": "Refactor UI with ToolPageLayout & ToolPanel"
+        },
+        {
+          "version": "1.0.2",
+          "updatedAt": "2026-03-17",
+          "summary": "Apply new UI theme abstraction"
         }
       ]
     },
@@ -496,9 +516,9 @@
     {
       "id": "qr-code",
       "title": "QRコード生成",
-      "version": "1.0.13",
+      "version": "1.0.14",
       "updatedAt": "2026-03-17",
-      "changeSummary": "Reorder char overlay controls and show badge size only when badge is enabled",
+      "changeSummary": "Apply ToolPageLayout and ToolPanel",
       "history": [
         {
           "version": "1.0.0",
@@ -569,6 +589,11 @@
           "version": "1.0.13",
           "updatedAt": "2026-03-17",
           "summary": "Reorder char overlay controls and show badge size only when badge is enabled"
+        },
+        {
+          "version": "1.0.14",
+          "updatedAt": "2026-03-17",
+          "summary": "Apply ToolPageLayout and ToolPanel"
         }
       ]
     },
@@ -778,14 +803,19 @@
     {
       "id": "timer",
       "title": "タイマーツール",
-      "version": "1.0.0",
-      "updatedAt": "2026-03-15",
-      "changeSummary": "Initial registration",
+      "version": "1.0.1",
+      "updatedAt": "2026-03-17",
+      "changeSummary": "Apply ToolPageLayout and ToolPanel",
       "history": [
         {
           "version": "1.0.0",
           "updatedAt": "2026-03-15",
           "summary": "Initial registration"
+        },
+        {
+          "version": "1.0.1",
+          "updatedAt": "2026-03-17",
+          "summary": "Apply ToolPageLayout and ToolPanel"
         }
       ]
     },
