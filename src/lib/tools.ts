@@ -60,6 +60,7 @@ export const categorizedTools = [
       { title: "UNIXタイム", path: "/unix-time", icon: "🕒", desc: "現在時刻の秒数" },
       { title: "ストップウォッチ", path: "/stopwatch", icon: "⏱️", desc: "ラップ機能付き" },
       { title: "タイマーツール", path: "/timer", icon: "⏲️", desc: "ブラウザで使える便利なタイマー。" },
+      { title: "1年タイマー", path: "/year-timer", icon: "⏳", desc: "1年の経過量をゲージ表示" },
       { title: "リピートタイマー", path: "/repeat-timer", icon: "🔁", desc: "繰り返し計測" },
       { title: "ポモドーロタイマー", path: "/pomodoro", icon: "🍅", desc: "25分作業＋5分休憩" },
       { title: "給料タイマー", path: "/salary-timer", icon: "💰", desc: "時間あたりの稼ぎを可視化" },
