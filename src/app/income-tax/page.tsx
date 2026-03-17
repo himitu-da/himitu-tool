@@ -1,6 +1,9 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
+import { ToolPageLayout } from "@/components/ToolPageLayout";
+import { ToolPanel } from "@/components/ToolPanel";
+import { useToolTheme } from "@/lib/useToolTheme";
 
 type TaxBracket = {
   min: number;
@@ -67,6 +70,7 @@ const linearScaleX = (value: number, min: number, max: number) => {
 export default function IncomeTaxPage() {
   const [income, setIncome] = useState("");
   const [deduction, setDeduction] = useState("");
+  const { inputCls, blockCls, mutedTextCls } = useToolTheme();
 
   const result = useMemo(() => {
     const incomeValue = parseAmount(income);
@@ -160,216 +164,220 @@ export default function IncomeTaxPage() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6 sm:space-y-8">
-      <section className="rounded-2xl p-5 sm:p-7 bg-black/5 dark:bg-white/5">
-        <h1 className="text-2xl sm:text-3xl font-bold">所得税計算ツール</h1>
-        <p className="mt-3 opacity-80 text-sm sm:text-base leading-relaxed">
-          収入金額と控除金額から、課税所得金額・所得税・適用税率を計算します。
-        </p>
-      </section>
+    <ToolPageLayout title="所得税計算ツール" maxWidth="4xl">
+      <div className="space-y-6 sm:space-y-8">
+        <ToolPanel>
+          <h1 className="text-2xl sm:text-3xl font-bold">所得税計算ツール</h1>
+          <p className="mt-3 opacity-80 text-sm sm:text-base leading-relaxed">
+            収入金額と控除金額から、課税所得金額・所得税・適用税率を計算します。
+          </p>
+        </ToolPanel>
 
-      <section className="rounded-2xl p-5 sm:p-7 bg-black/5 dark:bg-white/5 space-y-5">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <label className="space-y-2">
-            <span className="text-sm opacity-80">収入金額（円）</span>
-            <input
-              type="number"
-              min="0"
-              inputMode="numeric"
-              value={income}
-              onChange={(e) => setIncome(e.target.value)}
-              placeholder="例: 5000000"
-              className="w-full rounded-xl px-4 py-3 bg-white/70 dark:bg-black/20 text-current placeholder:opacity-60 outline-none border border-black/20 dark:border-white/30"
-            />
-          </label>
+        <ToolPanel className="space-y-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <label className="space-y-2">
+              <span className={`text-sm ${mutedTextCls}`}>収入金額（円）</span>
+              <input
+                type="number"
+                min="0"
+                step="500"
+                inputMode="numeric"
+                value={income}
+                onChange={(e) => setIncome(e.target.value)}
+                placeholder="例: 5000000"
+                className={`w-full rounded-xl px-4 py-3 outline-none border placeholder:opacity-60 ${inputCls}`}
+              />
+            </label>
 
-          <label className="space-y-2">
-            <span className="text-sm opacity-80">控除金額（円）</span>
-            <input
-              type="number"
-              min="0"
-              inputMode="numeric"
-              value={deduction}
-              onChange={(e) => setDeduction(e.target.value)}
-              placeholder="例: 1200000"
-              className="w-full rounded-xl px-4 py-3 bg-white/70 dark:bg-black/20 text-current placeholder:opacity-60 outline-none border border-black/20 dark:border-white/30"
-            />
-          </label>
-        </div>
-
-        <div className="rounded-xl p-4 sm:p-5 bg-white/60 dark:bg-black/20 space-y-3">
-          <div className="flex items-center justify-between gap-3">
-            <span className="opacity-80">課税所得金額</span>
-            <strong className="text-lg">{formatYen(result.taxableIncome)}</strong>
+            <label className="space-y-2">
+              <span className={`text-sm ${mutedTextCls}`}>控除金額（円）</span>
+              <input
+                type="number"
+                min="0"
+                step="500"
+                inputMode="numeric"
+                value={deduction}
+                onChange={(e) => setDeduction(e.target.value)}
+                placeholder="例: 1200000"
+                className={`w-full rounded-xl px-4 py-3 outline-none border placeholder:opacity-60 ${inputCls}`}
+              />
+            </label>
           </div>
-          <div className="flex items-center justify-between gap-3">
-            <span className="opacity-80">所得税</span>
-            <strong className="text-lg">{formatYen(result.incomeTax)}</strong>
-          </div>
-          <div className="flex items-center justify-between gap-3">
-            <span className="opacity-80">所得税率</span>
-            <strong className="text-lg">{result.taxRate}</strong>
-          </div>
-        </div>
 
-        <p className="text-xs sm:text-sm opacity-75">
-          入力値が空欄の場合は0円として扱います。計算式は「所得税 = 課税所得金額 × 税率 - 控除額」です。
-        </p>
-      </section>
-
-      <section className="rounded-2xl p-5 sm:p-7 bg-black/5 dark:bg-white/5">
-        <h2 className="text-xl sm:text-2xl font-bold">グラフ（補足）</h2>
-        <div className="mt-4 space-y-5">
-          <div className="rounded-xl p-4 sm:p-5 bg-white/60 dark:bg-black/20">
-            <h3 className="text-lg font-semibold">1. 円グラフ（収入の内訳）</h3>
-            <div className="mt-4 flex flex-row gap-4 items-center">
-              <svg viewBox="0 0 220 220" className="w-28 h-28 sm:w-32 sm:h-32 shrink-0" role="img" aria-label="収入の内訳円グラフ">
-                <circle cx="110" cy="110" r="92" fill="rgba(148, 163, 184, 0.25)" />
-                {piePaths.map((slice) => (
-                  <path key={slice.label} d={slice.path} fill={slice.color} />
-                ))}
-                <circle cx="110" cy="110" r="44" fill="rgba(255, 255, 255, 0.72)" className="dark:fill-black/45" />
-              </svg>
-
-              <div className="space-y-2 text-sm sm:text-base">
-                <p className="font-medium">収入合計: {formatYen(result.incomeValue)}</p>
-                {(pieSegments.length > 0 ? pieSegments : [{ label: "入力待ち", value: 0, color: "#94a3b8", ratio: 0 }]).map((segment) => (
-                  <div key={segment.label} className="flex items-center gap-2">
-                    <span className="inline-block w-3 h-3 rounded-full" style={{ backgroundColor: segment.color }} />
-                    <span>
-                      {segment.label}: {formatYen(segment.value)}
-                      {segment.value > 0 ? ` (${(segment.ratio * 100).toFixed(1)}%)` : ""}
-                    </span>
-                  </div>
-                ))}
-              </div>
+          <div className={`rounded-xl p-4 sm:p-5 space-y-3 ${blockCls}`}>
+            <div className="flex items-center justify-between gap-3">
+              <span className={mutedTextCls}>課税所得金額</span>
+              <strong className="text-lg">{formatYen(result.taxableIncome)}</strong>
+            </div>
+            <div className="flex items-center justify-between gap-3">
+              <span className={mutedTextCls}>所得税</span>
+              <strong className="text-lg">{formatYen(result.incomeTax)}</strong>
+            </div>
+            <div className="flex items-center justify-between gap-3">
+              <span className={mutedTextCls}>所得税率</span>
+              <strong className="text-lg">{result.taxRate}</strong>
             </div>
           </div>
 
-          <div className="rounded-xl p-4 sm:p-5 bg-white/60 dark:bg-black/20">
-            <h3 className="text-lg font-semibold">2. 線形グラフとあなたの課税所得</h3>
-            <svg viewBox="0 0 520 280" className="w-full mt-4" role="img" aria-label="課税所得と税率グラフ">
-              <rect x="0" y="0" width="520" height="280" fill="transparent" />
-              <line x1="56" y1="230" x2="486" y2="230" stroke="currentColor" strokeOpacity="0.35" />
-              <line x1="56" y1="24" x2="56" y2="230" stroke="currentColor" strokeOpacity="0.35" />
+          <p className={`text-xs sm:text-sm ${mutedTextCls}`}>
+            入力値が空欄の場合は0円として扱います。計算式は「所得税 = 課税所得金額 × 税率 - 控除額」です。
+          </p>
+        </ToolPanel>
 
-              {[0.05, 0.1, 0.2, 0.3, 0.4, 0.45].map((rate) => {
-                const y = 230 - rate * 420;
-                return (
-                  <g key={rate}>
-                    <line x1="56" y1={y} x2="486" y2={y} stroke="currentColor" strokeOpacity="0.12" />
-                    <text x="46" y={y + 4} textAnchor="end" fontSize="11" fill="currentColor" opacity="0.75">
-                      {Math.round(rate * 100)}%
-                    </text>
+        <ToolPanel>
+          <h2 className="text-xl sm:text-2xl font-bold">グラフ（補足）</h2>
+          <div className="mt-4 space-y-5">
+            <div className={`rounded-xl p-4 sm:p-5 ${blockCls}`}>
+              <h3 className="text-lg font-semibold">1. 円グラフ（収入の内訳）</h3>
+              <div className="mt-4 flex flex-row gap-4 items-center">
+                <svg viewBox="0 0 220 220" className="w-28 h-28 sm:w-32 sm:h-32 shrink-0" role="img" aria-label="収入の内訳円グラフ">
+                  <circle cx="110" cy="110" r="92" fill="rgba(148, 163, 184, 0.25)" />
+                  {piePaths.map((slice) => (
+                    <path key={slice.label} d={slice.path} fill={slice.color} />
+                  ))}
+                  <circle cx="110" cy="110" r="44" fill="rgba(255, 255, 255, 0.72)" className="dark:fill-black/45" />
+                </svg>
+
+                <div className="space-y-2 text-sm sm:text-base">
+                  <p className="font-medium">収入合計: {formatYen(result.incomeValue)}</p>
+                  {(pieSegments.length > 0 ? pieSegments : [{ label: "入力待ち", value: 0, color: "#94a3b8", ratio: 0 }]).map((segment) => (
+                    <div key={segment.label} className="flex items-center gap-2">
+                      <span className="inline-block w-3 h-3 rounded-full" style={{ backgroundColor: segment.color }} />
+                      <span>
+                        {segment.label}: {formatYen(segment.value)}
+                        {segment.value > 0 ? ` (${(segment.ratio * 100).toFixed(1)}%)` : ""}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className={`rounded-xl p-4 sm:p-5 ${blockCls}`}>
+              <h3 className="text-lg font-semibold">2. 線形グラフとあなたの課税所得</h3>
+              <svg viewBox="0 0 520 280" className="w-full mt-4" role="img" aria-label="課税所得と税率グラフ">
+                <rect x="0" y="0" width="520" height="280" fill="transparent" />
+                <line x1="56" y1="230" x2="486" y2="230" stroke="currentColor" strokeOpacity="0.35" />
+                <line x1="56" y1="24" x2="56" y2="230" stroke="currentColor" strokeOpacity="0.35" />
+
+                {[0.05, 0.1, 0.2, 0.3, 0.4, 0.45].map((rate) => {
+                  const y = 230 - rate * 420;
+                  return (
+                    <g key={rate}>
+                      <line x1="56" y1={y} x2="486" y2={y} stroke="currentColor" strokeOpacity="0.12" />
+                      <text x="46" y={y + 4} textAnchor="end" fontSize="11" fill="currentColor" opacity="0.75">
+                        {Math.round(rate * 100)}%
+                      </text>
+                    </g>
+                  );
+                })}
+
+                {chartXTicks.map((tick) => {
+                  const x = 56 + linearScaleX(tick, taxRateChart.xMin, taxRateChart.xMax) * 430;
+                  return (
+                    <g key={tick}>
+                      <line x1={x} y1="230" x2={x} y2="236" stroke="currentColor" strokeOpacity="0.5" />
+                      <text x={x} y="252" textAnchor="middle" fontSize="10" fill="currentColor" opacity="0.75">
+                        {formatXTick(tick)}
+                      </text>
+                    </g>
+                  );
+                })}
+
+                {taxRateChart.points.map((point, index) => {
+                  const x = 56 + point.x * 430;
+                  const y = 230 - point.y * 420;
+                  const prev = taxRateChart.points[index - 1];
+                  const next = taxRateChart.points[index + 1];
+                  const nextX = next ? 56 + next.x * 430 : 486;
+                  const prevY = prev ? 230 - prev.y * 420 : y;
+
+                  return (
+                    <g key={`${point.x}-${point.y}`}>
+                      {index > 0 && <line x1={x} y1={prevY} x2={x} y2={y} stroke="#38bdf8" strokeWidth="2" />}
+                      <line x1={x} y1={y} x2={nextX} y2={y} stroke="#38bdf8" strokeWidth="3" />
+                    </g>
+                  );
+                })}
+
+                {result.taxableIncome > 0 && (
+                  <g>
+                    <line
+                      x1={56 + taxRateChart.userX * 430}
+                      y1="24"
+                      x2={56 + taxRateChart.userX * 430}
+                      y2="230"
+                      stroke="#f97316"
+                      strokeDasharray="4 4"
+                    />
+                    <circle
+                      cx={56 + taxRateChart.userX * 430}
+                      cy={230 - taxRateChart.userRate * 420}
+                      r="6"
+                      fill="#f97316"
+                    />
                   </g>
-                );
-              })}
+                )}
 
-              {chartXTicks.map((tick) => {
-                const x = 56 + linearScaleX(tick, taxRateChart.xMin, taxRateChart.xMax) * 430;
-                return (
-                  <g key={tick}>
-                    <line x1={x} y1="230" x2={x} y2="236" stroke="currentColor" strokeOpacity="0.5" />
-                    <text x={x} y="252" textAnchor="middle" fontSize="10" fill="currentColor" opacity="0.75">
-                      {formatXTick(tick)}
-                    </text>
-                  </g>
-                );
-              })}
+                <text x="486" y="270" textAnchor="end" fontSize="11" fill="currentColor" opacity="0.8">
+                  課税所得（0円〜5,000万円）
+                </text>
+                <text x="20" y="24" textAnchor="start" fontSize="11" fill="currentColor" opacity="0.8">
+                  税率
+                </text>
+              </svg>
 
-              {taxRateChart.points.map((point, index) => {
-                const x = 56 + point.x * 430;
-                const y = 230 - point.y * 420;
-                const prev = taxRateChart.points[index - 1];
-                const next = taxRateChart.points[index + 1];
-                const nextX = next ? 56 + next.x * 430 : 486;
-                const prevY = prev ? 230 - prev.y * 420 : y;
-
-                return (
-                  <g key={`${point.x}-${point.y}`}>
-                    {index > 0 && <line x1={x} y1={prevY} x2={x} y2={y} stroke="#38bdf8" strokeWidth="2" />}
-                    <line x1={x} y1={y} x2={nextX} y2={y} stroke="#38bdf8" strokeWidth="3" />
-                  </g>
-                );
-              })}
-
-              {result.taxableIncome > 0 && (
-                <g>
-                  <line
-                    x1={56 + taxRateChart.userX * 430}
-                    y1="24"
-                    x2={56 + taxRateChart.userX * 430}
-                    y2="230"
-                    stroke="#f97316"
-                    strokeDasharray="4 4"
-                  />
-                  <circle
-                    cx={56 + taxRateChart.userX * 430}
-                    cy={230 - taxRateChart.userRate * 420}
-                    r="6"
-                    fill="#f97316"
-                  />
-                </g>
-              )}
-
-              <text x="486" y="270" textAnchor="end" fontSize="11" fill="currentColor" opacity="0.8">
-                課税所得（0円〜5,000万円）
-              </text>
-              <text x="20" y="24" textAnchor="start" fontSize="11" fill="currentColor" opacity="0.8">
-                税率
-              </text>
-            </svg>
-
-            <p className="mt-3 text-sm opacity-80">
-              あなたの課税所得: {formatYen(result.taxableIncome)} / 適用税率: {result.taxRate}
-            </p>
+              <p className={`mt-3 text-sm ${mutedTextCls}`}>
+                あなたの課税所得: {formatYen(result.taxableIncome)} / 適用税率: {result.taxRate}
+              </p>
+            </div>
           </div>
-        </div>
-      </section>
+        </ToolPanel>
 
-      <section className="rounded-2xl p-5 sm:p-7 bg-black/5 dark:bg-white/5">
-        <h2 className="text-xl sm:text-2xl font-bold">税率表（補足）</h2>
-        <div className="mt-4 overflow-x-auto rounded-xl bg-white/60 dark:bg-black/20">
-          <table className="w-full min-w-[640px] text-sm sm:text-base">
-            <thead>
-              <tr className="bg-black/10 dark:bg-white/10">
-                <th className="text-left px-4 py-3 font-semibold">課税される所得金額</th>
-                <th className="text-left px-4 py-3 font-semibold">税率</th>
-                <th className="text-left px-4 py-3 font-semibold">控除額</th>
-              </tr>
-            </thead>
-            <tbody>
-              {TAX_BRACKETS.map((bracket) => {
-                const rangeLabel =
-                  bracket.max === null
-                    ? `${bracket.min.toLocaleString("ja-JP")}円以上`
-                    : `${bracket.min.toLocaleString("ja-JP")}円から${bracket.max.toLocaleString("ja-JP")}円まで`;
+        <ToolPanel>
+          <h2 className="text-xl sm:text-2xl font-bold">税率表（補足）</h2>
+          <div className={`mt-4 overflow-x-auto rounded-xl ${blockCls}`}>
+            <table className="w-full min-w-[640px] text-sm sm:text-base">
+              <thead>
+                <tr className={blockCls}>
+                  <th className="text-left px-4 py-3 font-semibold">課税される所得金額</th>
+                  <th className="text-left px-4 py-3 font-semibold">税率</th>
+                  <th className="text-left px-4 py-3 font-semibold">控除額</th>
+                </tr>
+              </thead>
+              <tbody>
+                {TAX_BRACKETS.map((bracket) => {
+                  const rangeLabel =
+                    bracket.max === null
+                      ? `${bracket.min.toLocaleString("ja-JP")}円以上`
+                      : `${bracket.min.toLocaleString("ja-JP")}円から${bracket.max.toLocaleString("ja-JP")}円まで`;
 
-                return (
-                  <tr key={`${bracket.min}-${bracket.max ?? "max"}`}>
-                    <td className="px-4 py-3">{rangeLabel}</td>
-                    <td className="px-4 py-3">{Math.round(bracket.rate * 100)}%</td>
-                    <td className="px-4 py-3">{formatYen(bracket.deduction)}</td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      </section>
+                  return (
+                    <tr key={`${bracket.min}-${bracket.max ?? "max"}`}>
+                      <td className="px-4 py-3">{rangeLabel}</td>
+                      <td className="px-4 py-3">{Math.round(bracket.rate * 100)}%</td>
+                      <td className="px-4 py-3">{formatYen(bracket.deduction)}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </ToolPanel>
 
-      <section className="rounded-2xl p-5 sm:p-7 bg-black/5 dark:bg-white/5 space-y-3">
-        <h2 className="text-xl sm:text-2xl font-bold">注釈（補足）</h2>
-        <p className="text-sm sm:text-base leading-relaxed opacity-85">
-          ※1 令和7年分からは、基準所得金額が3億3,000万円を超える場合で、その超える部分の22.5%相当額が通常の所得税及び復興特別所得税を上回るときは、上回る部分の所得税額が加算されます。
-        </p>
-        <p className="text-sm sm:text-base leading-relaxed opacity-85">
-          ※2 平成25年から令和19年までの各年分では、所得税と復興特別所得税（原則としてその年分の基準所得税額の2.1%）を併せて申告・納付します。
-        </p>
-        <p className="text-xs sm:text-sm opacity-75 leading-relaxed">
-          このツールで表示する「所得税」は上記注釈の特例加算や復興特別所得税を含まない、速算表ベースの概算値です。
-        </p>
-      </section>
-    </div>
+        <ToolPanel className="space-y-3">
+          <h2 className="text-xl sm:text-2xl font-bold">注釈（補足）</h2>
+          <p className={`text-sm sm:text-base leading-relaxed ${mutedTextCls}`}>
+            ※1 令和7年分からは、基準所得金額が3億3,000万円を超える場合で、その超える部分の22.5%相当額が通常の所得税及び復興特別所得税を上回るときは、上回る部分の所得税額が加算されます。
+          </p>
+          <p className={`text-sm sm:text-base leading-relaxed ${mutedTextCls}`}>
+            ※2 平成25年から令和19年までの各年分では、所得税と復興特別所得税（原則としてその年分の基準所得税額の2.1%）を併せて申告・納付します。
+          </p>
+          <p className={`text-xs sm:text-sm leading-relaxed ${mutedTextCls}`}>
+            このツールで表示する「所得税」は上記注釈の特例加算や復興特別所得税を含まない、速算表ベースの概算値です。
+          </p>
+        </ToolPanel>
+      </div>
+    </ToolPageLayout>
   );
 }
