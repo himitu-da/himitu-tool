@@ -1,0 +1,48 @@
+## BEGIN WordPress Separation
+# このディレクトリ以下はWordPressのルールから除外する
+# RewriteEngine Off # URL書き換えのためコメントアウトまたは削除
+
+# Disable directory listing
+Options -Indexes
+
+<IfModule mod_rewrite.c>
+  # Enable URL rewriting
+  RewriteEngine On
+
+  # Remove trailing slash from URLs
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule ^(.*)/$ /$1 [R=301,L]
+
+  # Rewrite rule to hide .html extension
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteCond %{REQUEST_FILENAME}\.html -f
+  RewriteRule ^(.*)$ $1.html [L]
+
+  # Rewrite rule to map directory access to index.html (silently)
+  RewriteCond %{REQUEST_FILENAME} -d
+  RewriteRule ^(.*[^/])$ $1/index.html [L]
+</IfModule>
+
+## END WordPress Separation
+
+<IfModule mod_headers.c>
+  # Always revalidate HTML so frequent deploys propagate quickly.
+  <FilesMatch "\.(html?|json)$">
+    Header set Cache-Control "no-cache, no-store, must-revalidate"
+    Header set Pragma "no-cache"
+    Header set Expires "0"
+  </FilesMatch>
+
+  # Keep hashed static files cacheable for performance.
+  <FilesMatch "\.(?:js|mjs|css|png|jpg|jpeg|gif|svg|webp|ico|woff|woff2|ttf)$">
+    Header set Cache-Control "public, max-age=604800, immutable"
+  </FilesMatch>
+</IfModule>
+
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType text/html "access plus 0 seconds"
+  ExpiresByType application/json "access plus 0 seconds"
+  ExpiresByType text/css "access plus 7 days"
+  ExpiresByType application/javascript "access plus 7 days"
+</IfModule>
