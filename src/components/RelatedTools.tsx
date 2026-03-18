@@ -2,55 +2,43 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { categorizedTools } from "../lib/tools";
+
+import { findToolByPathname } from "../lib/tools";
 
 export function RelatedTools() {
     const pathname = usePathname();
 
-    // トップページの場合は何も表示しない
     if (pathname === "/") {
         return null;
     }
 
-    // 現在のツールパスに一致するツールとそのカテゴリを見つける
-    let currentCategory = null;
-    let currentTool = null;
+    const toolContext = findToolByPathname(pathname);
 
-    for (const cat of categorizedTools) {
-        const tool = cat.tools.find((t) => t.path === pathname);
-        if (tool) {
-            currentCategory = cat;
-            currentTool = tool;
-            break;
-        }
-    }
-
-    // ツールが見つからない場合、またはカテゴリ内に他のツールがない場合は何も表示しない
-    if (!currentCategory || !currentTool) {
+    if (!toolContext) {
         return null;
     }
 
-    const relatedTools = currentCategory.tools.filter((t) => t.path !== pathname);
+    const relatedTools = toolContext.category.tools.filter((tool) => tool.id !== toolContext.tool.id);
 
     if (relatedTools.length === 0) {
         return null;
     }
 
     return (
-        <section className="mt-16 sm:mt-24 border-t border-black/10 dark:border-white/10 pt-12 sm:pt-16">
-            <h2 className="text-2xl sm:text-3xl font-bold opacity-80 text-center mb-12">
-                関連ツール ({currentCategory.category})
+        <section className="mt-16 rounded-2xl bg-black/5 px-4 py-12 dark:bg-white/5 sm:mt-24 sm:px-6 sm:py-16">
+            <h2 className="mb-12 text-center text-2xl font-bold opacity-80 sm:text-3xl">
+                関連ツール ({toolContext.category.category})
             </h2>
-            <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <ul className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 {relatedTools.map((tool) => (
-                    <li key={tool.path}>
+                    <li key={tool.id}>
                         <Link
                             href={tool.path}
-                            className="flex flex-col items-center justify-center p-6 bg-black/5 dark:bg-white/5 rounded-xl hover:-translate-y-1 transition-transform h-full backdrop-blur-sm"
+                            className="flex h-full flex-col items-center justify-center rounded-xl bg-black/5 p-6 backdrop-blur-sm transition-transform hover:-translate-y-1 dark:bg-white/5"
                         >
-                            <div className="text-4xl mb-3">{tool.icon}</div>
-                            <h3 className="text-xl font-bold mb-2 text-current">{tool.title}</h3>
-                            <p className="opacity-70 text-sm text-center">{tool.desc}</p>
+                            <div className="mb-3 text-4xl">{tool.icon}</div>
+                            <h3 className="mb-2 text-xl font-bold text-current">{tool.title}</h3>
+                            <p className="text-center text-sm opacity-70">{tool.desc}</p>
                         </Link>
                     </li>
                 ))}

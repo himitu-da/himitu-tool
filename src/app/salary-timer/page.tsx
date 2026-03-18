@@ -1,9 +1,12 @@
 "use client";
 
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import React, { useState, useEffect, useRef } from "react";
 import { useTheme } from "../ThemeProvider";
 import { ToolStickyHeader } from "@/components/ToolStickyHeader";
 import { dseg7ClassicBold, dseg14ClassicBold } from "@/lib/digitalFonts";
+import { findToolByPathname } from "@/lib/tools";
 
 type FrequencyPreset = "60fps" | "10fps" | "2fps" | "1fps" | "custom";
 type DecimalPlaces = 0 | 1 | 2 | 3;
@@ -20,6 +23,8 @@ const YEN_SIGN = "\u00A5";
 
 export default function SalaryTimerPage() {
   const { theme, mounted: isClient } = useTheme();
+  const pathname = usePathname();
+  const toolContext = React.useMemo(() => findToolByPathname(pathname), [pathname]);
 
   const [hourlyWage, setHourlyWage] = useState<number>(1000);
   const [settings, setSettings] = useState<SalarySettings>({
@@ -268,6 +273,21 @@ export default function SalaryTimerPage() {
 
   return (
     <div className={`min-h-screen flex flex-col transition-colors duration-300 ${getThemeClasses()}`}>
+      {toolContext && (
+        <div className="w-full max-w-2xl mx-auto px-4 pt-4 pb-2">
+          <nav aria-label="パンくずリスト" className="flex flex-wrap items-center gap-2 text-sm opacity-70 sm:text-base">
+            <Link href="/" className="transition-opacity hover:opacity-100">
+              トップページ
+            </Link>
+            <span aria-hidden="true">＞</span>
+            <Link href={toolContext.category.path} className="transition-opacity hover:opacity-100">
+              {toolContext.category.category}
+            </Link>
+            <span aria-hidden="true">＞</span>
+            <span className="opacity-100">{toolContext.tool.title}</span>
+          </nav>
+        </div>
+      )}
       <ToolStickyHeader
         title="給料タイマー"
         className={getHeaderClasses()}

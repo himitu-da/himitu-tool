@@ -1,8 +1,11 @@
 "use client";
 
-import React from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import React, { useMemo } from "react";
 
 import { ToolStickyHeader } from "@/components/ToolStickyHeader";
+import { findToolByPathname } from "@/lib/tools";
 import { useToolTheme } from "@/lib/useToolTheme";
 
 type MaxWidth = "sm" | "md" | "lg" | "xl" | "2xl" | "3xl" | "4xl" | "5xl" | "6xl" | "7xl";
@@ -51,9 +54,26 @@ export function ToolPageLayout({
     headerClassName = "",
 }: ToolPageLayoutProps) {
     const { pageCls } = useToolTheme();
+    const pathname = usePathname();
+    const toolContext = useMemo(() => findToolByPathname(pathname), [pathname]);
 
     return (
         <div className={`min-h-screen transition-colors duration-300 ${pageCls}`}>
+            {toolContext && (
+                <div className={`w-full ${maxWidthClass[maxWidth]} mx-auto px-4 pt-4 pb-2`}>
+                    <nav aria-label="パンくずリスト" className="flex flex-wrap items-center gap-2 text-sm opacity-70 sm:text-base">
+                        <Link href="/" className="transition-opacity hover:opacity-100">
+                            トップページ
+                        </Link>
+                        <span aria-hidden="true">＞</span>
+                        <Link href={toolContext.category.path} className="transition-opacity hover:opacity-100">
+                            {toolContext.category.category}
+                        </Link>
+                        <span aria-hidden="true">＞</span>
+                        <span className="opacity-100">{toolContext.tool.title}</span>
+                    </nav>
+                </div>
+            )}
             <ToolStickyHeader
                 title={title}
                 rightSlot={headerRightSlot}

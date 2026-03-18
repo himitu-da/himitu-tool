@@ -1,4 +1,31 @@
-export const categorizedTools = [
+type RawTool = {
+  title: string;
+  path: string;
+  icon: string;
+  desc: string;
+};
+
+type RawCategory = {
+  category: string;
+  tools: RawTool[];
+};
+
+export type CategoryId = "text" | "encoding" | "calculators" | "date-time" | "generators";
+
+export type ToolMeta = RawTool & {
+  id: string;
+  categoryId: CategoryId;
+  categoryTitle: string;
+};
+
+export type ToolCategory = {
+  id: CategoryId;
+  category: string;
+  path: string;
+  tools: ToolMeta[];
+};
+
+const rawCategorizedTools: RawCategory[] = [
   {
     category: "テキスト・文字列処理",
     tools: [
@@ -83,3 +110,71 @@ export const categorizedTools = [
     ],
   },
 ];
+
+const categoryIds: CategoryId[] = ["text", "encoding", "calculators", "date-time", "generators"];
+
+function normalizePathname(pathname: string) {
+  const trimmed = pathname.replace(/\/+$/, "");
+  return trimmed === "" ? "/" : trimmed;
+}
+
+export function getCategoryPath(categoryId: CategoryId) {
+  return `/${categoryId}`;
+}
+
+export function getLegacyToolPath(toolId: string) {
+  return `/${toolId}`;
+}
+
+export const categorizedTools: ToolCategory[] = rawCategorizedTools.map((category, index) => {
+  const categoryId = categoryIds[index];
+
+  return {
+    id: categoryId,
+    category: category.category,
+    path: getCategoryPath(categoryId),
+    tools: category.tools.map((tool) => {
+      const toolId = tool.path.replace(/^\//, "");
+
+      return {
+        ...tool,
+        id: toolId,
+        path: getLegacyToolPath(toolId),
+        categoryId,
+        categoryTitle: category.category,
+      };
+    }),
+  };
+});
+
+export const allTools = categorizedTools.flatMap((category) => category.tools);
+
+const categoryMap = new Map(categorizedTools.map((category) => [category.id, category]));
+const toolMap = new Map(allTools.map((tool) => [tool.id, tool]));
+
+export function getCategoryById(categoryId: string) {
+  return categoryMap.get(categoryId as CategoryId) ?? null;
+}
+
+export function getToolById(toolId: string) {
+  return toolMap.get(toolId) ?? null;
+}
+
+export function findToolByPathname(pathname: string) {
+  const normalizedPathname = normalizePathname(pathname);
+  const matchedTool = allTools.find((tool) => tool.path === normalizedPathname);
+
+  if (!matchedTool) {
+    return null;
+  }
+
+  const category = getCategoryById(matchedTool.categoryId);
+  if (!category) {
+    return null;
+  }
+
+  return {
+    tool: matchedTool,
+    category,
+  } as const;
+}

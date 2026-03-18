@@ -145,19 +145,28 @@ export function HamburgerMenu() {
                             <div className="space-y-2">
                                 {categorizedTools.map((cat) => (
                                     <div key={cat.category} className="rounded-lg overflow-hidden">
-                                        <button
-                                            onClick={() =>
-                                                setOpenCategory(openCategory === cat.category ? null : cat.category)
-                                            }
-                                            className={`w-full flex items-center justify-between p-3 transition-colors ${getItemHoverStyle()}`}
-                                        >
-                                            <span className="font-medium text-sm">{cat.category}</span>
-                                            {openCategory === cat.category ? (
-                                                <ChevronDown size={18} />
-                                            ) : (
-                                                <ChevronRight size={18} />
-                                            )}
-                                        </button>
+                                        <div className={`flex items-center justify-between p-3 transition-colors ${getItemHoverStyle()}`}>
+                                            <Link
+                                                href={cat.path}
+                                                onClick={() => setIsOpen(false)}
+                                                className="font-medium text-sm flex-1"
+                                            >
+                                                {cat.category}
+                                            </Link>
+                                            <button
+                                                onClick={() =>
+                                                    setOpenCategory(openCategory === cat.category ? null : cat.category)
+                                                }
+                                                className="ml-3 rounded-md p-1"
+                                                aria-label={openCategory === cat.category ? "カテゴリを閉じる" : "カテゴリを開く"}
+                                            >
+                                                {openCategory === cat.category ? (
+                                                    <ChevronDown size={18} />
+                                                ) : (
+                                                    <ChevronRight size={18} />
+                                                )}
+                                            </button>
+                                        </div>
 
                                         {openCategory === cat.category && (
                                             <div className={`p-2 space-y-1 ${getSubMenuBgStyle()}`}>
@@ -181,7 +190,15 @@ export function HamburgerMenu() {
                             <div className="flex flex-col gap-6 mt-4">
                                 {categorizedTools.map((cat) => (
                                     <div key={`min-${cat.category}`}>
-                                        <h3 className="text-sm font-bold opacity-70 mb-3 px-2">{cat.category}</h3>
+                                        <div className="mb-3 px-2">
+                                            <Link
+                                                href={cat.path}
+                                                onClick={() => setIsOpen(false)}
+                                                className="text-sm font-bold opacity-70 transition-opacity hover:opacity-100"
+                                            >
+                                                {cat.category}
+                                            </Link>
+                                        </div>
                                         <ul className="flex flex-wrap gap-1.5 px-2">
                                             {cat.tools.map((tool) => (
                                                 <li key={`min-${tool.path}`}>

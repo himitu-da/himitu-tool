@@ -52,7 +52,11 @@ export default function Home() {
           <div className="mt-12 flex flex-col gap-12">
             {categorizedTools.map((cat) => (
               <div key={cat.category}>
-                <h3 className="text-xl font-bold opacity-70 mb-6 text-center sm:text-left">{cat.category}</h3>
+                <div className="mb-6 text-center sm:text-left">
+                  <Link href={cat.path} className="text-xl font-bold opacity-70 transition-opacity hover:opacity-100">
+                    {cat.category}
+                  </Link>
+                </div>
                 <ul className="flex flex-wrap gap-2 justify-center sm:justify-start">
                   {cat.tools.map((tool) => (
                     <li key={tool.path}>
@@ -72,7 +76,11 @@ export default function Home() {
           <div className="mt-12 sm:mt-16 flex flex-col gap-16">
             {categorizedTools.map((cat) => (
               <div key={cat.category}>
-                <h3 className="text-2xl font-bold opacity-80 mb-8 text-center sm:text-left">{cat.category}</h3>
+                <div className="mb-8 text-center sm:text-left">
+                  <Link href={cat.path} className="text-2xl font-bold opacity-80 transition-opacity hover:opacity-100">
+                    {cat.category}
+                  </Link>
+                </div>
                 <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                   {cat.tools.map((tool) => (
                     <li key={tool.path}>

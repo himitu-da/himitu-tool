@@ -1,37 +1,33 @@
-import { MetadataRoute } from 'next';
-import fs from 'fs';
-import path from 'path';
+import { MetadataRoute } from "next";
 
-export const dynamic = 'force-static';
+import { categorizedTools } from "@/lib/tools";
+
+export const dynamic = "force-static";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = 'https://hmts.jp/tool';
+  const baseUrl = "https://hmts.jp/tool";
+  const now = new Date();
 
-  // src/app ディレクトリからツールの一覧を動的に取得
-  const appDir = path.join(process.cwd(), 'src', 'app');
-  const dirents = fs.readdirSync(appDir, { withFileTypes: true });
-  
-  const tools = dirents
-    .filter(dirent => dirent.isDirectory())
-    .map(dirent => dirent.name)
-    // Route GroupsやPrivate Foldersなどを除外する
-    .filter(name => !name.startsWith('(') && !name.startsWith('_'));
-
-  const routes: MetadataRoute.Sitemap = [
+  return [
     {
       url: `${baseUrl}/`,
-      lastModified: new Date(),
-      changeFrequency: 'weekly',
+      lastModified: now,
+      changeFrequency: "weekly",
       priority: 1,
     },
-    ...tools.map((tool) => ({
-      // output: 'export' と trailingSlash: true の設定に合わせる
-      url: `${baseUrl}/${tool}/`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly' as const,
-      priority: 0.8,
+    ...categorizedTools.map((category) => ({
+      url: `${baseUrl}${category.path}/`,
+      lastModified: now,
+      changeFrequency: "weekly" as const,
+      priority: 0.9,
     })),
+    ...categorizedTools.flatMap((category) =>
+      category.tools.map((tool) => ({
+        url: `${baseUrl}${tool.path}/`,
+        lastModified: now,
+        changeFrequency: "monthly" as const,
+        priority: 0.8,
+      })),
+    ),
   ];
-
-  return routes;
 }
