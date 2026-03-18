@@ -451,10 +451,10 @@
     },
     {
       "id": "image-conv",
-      "title": "画像変換",
-      "version": "1.0.1",
-      "updatedAt": "2026-03-17",
-      "changeSummary": "Refactor UI",
+      "title": "画像拡張子変換ツール",
+      "version": "1.0.5",
+      "updatedAt": "2026-03-18",
+      "changeSummary": "Rework layout flow and switch output format control to compact toggle buttons",
       "history": [
         {
           "version": "1.0.0",
@@ -465,6 +465,26 @@
           "version": "1.0.1",
           "updatedAt": "2026-03-17",
           "summary": "Refactor UI"
+        },
+        {
+          "version": "1.0.2",
+          "updatedAt": "2026-03-18",
+          "summary": "Rename tool and redesign multi-file drag-and-drop workflow"
+        },
+        {
+          "version": "1.0.3",
+          "updatedAt": "2026-03-18",
+          "summary": "Refine upload layout, compact result rows, and image preview modal"
+        },
+        {
+          "version": "1.0.4",
+          "updatedAt": "2026-03-18",
+          "summary": "Refine drop zone layout, compact result rows, and image preview modal"
+        },
+        {
+          "version": "1.0.5",
+          "updatedAt": "2026-03-18",
+          "summary": "Rework layout flow and switch output format control to compact toggle buttons"
         }
       ]
     },

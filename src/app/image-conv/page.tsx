@@ -1,11 +1,35 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { ToolPageLayout } from "@/components/ToolPageLayout";
 import { ToolPanel } from "@/components/ToolPanel";
 import { useToolTheme } from "@/lib/useToolTheme";
 
 type OutputFormat = "image/png" | "image/jpeg" | "image/webp" | "image/avif";
+
+type SelectedImage = {
+  id: string;
+  file: File;
+  previewUrl: string;
+  note: string;
+};
+
+type ConvertedImage = {
+  id: string;
+  name: string;
+  downloadName: string;
+  formatLabel: string;
+  previewUrl: string;
+  blob: Blob;
+  width: number;
+  height: number;
+  sizeLabel: string;
+};
+
+type PreviewImage = {
+  src: string;
+  alt: string;
+};
 
 const OUTPUT_OPTIONS: Array<{ mime: OutputFormat; label: string; ext: string; lossy: boolean }> = [
   { mime: "image/png", label: "PNG", ext: "png", lossy: false },
@@ -18,10 +42,7 @@ const ACCEPT_EXTENSIONS = ".png,.jpg,.jpeg,.webp,.avif,.gif,.bmp,.tif,.tiff,.ico
 
 function fileExtension(name: string) {
   const dot = name.lastIndexOf(".");
-  if (dot < 0) {
-    return "";
-  }
-  return name.slice(dot + 1).toLowerCase();
+  return dot < 0 ? "" : name.slice(dot + 1).toLowerCase();
 }
 
 function blobToObjectUrl(blob: Blob) {
@@ -29,8 +50,27 @@ function blobToObjectUrl(blob: Blob) {
 }
 
 function revokeObjectUrl(url: string | null) {
-  if (!url) return;
-  URL.revokeObjectURL(url);
+  if (url) {
+    URL.revokeObjectURL(url);
+  }
+}
+
+function revokeUrls(items: Array<{ previewUrl: string }>) {
+  items.forEach((item) => revokeObjectUrl(item.previewUrl));
+}
+
+function formatBytes(bytes: number) {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+}
+
+function buildFileNote(file: File) {
+  return fileExtension(file.name) === "gif" ? "GIFは先頭フレームを静止画として変換します。" : "";
+}
+
+function wait(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 function loadImageElement(url: string): Promise<HTMLImageElement> {
@@ -51,7 +91,7 @@ async function imageLikeToCanvas(blob: Blob): Promise<HTMLCanvasElement> {
     const ctx = canvas.getContext("2d");
     if (!ctx) {
       bitmap.close();
-      throw new Error("Canvasコンテキストを初期化できませんでした");
+      throw new Error("Canvasコンテキストを取得できませんでした");
     }
     ctx.drawImage(bitmap, 0, 0);
     bitmap.close();
@@ -65,7 +105,7 @@ async function imageLikeToCanvas(blob: Blob): Promise<HTMLCanvasElement> {
       canvas.height = img.naturalHeight;
       const ctx = canvas.getContext("2d");
       if (!ctx) {
-        throw new Error("Canvasコンテキストを初期化できませんでした");
+        throw new Error("Canvasコンテキストを取得できませんでした");
       }
       ctx.drawImage(img, 0, 0);
       return canvas;
@@ -83,9 +123,9 @@ async function readAsArrayBuffer(file: File): Promise<ArrayBuffer> {
         resolve(reader.result);
         return;
       }
-      reject(new Error("ファイルを読み込めませんでした"));
+      reject(new Error("ファイルの読み込みに失敗しました"));
     };
-    reader.onerror = () => reject(new Error("ファイル読み込み時にエラーが発生しました"));
+    reader.onerror = () => reject(new Error("ファイル読み込み中にエラーが発生しました"));
     reader.readAsArrayBuffer(file);
   });
 }
@@ -102,7 +142,7 @@ async function decodeTiff(file: File): Promise<HTMLCanvasElement> {
   const buffer = await readAsArrayBuffer(file);
   const ifds = UTIF.decode(buffer);
   if (!ifds.length) {
-    throw new Error("TIFFデータを解析できませんでした");
+    throw new Error("TIFFファイルを解析できませんでした");
   }
   UTIF.decodeImages(buffer, ifds);
   const first = ifds[0] as { width: number; height: number };
@@ -113,7 +153,7 @@ async function decodeTiff(file: File): Promise<HTMLCanvasElement> {
   canvas.height = first.height;
   const ctx = canvas.getContext("2d");
   if (!ctx) {
-    throw new Error("Canvasコンテキストを初期化できませんでした");
+    throw new Error("Canvasコンテキストを取得できませんでした");
   }
 
   const data = new ImageData(new Uint8ClampedArray(rgba), first.width, first.height);
@@ -126,7 +166,7 @@ async function decodeIco(file: File): Promise<HTMLCanvasElement> {
   const buffer = await readAsArrayBuffer(file);
   const images = await parseICO(buffer, "image/png");
   if (!images.length) {
-    throw new Error("ICOデータを解析できませんでした");
+    throw new Error("ICOファイルを解析できませんでした");
   }
 
   const best = images.reduce((acc, current) => {
@@ -143,7 +183,7 @@ async function decodeIco(file: File): Promise<HTMLCanvasElement> {
   canvas.height = best.height;
   const ctx = canvas.getContext("2d");
   if (!ctx) {
-    throw new Error("Canvasコンテキストを初期化できませんでした");
+    throw new Error("Canvasコンテキストを取得できませんでした");
   }
 
   ctx.putImageData(imageData, 0, 0);
@@ -156,7 +196,7 @@ function canvasToBlob(canvas: HTMLCanvasElement, mime: OutputFormat, quality: nu
     canvas.toBlob(
       (blob) => {
         if (!blob) {
-          reject(new Error("この形式は現在のブラウザで出力できませんでした"));
+          reject(new Error("画像の書き出しに失敗しました"));
           return;
         }
         resolve(blob);
@@ -167,18 +207,38 @@ function canvasToBlob(canvas: HTMLCanvasElement, mime: OutputFormat, quality: nu
   });
 }
 
+async function fileToCanvas(file: File) {
+  const ext = fileExtension(file.name);
+  const mime = file.type.toLowerCase();
+
+  if (ext === "heic" || ext === "heif" || mime === "image/heic" || mime === "image/heif") {
+    return decodeHeic(file);
+  }
+  if (ext === "tif" || ext === "tiff" || mime === "image/tiff") {
+    return decodeTiff(file);
+  }
+  if (ext === "ico" || mime === "image/x-icon" || mime === "image/vnd.microsoft.icon") {
+    return decodeIco(file);
+  }
+  return imageLikeToCanvas(file);
+}
+
+function fileKey(file: File) {
+  return `${file.name}-${file.size}-${file.lastModified}`;
+}
+
 export default function ImageConvPage() {
-  const [sourceFile, setSourceFile] = useState<File | null>(null);
-  const [sourceUrl, setSourceUrl] = useState<string | null>(null);
-  const [resultUrl, setResultUrl] = useState<string | null>(null);
-  const [resultBlob, setResultBlob] = useState<Blob | null>(null);
-  const [resultName, setResultName] = useState("converted-image");
+  const [selectedFiles, setSelectedFiles] = useState<SelectedImage[]>([]);
+  const [results, setResults] = useState<ConvertedImage[]>([]);
   const [outputMime, setOutputMime] = useState<OutputFormat>("image/png");
   const [quality, setQuality] = useState(0.9);
+  const [dragActive, setDragActive] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [note, setNote] = useState("");
-  const { inputCls, primaryBtnCls, secondaryBtnCls, blockCls, mutedTextCls } = useToolTheme();
+  const [conversionNotes, setConversionNotes] = useState<string[]>([]);
+  const [previewImage, setPreviewImage] = useState<PreviewImage | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const { primaryBtnCls, secondaryBtnCls, blockCls, mutedTextCls, radioLabelCls, theme } = useToolTheme();
 
   const selectedOutput = useMemo(() => {
     return OUTPUT_OPTIONS.find((item) => item.mime === outputMime) ?? OUTPUT_OPTIONS[0];
@@ -186,78 +246,157 @@ export default function ImageConvPage() {
 
   useEffect(() => {
     return () => {
-      revokeObjectUrl(sourceUrl);
-      revokeObjectUrl(resultUrl);
+      revokeUrls(selectedFiles);
+      revokeUrls(results);
     };
-  }, [sourceUrl, resultUrl]);
+  }, [selectedFiles, results]);
 
-  const onFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0] ?? null;
-    setError("");
-    setNote("");
-    revokeObjectUrl(resultUrl);
-    setResultUrl(null);
-    setResultBlob(null);
-
-    if (!file) {
-      revokeObjectUrl(sourceUrl);
-      setSourceUrl(null);
-      setSourceFile(null);
+  const addFiles = (fileList: FileList | File[]) => {
+    const incoming = Array.from(fileList);
+    if (!incoming.length) {
       return;
     }
 
-    revokeObjectUrl(sourceUrl);
-    setSourceUrl(blobToObjectUrl(file));
-    setSourceFile(file);
+    setError("");
+    setConversionNotes([]);
+    setResults((current) => {
+      revokeUrls(current);
+      return [];
+    });
 
-    const ext = fileExtension(file.name);
-    if (ext === "gif") {
-      setNote("GIFは先頭フレームを静止画として変換します。");
+    setSelectedFiles((current) => {
+      const seen = new Set(current.map((item) => fileKey(item.file)));
+      const next = [...current];
+
+      incoming.forEach((file) => {
+        const key = fileKey(file);
+        if (seen.has(key)) {
+          return;
+        }
+
+        seen.add(key);
+        next.push({
+          id: key,
+          file,
+          previewUrl: blobToObjectUrl(file),
+          note: buildFileNote(file),
+        });
+      });
+
+      return next;
+    });
+  };
+
+  const onFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    addFiles(event.target.files ?? []);
+    event.target.value = "";
+  };
+
+  const onDrop = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    setDragActive(false);
+    addFiles(event.dataTransfer.files);
+  };
+
+  const onDragOver = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    if (!dragActive) {
+      setDragActive(true);
     }
   };
 
+  const onDragLeave = (event: React.DragEvent<HTMLDivElement>) => {
+    if (event.currentTarget.contains(event.relatedTarget as Node | null)) {
+      return;
+    }
+    setDragActive(false);
+  };
+
+  const clearSelectedFiles = () => {
+    setSelectedFiles((current) => {
+      revokeUrls(current);
+      return [];
+    });
+    setResults((current) => {
+      revokeUrls(current);
+      return [];
+    });
+    setError("");
+    setConversionNotes([]);
+  };
+
+  const removeSelectedFile = (id: string) => {
+    setSelectedFiles((current) => {
+      const target = current.find((item) => item.id === id);
+      if (target) {
+        revokeObjectUrl(target.previewUrl);
+      }
+      return current.filter((item) => item.id !== id);
+    });
+    setResults((current) => {
+      revokeUrls(current);
+      return [];
+    });
+    setError("");
+    setConversionNotes([]);
+  };
+
   const convert = async () => {
-    if (!sourceFile) {
-      setError("先に画像ファイルを選択してください。");
+    if (!selectedFiles.length) {
+      setError("先に画像を選択してください。");
       return;
     }
 
     setLoading(true);
     setError("");
+    setConversionNotes([]);
+    setResults((current) => {
+      revokeUrls(current);
+      return [];
+    });
 
-    revokeObjectUrl(resultUrl);
-    setResultUrl(null);
-    setResultBlob(null);
+    const startedAt = Date.now();
 
     try {
-      const ext = fileExtension(sourceFile.name);
-      const mime = sourceFile.type.toLowerCase();
+      const nextResults = await Promise.all(
+        selectedFiles.map(async ({ file, id }) => {
+          const canvas = await fileToCanvas(file);
+          const blob = await canvasToBlob(canvas, outputMime, quality);
+          const downloadName = `${file.name.replace(/\.[^.]+$/, "") || "converted-image"}.${selectedOutput.ext}`;
+          return {
+            id,
+            name: file.name,
+            downloadName,
+            formatLabel: selectedOutput.label,
+            previewUrl: blobToObjectUrl(blob),
+            blob,
+            width: canvas.width,
+            height: canvas.height,
+            sizeLabel: formatBytes(blob.size),
+          } satisfies ConvertedImage;
+        }),
+      );
 
-      let canvas: HTMLCanvasElement;
-      if (ext === "heic" || ext === "heif" || mime === "image/heic" || mime === "image/heif") {
-        canvas = await decodeHeic(sourceFile);
-      } else if (ext === "tif" || ext === "tiff" || mime === "image/tiff") {
-        canvas = await decodeTiff(sourceFile);
-      } else if (ext === "ico" || mime === "image/x-icon" || mime === "image/vnd.microsoft.icon") {
-        canvas = await decodeIco(sourceFile);
-      } else {
-        canvas = await imageLikeToCanvas(sourceFile);
+      const remaining = 1000 - (Date.now() - startedAt);
+      if (remaining > 0) {
+        await wait(remaining);
       }
 
-      const blob = await canvasToBlob(canvas, outputMime, quality);
-      const url = blobToObjectUrl(blob);
+      setResults(nextResults);
 
-      setResultBlob(blob);
-      setResultUrl(url);
-      setResultName(sourceFile.name.replace(/\.[^.]+$/, "") || "converted-image");
-
-      if (outputMime === "image/jpeg") {
-        setNote("JPEGは透過情報を保持できません。背景は黒または白に見える場合があります。");
-      }
+      const notes = Array.from(
+        new Set(
+          selectedFiles
+            .map((item) => item.note)
+            .filter(Boolean)
+            .concat(outputMime === "image/jpeg" ? ["JPEGは透過情報を保持できません。"] : []),
+        ),
+      );
+      setConversionNotes(notes);
     } catch (e) {
-      const message = e instanceof Error ? e.message : "変換中に予期しないエラーが発生しました";
+      const message = e instanceof Error ? e.message : "変換中にエラーが発生しました";
       if (message.includes("heic") || message.includes("HEIC")) {
-        setError("HEICの解析に失敗しました。端末のメモリ状態やファイル破損をご確認ください。");
+        setError("HEICの変換に失敗しました。端末やブラウザの対応状況をご確認ください。");
       } else {
         setError(message);
       }
@@ -266,122 +405,302 @@ export default function ImageConvPage() {
     }
   };
 
-  const download = () => {
-    if (!resultBlob || !resultUrl) {
-      return;
-    }
-
+  const downloadOne = (item: ConvertedImage) => {
     const anchor = document.createElement("a");
-    anchor.href = resultUrl;
-    anchor.download = `${resultName}.${selectedOutput.ext}`;
+    anchor.href = item.previewUrl;
+    anchor.download = item.downloadName;
     document.body.appendChild(anchor);
     anchor.click();
     anchor.remove();
   };
 
+  const downloadAll = async () => {
+    for (const item of results) {
+      downloadOne(item);
+      await wait(120);
+    }
+  };
+
+  const dropZoneCls = (() => {
+    const base = "rounded-3xl border-2 border-dashed p-6 sm:p-8 transition-colors";
+    if (dragActive) {
+      switch (theme) {
+        case "dark":
+          return `${base} border-blue-400 bg-blue-500/10`;
+        case "ocean":
+          return `${base} border-cyan-300 bg-cyan-300/10`;
+        default:
+          return `${base} border-blue-500 bg-blue-50`;
+      }
+    }
+
+    switch (theme) {
+      case "dark":
+        return `${base} border-gray-500 bg-gray-700/20`;
+      case "ocean":
+        return `${base} border-cyan-200/40 bg-cyan-800/30`;
+      default:
+        return `${base} border-slate-300 bg-slate-50`;
+    }
+  })();
+
+  const cardSurfaceCls = theme === "default" ? "bg-white" : "bg-black/10";
+
   return (
-    <ToolPageLayout title="画像変換" maxWidth="4xl">
+    <ToolPageLayout title="画像拡張子変換ツール" maxWidth="5xl">
       <ToolPanel className="space-y-5">
-        <div className={`rounded-2xl p-5 sm:p-6 ${blockCls}`}>
-          <p className="text-sm opacity-85 leading-relaxed">
-            ブラウザだけで画像形式を変換します。HEIC / TIFF / ICO も入力できます。
-            出力は PNG / JPEG / WebP / AVIF に対応しています。
-          </p>
-
-          <div className="mt-5 grid gap-4 sm:grid-cols-2">
-            <label className="flex flex-col gap-2">
-              <span className="text-sm font-semibold opacity-90">入力画像</span>
-              <input
-                type="file"
-                accept={ACCEPT_EXTENSIONS}
-                onChange={onFileChange}
-                className={`w-full p-2.5 rounded-lg border ${inputCls}`}
-              />
-            </label>
-
-            <label className="flex flex-col gap-2">
-              <span className="text-sm font-semibold opacity-90">出力形式</span>
-              <select
-                value={outputMime}
-                onChange={(e) => setOutputMime(e.target.value as OutputFormat)}
-                className={`w-full p-2.5 rounded-lg border ${inputCls}`}
-              >
-                {OUTPUT_OPTIONS.map((option) => (
-                  <option key={option.mime} value={option.mime}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </label>
+        <div className={`rounded-3xl p-5 sm:p-6 ${blockCls}`}>
+          <div
+            onDrop={onDrop}
+            onDragOver={onDragOver}
+            onDragLeave={onDragLeave}
+            className={dropZoneCls}
+          >
+            <div className="space-y-2 text-center">
+              <p className="text-lg font-semibold">画像をドロップ</p>
+              <p className={`text-sm ${mutedTextCls}`}>
+                このエリアに画像をドラッグしてください。複数ファイルもまとめて追加できます。
+              </p>
+            </div>
           </div>
 
-          {selectedOutput.lossy && (
-            <div className={`mt-4 p-4 rounded-xl ${blockCls}`}>
-              <label className="flex flex-col gap-2">
-                <span className="text-sm font-semibold opacity-90">画質: {Math.round(quality * 100)}%</span>
-                <input
-                  type="range"
-                  min={0.4}
-                  max={1}
-                  step={0.05}
-                  value={quality}
-                  onChange={(e) => setQuality(Number(e.target.value))}
-                  className="accent-blue-500"
-                />
+          <div className="mt-4 flex justify-center">
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className={`rounded-xl px-5 py-3 font-semibold transition-colors ${secondaryBtnCls}`}
+            >
+              ファイルを選択
+            </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept={ACCEPT_EXTENSIONS}
+              multiple
+              onChange={onFileChange}
+              className="hidden"
+            />
+          </div>
+        </div>
+
+        <div className={`rounded-3xl p-5 sm:p-6 ${blockCls}`}>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <h2 className="text-sm font-semibold opacity-90">変換後の拡張子</h2>
+              <div className="flex flex-wrap gap-2">
+                {OUTPUT_OPTIONS.map((option) => {
+                  const active = outputMime === option.mime;
+                  return (
+                    <button
+                      key={option.mime}
+                      type="button"
+                      onClick={() => setOutputMime(option.mime)}
+                      className={`rounded-xl px-4 py-2 text-sm font-semibold transition-colors ${radioLabelCls(active)}`}
+                      aria-pressed={active}
+                    >
+                      {option.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {selectedOutput.lossy ? (
+              <label className="flex max-w-xl flex-col gap-2">
+                <span className="text-sm font-semibold opacity-90">画質 {Math.round(quality * 100)}%</span>
+                <div className={`rounded-xl px-4 py-4 ${cardSurfaceCls}`}>
+                  <input
+                    type="range"
+                    min={0.4}
+                    max={1}
+                    step={0.05}
+                    value={quality}
+                    onChange={(e) => setQuality(Number(e.target.value))}
+                    className="w-full accent-blue-500"
+                  />
+                </div>
               </label>
+            ) : (
+              <div className={`max-w-xl rounded-xl p-4 text-sm ${cardSurfaceCls} ${mutedTextCls}`}>
+                PNGは劣化なしで出力します。
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className={`rounded-3xl p-5 sm:p-6 ${blockCls}`}>
+          <div className="mb-3 flex items-center justify-between gap-3">
+            <h2 className="text-sm font-semibold opacity-90">選択した画像</h2>
+            {!!selectedFiles.length && (
+              <button
+                type="button"
+                onClick={clearSelectedFiles}
+                className={`rounded-lg px-3 py-2 text-sm font-medium transition-colors ${secondaryBtnCls}`}
+              >
+                すべてクリア
+              </button>
+            )}
+          </div>
+
+          {selectedFiles.length ? (
+            <ul className="grid gap-2.5">
+              {selectedFiles.map((item) => (
+                <li key={item.id} className={`rounded-2xl p-3 ${cardSurfaceCls}`}>
+                  <div className="flex items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setPreviewImage({ src: item.previewUrl, alt: item.file.name })}
+                      className="shrink-0"
+                      aria-label={`${item.file.name} を拡大表示`}
+                    >
+                      <img
+                        src={item.previewUrl}
+                        alt={item.file.name}
+                        className="h-14 w-14 rounded-xl object-cover"
+                      />
+                    </button>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-semibold">{item.file.name}</p>
+                      <p className={`text-xs ${mutedTextCls}`}>
+                        {fileExtension(item.file.name).toUpperCase() || "FILE"} / {formatBytes(item.file.size)}
+                      </p>
+                      {item.note && <p className={`mt-1 text-xs ${mutedTextCls}`}>{item.note}</p>}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => removeSelectedFile(item.id)}
+                      className={`shrink-0 rounded-full px-2.5 py-1.5 text-sm leading-none transition-colors ${secondaryBtnCls}`}
+                      aria-label={`${item.file.name} を削除`}
+                    >
+                      ×
+                    </button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <div className={`rounded-2xl p-4 text-sm ${cardSurfaceCls} ${mutedTextCls}`}>
+              まだ画像は選択されていません。
             </div>
           )}
+        </div>
 
-          <div className="mt-5 flex flex-wrap gap-3">
-            <button
-              onClick={convert}
-              disabled={!sourceFile || loading}
-              className={`px-5 py-2.5 rounded-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-colors ${primaryBtnCls}`}
-            >
-              {loading ? "変換中..." : "変換する"}
-            </button>
-            <button
-              onClick={download}
-              disabled={!resultBlob}
-              className={`px-5 py-2.5 rounded-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-colors ${secondaryBtnCls}`}
-            >
-              ダウンロード
-            </button>
+        <button
+          type="button"
+          onClick={convert}
+          disabled={!selectedFiles.length || loading}
+          className={`min-h-14 w-full rounded-2xl px-6 py-4 text-base font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${primaryBtnCls}`}
+        >
+          {loading ? "変換中..." : "変換する"}
+        </button>
+
+        {loading && (
+          <div className={`rounded-2xl p-4 text-sm ${blockCls} ${mutedTextCls}`}>
+            画像を順番に処理しています。完了まで少しだけお待ちください。
+          </div>
+        )}
+
+        {error && (
+          <div className={`rounded-2xl p-4 text-sm ${blockCls}`}>
+            {error}
+          </div>
+        )}
+
+        <div className={`rounded-3xl p-5 sm:p-6 ${blockCls}`}>
+          <div className="mb-4 flex items-center justify-between gap-3">
+            <div>
+              <h2 className="text-lg font-semibold">変換後の画像</h2>
+              <p className={`text-sm ${mutedTextCls}`}>
+                {results.length ? `${results.length}件の画像を出力しました。` : "変換後の画像はここに表示されます。"}
+              </p>
+            </div>
+            {results.length > 1 && (
+              <button
+                type="button"
+                onClick={downloadAll}
+                className={`rounded-xl px-4 py-3 text-sm font-semibold transition-colors ${secondaryBtnCls}`}
+              >
+                一括ダウンロード
+              </button>
+            )}
           </div>
 
-          {note && (
-            <p className={`mt-4 text-sm rounded-lg p-3 ${blockCls}`}>
-              {note}
-            </p>
-          )}
-
-          {error && (
-            <p className={`mt-4 text-sm rounded-lg p-3 ${blockCls}`}>
-              {error}
-            </p>
+          {results.length ? (
+            <div className="grid gap-2.5">
+              {results.map((item) => (
+                <article key={item.id} className={`rounded-2xl p-3 ${cardSurfaceCls}`}>
+                  <div className="flex items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setPreviewImage({ src: item.previewUrl, alt: item.downloadName })}
+                      className="shrink-0"
+                      aria-label={`${item.downloadName} を拡大表示`}
+                    >
+                      <img
+                        src={item.previewUrl}
+                        alt={item.downloadName}
+                        className="h-14 w-14 rounded-xl object-cover"
+                      />
+                    </button>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-semibold">{item.downloadName}</p>
+                      <p className={`text-xs ${mutedTextCls}`}>
+                        {item.formatLabel} / {item.width} x {item.height} / {item.sizeLabel}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => downloadOne(item)}
+                      className={`shrink-0 rounded-xl px-4 py-3 text-sm font-semibold transition-colors ${primaryBtnCls}`}
+                    >
+                      ダウンロード
+                    </button>
+                  </div>
+                </article>
+              ))}
+            </div>
+          ) : (
+            <div className={`rounded-2xl p-4 text-sm ${cardSurfaceCls} ${mutedTextCls}`}>
+              ファイルを選択して変換すると、ここに変換後の画像リストが並びます。
+            </div>
           )}
         </div>
 
-        <div className="mt-5 grid gap-4 md:grid-cols-2">
-          <section className={`rounded-2xl p-4 ${blockCls}`}>
-            <h3 className="font-semibold opacity-90 mb-3">入力プレビュー</h3>
-            {sourceUrl ? (
-              <img src={sourceUrl} alt="入力画像プレビュー" className={`w-full h-auto rounded-lg object-contain max-h-[360px] ${blockCls}`} />
-            ) : (
-              <p className={`text-sm ${mutedTextCls}`}>画像を選択するとプレビューが表示されます。</p>
-            )}
-          </section>
-
-          <section className={`rounded-2xl p-4 ${blockCls}`}>
-            <h3 className="font-semibold opacity-90 mb-3">変換後プレビュー</h3>
-            {resultUrl ? (
-              <img src={resultUrl} alt="変換後画像プレビュー" className={`w-full h-auto rounded-lg object-contain max-h-[360px] ${blockCls}`} />
-            ) : (
-              <p className={`text-sm ${mutedTextCls}`}>変換後の画像はここに表示されます。</p>
-            )}
-          </section>
+        <div className={`rounded-3xl p-5 sm:p-6 ${blockCls}`}>
+          <h2 className="text-lg font-semibold">使い方と補足</h2>
+          <div className={`mt-3 space-y-2 text-sm leading-relaxed ${mutedTextCls}`}>
+            <p>PNG / JPEG / WebP / AVIF へ変換できます。HEIC / HEIF / TIFF / ICO なども読み込みに対応しています。</p>
+            <p>複数画像をまとめて選択し、そのまま同じ拡張子へ一括変換できます。</p>
+            {conversionNotes.map((note) => (
+              <p key={note}>{note}</p>
+            ))}
+          </div>
         </div>
       </ToolPanel>
+
+      {previewImage && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
+          onClick={() => setPreviewImage(null)}
+        >
+          <div className="relative max-h-full max-w-5xl">
+            <button
+              type="button"
+              onClick={() => setPreviewImage(null)}
+              className="absolute right-3 top-3 rounded-full bg-black/60 px-3 py-2 text-sm font-semibold text-white"
+              aria-label="プレビューを閉じる"
+            >
+              ×
+            </button>
+            <img
+              src={previewImage.src}
+              alt={previewImage.alt}
+              className="max-h-[85vh] max-w-full rounded-2xl object-contain"
+              onClick={(event) => event.stopPropagation()}
+            />
+          </div>
+        </div>
+      )}
     </ToolPageLayout>
   );
 }
