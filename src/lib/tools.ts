@@ -1,4 +1,4 @@
-type RawTool = {
+﻿type RawTool = {
   title: string;
   path: string;
   icon: string;
@@ -88,6 +88,8 @@ const rawCategorizedTools: RawCategory[] = [
       { title: "UNIXタイム", path: "/unix-time", icon: "🕒", desc: "現在時刻の秒数" },
       { title: "ストップウォッチ", path: "/stopwatch", icon: "⏱️", desc: "ラップ機能付き" },
       { title: "タイマーツール", path: "/timer", icon: "⏲️", desc: "ブラウザで使える便利なタイマー。" },
+      { title: "1日タイマー", path: "/day-timer", icon: "🕐", desc: "1日の経過量をゲージ表示" },
+      { title: "1ヶ月タイマー", path: "/month-timer", icon: "🗓️", desc: "1ヶ月の経過量をゲージ表示" },
       { title: "1年タイマー", path: "/year-timer", icon: "⏳", desc: "1年の経過量をゲージ表示" },
       { title: "リピートタイマー", path: "/repeat-timer", icon: "🔁", desc: "繰り返し計測" },
       { title: "ポモドーロタイマー", path: "/pomodoro", icon: "🍅", desc: "25分作業＋5分休憩" },

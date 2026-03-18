@@ -3,6 +3,20 @@
   "generatedAt": "2026-03-18",
   "tools": [
     {
+      "id": "[category]",
+      "title": "[category]",
+      "version": "1.0.0",
+      "updatedAt": "2026-03-18",
+      "changeSummary": "Initial registration",
+      "history": [
+        {
+          "version": "1.0.0",
+          "updatedAt": "2026-03-18",
+          "summary": "Initial registration"
+        }
+      ]
+    },
+    {
       "id": "age-calc",
       "title": "年齢計算",
       "version": "1.0.1",
@@ -294,6 +308,25 @@
           "version": "1.0.1",
           "updatedAt": "2026-03-17",
           "summary": "Refactor UI"
+        }
+      ]
+    },
+    {
+      "id": "day-timer",
+      "title": "day-timer",
+      "version": "1.0.1",
+      "updatedAt": "2026-03-18",
+      "changeSummary": "Adjust date label formats for normal and fullscreen views",
+      "history": [
+        {
+          "version": "1.0.0",
+          "updatedAt": "2026-03-18",
+          "summary": "Initial registration"
+        },
+        {
+          "version": "1.0.1",
+          "updatedAt": "2026-03-18",
+          "summary": "Adjust date label formats for normal and fullscreen views"
         }
       ]
     },
@@ -614,6 +647,25 @@
           "version": "1.0.1",
           "updatedAt": "2026-03-17",
           "summary": "Refactor UI"
+        }
+      ]
+    },
+    {
+      "id": "month-timer",
+      "title": "month-timer",
+      "version": "1.0.1",
+      "updatedAt": "2026-03-18",
+      "changeSummary": "Adjust date label formats for normal and fullscreen views",
+      "history": [
+        {
+          "version": "1.0.0",
+          "updatedAt": "2026-03-18",
+          "summary": "Initial registration"
+        },
+        {
+          "version": "1.0.1",
+          "updatedAt": "2026-03-18",
+          "summary": "Adjust date label formats for normal and fullscreen views"
         }
       ]
     },
