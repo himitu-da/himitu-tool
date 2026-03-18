@@ -871,9 +871,9 @@
     {
       "id": "salary-timer",
       "title": "給料タイマー",
-      "version": "1.0.6",
-      "updatedAt": "2026-03-16",
-      "changeSummary": "Adjust display-to-icon size balance",
+      "version": "1.0.7",
+      "updatedAt": "2026-03-18",
+      "changeSummary": "Use shared tool layout and panel components",
       "history": [
         {
           "version": "1.0.0",
@@ -914,6 +914,11 @@
           "version": "1.0.6",
           "updatedAt": "2026-03-16",
           "summary": "Adjust display-to-icon size balance"
+        },
+        {
+          "version": "1.0.7",
+          "updatedAt": "2026-03-18",
+          "summary": "Use shared tool layout and panel components"
         }
       ]
     },
