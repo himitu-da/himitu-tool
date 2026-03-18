@@ -1,0 +1,4 @@
+interface:
+  display_name: "Build himitu-tool"
+  short_description: "Build or update himitu-tool pages."
+  default_prompt: "Use $build-himitu-tool to add or update a tool page in this repository."
