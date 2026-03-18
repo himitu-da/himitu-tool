@@ -24,28 +24,13 @@ const maxWidthClass: Record<MaxWidth, string> = {
 };
 
 interface ToolPageLayoutProps {
-    /** ToolStickyHeader に表示するツール名 */
     title: string;
     children: React.ReactNode;
-    /** main コンテナの最大幅。デフォルト "2xl" */
     maxWidth?: MaxWidth;
-    /** ToolStickyHeader の rightSlot */
     headerRightSlot?: React.ReactNode;
-    /** ToolStickyHeader に追加する className */
     headerClassName?: string;
 }
 
-/**
- * ツールページの共通外枠。
- * ページ背景・ToolStickyHeader・main コンテナを内包する。
- *
- * @example
- * ```tsx
- * <ToolPageLayout title="電卓">
- *   <ToolPanel>...</ToolPanel>
- * </ToolPageLayout>
- * ```
- */
 export function ToolPageLayout({
     title,
     children,
@@ -58,9 +43,9 @@ export function ToolPageLayout({
     const toolContext = useMemo(() => findToolByPathname(pathname), [pathname]);
 
     return (
-        <div className={`min-h-screen transition-colors duration-300 ${pageCls}`}>
+        <>
             {toolContext && (
-                <div className={`w-full ${maxWidthClass[maxWidth]} mx-auto px-4 pt-4 pb-2`}>
+                <div className="px-4 pt-4 pb-2">
                     <nav aria-label="パンくずリスト" className="flex flex-wrap items-center gap-2 text-sm opacity-70 sm:text-base">
                         <Link href="/" className="transition-opacity hover:opacity-100">
                             トップページ
@@ -74,16 +59,17 @@ export function ToolPageLayout({
                     </nav>
                 </div>
             )}
-            <ToolStickyHeader
-                title={title}
-                rightSlot={headerRightSlot}
-                className={`bg-gray-800 text-white ${headerClassName}`.trim()}
-            />
-            <main
-                className={`w-full ${maxWidthClass[maxWidth]} mx-auto px-4 pt-4 pb-10 text-base sm:text-lg`}
-            >
-                {children}
-            </main>
-        </div>
+
+            <div className={`min-h-screen transition-colors duration-300 ${pageCls}`}>
+                <ToolStickyHeader
+                    title={title}
+                    rightSlot={headerRightSlot}
+                    className={`bg-gray-800 text-white ${headerClassName}`.trim()}
+                />
+                <main className={`w-full ${maxWidthClass[maxWidth]} mx-auto px-4 pt-4 pb-10 text-base sm:text-lg`}>
+                    {children}
+                </main>
+            </div>
+        </>
     );
 }
