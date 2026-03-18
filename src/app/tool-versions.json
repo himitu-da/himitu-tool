@@ -1258,9 +1258,9 @@
     {
       "id": "year-timer",
       "title": "year-timer",
-      "version": "1.0.1",
+      "version": "1.0.4",
       "updatedAt": "2026-03-18",
-      "changeSummary": "Rename default theme key to light",
+      "changeSummary": "Align percent baseline and add time breakdown",
       "history": [
         {
           "version": "1.0.0",
@@ -1271,6 +1271,21 @@
           "version": "1.0.1",
           "updatedAt": "2026-03-18",
           "summary": "Rename default theme key to light"
+        },
+        {
+          "version": "1.0.2",
+          "updatedAt": "2026-03-18",
+          "summary": "Add fullscreen mode and expand font styling"
+        },
+        {
+          "version": "1.0.3",
+          "updatedAt": "2026-03-18",
+          "summary": "Tighten fullscreen layout and percent symbol position"
+        },
+        {
+          "version": "1.0.4",
+          "updatedAt": "2026-03-18",
+          "summary": "Align percent baseline and add time breakdown"
         }
       ]
     }
