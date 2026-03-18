@@ -8,6 +8,7 @@ export function ThemeWrapper({ children }: { children: React.ReactNode }) {
 
   const getThemeClasses = () => {
     switch (theme) {
+      case 'light': return 'bg-white text-gray-900';
       case 'dark': return 'bg-gray-900 text-gray-100';
       case 'ocean': return 'bg-cyan-900 text-cyan-50';
       default: return 'bg-white text-gray-900';

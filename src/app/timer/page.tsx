@@ -482,12 +482,12 @@ export default function TimerPage() {
             className={`relative w-full max-w-lg p-6 rounded-3xl shadow-2xl transition-all ${panelCls}`}
             onClick={e => e.stopPropagation()}
           >
-            <button onClick={() => setIsSettingsOpen(false)} className={`absolute top-4 right-4 transition-colors ${theme === 'default' ? 'text-gray-500 hover:text-gray-800' : 'text-gray-400 hover:text-white'}`}>
+            <button onClick={() => setIsSettingsOpen(false)} className={`absolute top-4 right-4 transition-colors ${theme === 'light' ? 'text-gray-500 hover:text-gray-800' : 'text-gray-400 hover:text-white'}`}>
               <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
             </button>
             <h2 className="text-2xl font-bold mb-6">設定</h2>
 
-            <div className={`flex border-b mb-6 overflow-x-auto select-none ${theme === 'default' ? 'border-gray-300' : 'border-gray-600'}`}>
+            <div className={`flex border-b mb-6 overflow-x-auto select-none ${theme === 'light' ? 'border-gray-300' : 'border-gray-600'}`}>
               {['basic', 'sound', 'advanced'].map(tab => (
                 <button
                   key={tab}
@@ -504,7 +504,7 @@ export default function TimerPage() {
             <div className="py-2 h-64 overflow-y-auto pr-2">
               {activeTab === 'basic' && (
                 <div className="space-y-6">
-                  <h3 className={`font-semibold text-lg border-b border-opacity-20 pb-2 ${theme === 'default' ? 'border-gray-300' : 'border-gray-600'}`}>基本設定</h3>
+                  <h3 className={`font-semibold text-lg border-b border-opacity-20 pb-2 ${theme === 'light' ? 'border-gray-300' : 'border-gray-600'}`}>基本設定</h3>
                   <div className={`flex justify-between items-center p-3 rounded-lg border ${getSettingItemClasses()}`}>
                     <label>デフォルト時間（分）:</label>
                     <input type="number" min="0" max="99" value={settings.defaultMinutes} onChange={e => {
@@ -548,7 +548,7 @@ export default function TimerPage() {
 
               {activeTab === 'sound' && (
                 <div className="space-y-6">
-                  <h3 className={`font-semibold text-lg border-b border-opacity-20 pb-2 ${theme === 'default' ? 'border-gray-300' : 'border-gray-600'}`}>音声設定</h3>
+                  <h3 className={`font-semibold text-lg border-b border-opacity-20 pb-2 ${theme === 'light' ? 'border-gray-300' : 'border-gray-600'}`}>音声設定</h3>
                   <div className={`flex justify-between items-center p-3 rounded-lg border ${getSettingItemClasses()}`}>
                     <label>アラーム音:</label>
                     <select
@@ -578,7 +578,7 @@ export default function TimerPage() {
 
               {activeTab === 'advanced' && (
                 <div className="space-y-6">
-                  <h3 className={`font-semibold text-lg border-b border-opacity-20 pb-2 ${theme === 'default' ? 'border-gray-300' : 'border-gray-600'}`}>詳細設定</h3>
+                  <h3 className={`font-semibold text-lg border-b border-opacity-20 pb-2 ${theme === 'light' ? 'border-gray-300' : 'border-gray-600'}`}>詳細設定</h3>
                   <div className={`flex items-center justify-between p-4 rounded-lg border ${getSettingItemClasses()}`}>
                     <label>ミリ秒表示を有効にする:</label>
                     <label className="relative inline-flex items-center cursor-pointer">
@@ -588,7 +588,7 @@ export default function TimerPage() {
                         onChange={e => updateSettingStore('enableMilliseconds', e.target.checked)}
                         className="sr-only peer"
                       />
-                      <div className={`w-14 h-7 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-blue-500 ${theme === 'default' ? 'bg-gray-300' : 'bg-gray-600'}`}></div>
+                      <div className={`w-14 h-7 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-blue-500 ${theme === 'light' ? 'bg-gray-300' : 'bg-gray-600'}`}></div>
                     </label>
                   </div>
                 </div>
@@ -624,7 +624,7 @@ export default function TimerPage() {
               setIsQuickSettingsOpen(false);
             }}>10分セット</button>
 
-            <div className={`h-px w-full my-1 ${theme === 'default' ? 'bg-gray-200' : 'bg-gray-700'}`} />
+            <div className={`h-px w-full my-1 ${theme === 'light' ? 'bg-gray-200' : 'bg-gray-700'}`} />
 
 
             <button className={`w-full text-left px-5 py-3 transition-colors flex items-center justify-between ${getButtonHoverClasses()}`} onClick={() => {
@@ -632,7 +632,7 @@ export default function TimerPage() {
               setIsQuickSettingsOpen(false);
             }}>
               サウンド
-              <span className={`text-sm font-bold px-2 py-1 rounded ${settings.muted ? (theme === 'default' ? 'bg-red-100 text-red-600' : 'bg-red-900/30 text-red-600') : (theme === 'default' ? 'bg-green-100 text-green-600' : 'bg-green-900/30 text-green-600')}`}>
+              <span className={`text-sm font-bold px-2 py-1 rounded ${settings.muted ? (theme === 'light' ? 'bg-red-100 text-red-600' : 'bg-red-900/30 text-red-600') : (theme === 'light' ? 'bg-green-100 text-green-600' : 'bg-green-900/30 text-green-600')}`}>
                 {settings.muted ? 'OFF' : 'ON'}
               </span>
             </button>

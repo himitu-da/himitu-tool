@@ -27,6 +27,8 @@ export function HamburgerMenu() {
     // Handle sidebar colors based on theme
     const getSidebarStyle = () => {
         switch (theme) {
+            case "light":
+                return "bg-white text-gray-900";
             case "dark":
                 return "bg-gray-900 text-white";
             case "ocean":
@@ -38,6 +40,8 @@ export function HamburgerMenu() {
 
     const getItemHoverStyle = () => {
         switch (theme) {
+            case "light":
+                return "hover:bg-black/5";
             case "dark":
                 return "hover:bg-white/10";
             case "ocean":
@@ -49,6 +53,8 @@ export function HamburgerMenu() {
 
     const getSubMenuBgStyle = () => {
         switch (theme) {
+            case "light":
+                return "bg-black/5";
             case "dark":
                 return "bg-white/5";
             case "ocean":

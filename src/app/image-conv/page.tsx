@@ -444,7 +444,7 @@ export default function ImageConvPage() {
     }
   })();
 
-  const cardSurfaceCls = theme === "default" ? "bg-white" : "bg-black/10";
+  const cardSurfaceCls = theme === "light" ? "bg-white" : "bg-black/10";
 
   return (
     <ToolPageLayout title="画像拡張子変換ツール" maxWidth="5xl">

@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState } from "react";
 
-export type Theme = "default" | "dark" | "ocean";
+export type Theme = "light" | "dark" | "ocean";
 
 interface ThemeContextType {
   theme: Theme;
@@ -10,21 +10,35 @@ interface ThemeContextType {
   mounted: boolean;
 }
 
-const ThemeContext = createContext<ThemeContextType>({ theme: "default", setTheme: () => {}, mounted: false });
+const ThemeContext = createContext<ThemeContextType>({ theme: "light", setTheme: () => {}, mounted: false });
+
+function normalizeTheme(theme: string | null): Theme | null {
+  switch (theme) {
+    case "light":
+    case "dark":
+    case "ocean":
+      return theme;
+    case "default":
+      return "light";
+    default:
+      return null;
+  }
+}
 
 export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
-  const [theme, setThemeState] = useState<Theme>("default");
+  const [theme, setThemeState] = useState<Theme>("light");
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    const savedTheme = localStorage.getItem("globalTheme") as Theme;
+    const savedTheme = normalizeTheme(localStorage.getItem("globalTheme"));
     if (savedTheme) {
       setThemeState(savedTheme);
+      localStorage.setItem("globalTheme", savedTheme);
     } else {
-      // 以前のタイマーアプリのテーマ設定を引き継ぐ（あれば）
-      const oldTimerTheme = localStorage.getItem("timerTheme") as Theme;
+      const oldTimerTheme = normalizeTheme(localStorage.getItem("timerTheme"));
       if (oldTimerTheme) {
         setThemeState(oldTimerTheme);
+        localStorage.setItem("globalTheme", oldTimerTheme);
       }
     }
     setMounted(true);
