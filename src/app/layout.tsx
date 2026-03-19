@@ -1,4 +1,4 @@
-﻿import type { Metadata } from "next";
+import type { Metadata } from "next";
 import Script from "next/script";
 import { ThemeProvider } from "./ThemeProvider";
 import { GlobalHeader } from "./GlobalHeader";
