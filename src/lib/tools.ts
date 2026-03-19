@@ -1,4 +1,4 @@
-﻿type RawTool = {
+type RawTool = {
   title: string;
   path: string;
   icon: string;
