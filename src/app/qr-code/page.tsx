@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import QRCode from "qrcode";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";

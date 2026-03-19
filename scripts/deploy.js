@@ -1,4 +1,4 @@
-﻿require('dotenv').config({ path: '.env.local' });
+require('dotenv').config({ path: '.env.local' });
 const ftp = require('basic-ftp');
 const path = require('path');
 
