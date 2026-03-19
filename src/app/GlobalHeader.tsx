@@ -16,6 +16,8 @@ export function GlobalHeader() {
         return "bg-gray-800 text-white";
       case "ocean":
         return "bg-cyan-800 text-white";
+      case "classic":
+        return "bg-gray-200 text-black border-b-2 border-gray-400 font-serif";
       default:
         return "bg-gray-100 text-gray-900";
     }
@@ -29,6 +31,8 @@ export function GlobalHeader() {
         return "text-blue-400 hover:text-blue-300";
       case "ocean":
         return "text-cyan-200 hover:text-cyan-100";
+      case "classic":
+        return "text-blue-800 underline hover:text-purple-800";
       default:
         return "text-blue-600 hover:text-blue-800";
     }
@@ -42,6 +46,8 @@ export function GlobalHeader() {
         return "bg-gray-700 text-white focus:ring-blue-500";
       case "ocean":
         return "bg-cyan-700 text-white focus:ring-cyan-400";
+      case "classic":
+        return "bg-white text-black border-2 border-gray-400 rounded-none focus:ring-0";
       default:
         return "bg-white text-gray-900 focus:ring-blue-500";
     }
@@ -80,6 +86,7 @@ export function GlobalHeader() {
             <option value="light">ライト</option>
             <option value="dark">ダーク</option>
             <option value="ocean">オーシャン</option>
+            <option value="classic">クラシック</option>
           </select>
         </div>
       </div>

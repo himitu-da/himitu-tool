@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState } from "react";
 
-export type Theme = "light" | "dark" | "ocean";
+export type Theme = "light" | "dark" | "ocean" | "classic";
 
 interface ThemeContextType {
   theme: Theme;
@@ -17,6 +17,7 @@ function normalizeTheme(theme: string | null): Theme | null {
     case "light":
     case "dark":
     case "ocean":
+    case "classic":
       return theme;
     case "default":
       return "light";

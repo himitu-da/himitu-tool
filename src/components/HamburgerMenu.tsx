@@ -33,6 +33,8 @@ export function HamburgerMenu() {
                 return "bg-gray-900 text-white";
             case "ocean":
                 return "bg-cyan-900 text-white";
+            case "classic":
+                return "bg-gray-200 text-black border-r-2 border-gray-400 font-serif";
             default:
                 return "bg-white text-gray-900";
         }
@@ -46,6 +48,8 @@ export function HamburgerMenu() {
                 return "hover:bg-white/10";
             case "ocean":
                 return "hover:bg-white/10";
+            case "classic":
+                return "hover:bg-gray-300 border focus:border-black rounded-none";
             default:
                 return "hover:bg-black/5";
         }
@@ -59,6 +63,8 @@ export function HamburgerMenu() {
                 return "bg-white/5";
             case "ocean":
                 return "bg-black/10";
+            case "classic":
+                return "bg-gray-100 border border-gray-400 rounded-none";
             default:
                 return "bg-black/5";
         }

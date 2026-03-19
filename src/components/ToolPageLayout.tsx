@@ -38,7 +38,7 @@ export function ToolPageLayout({
     headerRightSlot,
     headerClassName = "",
 }: ToolPageLayoutProps) {
-    const { pageCls } = useToolTheme();
+    const { theme, pageCls } = useToolTheme();
     const pathname = usePathname();
     const toolContext = useMemo(() => findToolByPathname(pathname), [pathname]);
 
@@ -64,7 +64,7 @@ export function ToolPageLayout({
                 <ToolStickyHeader
                     title={title}
                     rightSlot={headerRightSlot}
-                    className={`bg-gray-800 text-white ${headerClassName}`.trim()}
+                    className={`${theme === "classic" ? "bg-gray-200 text-black border-y-2 border-gray-400 font-serif" : "bg-gray-800 text-white"} ${headerClassName}`.trim()}
                 />
                 <main className={`w-full ${maxWidthClass[maxWidth]} mx-auto px-4 pt-4 pb-10 text-base sm:text-lg`}>
                     {children}
