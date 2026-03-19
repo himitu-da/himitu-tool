@@ -701,9 +701,9 @@
     {
       "id": "password-generator",
       "title": "パスワード生成",
-      "version": "2.2.0",
+      "version": "2.3.0",
       "updatedAt": "2026-03-19",
-      "changeSummary": "Refine presets to patterns, simplify formats, add quick numeric selectors and UI enhancements",
+      "changeSummary": "簡易・詳細生成モードの分離と全面UI刷新、生成文字数の複数選択対応、文字カスタム機能追加",
       "history": [
         {
           "version": "1.0.0",
@@ -739,6 +739,11 @@
           "version": "2.2.0",
           "updatedAt": "2026-03-19",
           "summary": "Refine presets to patterns, simplify formats, add quick numeric selectors and UI enhancements"
+        },
+        {
+          "version": "2.3.0",
+          "updatedAt": "2026-03-19",
+          "summary": "簡易・詳細生成モードの分離と全面UI刷新、生成文字数の複数選択対応、文字カスタム機能追加"
         }
       ]
     },

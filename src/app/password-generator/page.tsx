@@ -16,6 +16,14 @@ const AMBIGUOUS = "O0oIl1|`'\"";
 const LENGTH_OPTIONS = [4, 6, 8, 10, 12, 14, 16, 20, 24, 28, 32, 36, 40, 48, 64, 128];
 const COUNT_OPTIONS = [1, 5, 10, 20, 50, 100];
 
+const SIMPLE_LENGTH_OPTIONS = [
+  { id: 4, label: "非常に短い", sub: "4文字" },
+  { id: 8, label: "短い", sub: "8文字" },
+  { id: 12, label: "普通", sub: "12文字" },
+  { id: 16, label: "やや長い", sub: "16文字" },
+  { id: 20, label: "長い", sub: "20文字" },
+];
+
 type SettingMode = "simple" | "detailed";
 type SimplePatternId = "numbers" | "alphanumeric" | "symbols";
 type StrengthLevel = "weak" | "fair" | "strong" | "excellent";
@@ -29,22 +37,26 @@ type GeneratorSettings = {
   includeSymbols: boolean;
   excludeAmbiguous: boolean;
   ensureEverySet: boolean;
+  distribution: "proportional" | "equal";
   charset: string;
   isCharsetEdited: boolean;
 };
 
 type SimpleSettings = {
   pattern: SimplePatternId;
-  lengthType: 6 | 8 | 12;
+  selectedLengths: number[];
   excludeAmbiguous: boolean;
+  distribution: "proportional" | "equal";
 };
 
 type GeneratedItem = {
   id: string;
   value: string;
+  length: number;
   entropy: number;
   strength: StrengthLevel;
   detail: string;
+  label?: string;
 };
 
 function clamp(value: number, min: number, max: number) {
@@ -154,6 +166,7 @@ const DEFAULT_SETTINGS: GeneratorSettings = {
   includeSymbols: false,
   excludeAmbiguous: true,
   ensureEverySet: true,
+  distribution: "proportional",
   charset: "",
   isCharsetEdited: false,
 };
@@ -175,11 +188,26 @@ function generateRandomBatch(settings: GeneratorSettings) {
   let attempts = 0;
   const limit = Math.max(1000, settings.count * 100);
   
+  let buckets: string[] = [];
+  if (settings.distribution === "equal") {
+    const b1 = chars.split('').filter(c => LOWERCASE.includes(c)).join('');
+    const b2 = chars.split('').filter(c => UPPERCASE.includes(c)).join('');
+    const b3 = chars.split('').filter(c => NUMBERS.includes(c)).join('');
+    const b4 = chars.split('').filter(c => SYMBOLS.includes(c)).join('');
+    const b5 = chars.split('').filter(c => !LOWERCASE.includes(c) && !UPPERCASE.includes(c) && !NUMBERS.includes(c) && !SYMBOLS.includes(c)).join('');
+    buckets = [b1, b2, b3, b4, b5].filter(b => b.length > 0);
+  }
+
   while (results.length < settings.count && attempts < limit) {
     attempts++;
     let pwd = "";
     for (let i = 0; i < settings.length; i++) {
-        pwd += pickRandomChar(chars);
+        if (settings.distribution === "equal" && buckets.length > 0) {
+            const bucket = buckets[randomInt(buckets.length)];
+            pwd += pickRandomChar(bucket);
+        } else {
+            pwd += pickRandomChar(chars);
+        }
     }
     
     if (!settings.isCharsetEdited && settings.ensureEverySet) {
@@ -196,6 +224,7 @@ function generateRandomBatch(settings: GeneratorSettings) {
       results.push({
         id: createId(),
         value: pwd,
+        length: settings.length,
         entropy,
         strength,
         detail: `${chars.length} 種類の文字から構成`,
@@ -204,7 +233,7 @@ function generateRandomBatch(settings: GeneratorSettings) {
   }
 
   if (results.length < settings.count) {
-    throw new Error("条件が厳しすぎるか、十分な数の一意な結果を生成できませんでした。");
+    throw new Error(`【長さ: ${settings.length}文字】条件が厳しすぎるか、十分な数の一意な結果を生成できませんでした。パスワード長を増やすなどしてください。`);
   }
   return results;
 }
@@ -216,8 +245,9 @@ export default function PasswordGeneratorPage() {
 
   const [simpleSettings, setSimpleSettings] = useState<SimpleSettings>({
     pattern: "alphanumeric",
-    lengthType: 8,
+    selectedLengths: [12, 16, 20],
     excludeAmbiguous: true,
+    distribution: "equal",
   });
 
   const [settings, setSettings] = useState<GeneratorSettings>(() => {
@@ -267,6 +297,18 @@ export default function PasswordGeneratorPage() {
     });
   };
 
+  const toggleChar = (c: string) => {
+    setSettings((prev) => {
+      let newCharset = prev.charset;
+      if (newCharset.includes(c)) {
+        newCharset = newCharset.replace(c, '');
+      } else {
+        newCharset += c;
+      }
+      return { ...prev, charset: newCharset, isCharsetEdited: true };
+    });
+  };
+
   const updateSimple = <K extends keyof SimpleSettings>(key: K, value: SimpleSettings[K]) => {
     setSimpleSettings((prev) => {
       const next = { ...prev, [key]: value };
@@ -277,54 +319,78 @@ export default function PasswordGeneratorPage() {
 
   const generate = (mode: SettingMode = settingMode, currentSimple = simpleSettings, currentDetailed = settings) => {
     try {
-      let runSettings: GeneratorSettings;
-      
       if (mode === "simple") {
-        const next: GeneratorSettings = {
-          ...DEFAULT_SETTINGS,
-          length: currentSimple.lengthType,
-          count: 5,
-          excludeAmbiguous: currentSimple.excludeAmbiguous,
-          ensureEverySet: true,
-          isCharsetEdited: false,
-        };
+        let allResults: GeneratedItem[] = [];
+        
+        if (currentSimple.selectedLengths.length === 0) {
+           setResults([]);
+           setError("");
+           return;
+        }
 
-        if (currentSimple.pattern === 'numbers') {
-          next.includeLowercase = false;
-          next.includeUppercase = false;
-          next.includeNumbers = true;
-          next.includeSymbols = false;
-        } else if (currentSimple.pattern === 'alphanumeric') {
-          next.includeLowercase = true;
-          next.includeUppercase = true;
-          next.includeNumbers = true;
-          next.includeSymbols = false;
-        } else if (currentSimple.pattern === 'symbols') {
-          next.includeLowercase = true;
-          next.includeUppercase = true;
-          next.includeNumbers = true;
-          next.includeSymbols = true;
+        // 選択された数のパスワード長ごとに生成する
+        for (const lenId of currentSimple.selectedLengths) {
+          const next: GeneratorSettings = {
+            ...DEFAULT_SETTINGS,
+            length: lenId,
+            count: 5,
+            excludeAmbiguous: currentSimple.excludeAmbiguous,
+            ensureEverySet: true,
+            distribution: currentSimple.distribution,
+            isCharsetEdited: false,
+          };
+
+          if (currentSimple.pattern === 'numbers') {
+            next.includeLowercase = false;
+            next.includeUppercase = false;
+            next.includeNumbers = true;
+            next.includeSymbols = false;
+          } else if (currentSimple.pattern === 'alphanumeric') {
+            next.includeLowercase = true;
+            next.includeUppercase = true;
+            next.includeNumbers = true;
+            next.includeSymbols = false;
+          } else if (currentSimple.pattern === 'symbols') {
+            next.includeLowercase = true;
+            next.includeUppercase = true;
+            next.includeNumbers = true;
+            next.includeSymbols = true;
+          }
+          
+          let pool = "";
+          if (next.includeLowercase) pool += LOWERCASE;
+          if (next.includeUppercase) pool += UPPERCASE;
+          if (next.includeNumbers) pool += NUMBERS;
+          if (next.includeSymbols) pool += SYMBOLS;
+          if (next.excludeAmbiguous) {
+             pool = pool.split('').filter(c => !AMBIGUOUS.includes(c)).join('');
+          }
+          next.charset = uniqueChars(pool);
+
+          const batchLabel = SIMPLE_LENGTH_OPTIONS.find(o => o.id === lenId)?.label || "";
+          const batchResults = generateRandomBatch(next);
+
+          batchResults.forEach(item => {
+             item.label = `${lenId}文字 (${batchLabel})`;
+          });
+
+          allResults = allResults.concat(batchResults);
         }
-        
-        let pool = "";
-        if (next.includeLowercase) pool += LOWERCASE;
-        if (next.includeUppercase) pool += UPPERCASE;
-        if (next.includeNumbers) pool += NUMBERS;
-        if (next.includeSymbols) pool += SYMBOLS;
-        if (next.excludeAmbiguous) {
-           pool = pool.split('').filter(c => !AMBIGUOUS.includes(c)).join('');
-        }
-        next.charset = uniqueChars(pool);
-        
-        runSettings = next;
+
+        setResults(allResults);
+        setError("");
+        setCopiedMessage("");
+
       } else {
-        runSettings = currentDetailed;
+        // 詳細設定の生成
+        const nextResults = generateRandomBatch(currentDetailed);
+        nextResults.forEach(item => {
+            item.label = `${currentDetailed.length}文字`;
+        });
+        setResults(nextResults);
+        setError("");
+        setCopiedMessage("");
       }
-
-      const nextResults = generateRandomBatch(runSettings);
-      setResults(nextResults);
-      setError("");
-      setCopiedMessage("");
     } catch (generationError) {
       setResults([]);
       setError(generationError instanceof Error ? generationError.message : "生成に失敗しました。");
@@ -354,6 +420,40 @@ export default function PasswordGeneratorPage() {
     }
   };
 
+  const CharsetButtons = ({ source, label }: { source: string, label: string }) => {
+    return (
+      <div className="mt-3 p-3 bg-black/5 dark:bg-white/5 rounded-xl border border-black/10 dark:border-white/10">
+        <div className={`text-xs font-semibold mb-2 ${mutedTextCls}`}>{label}のカスタマイズ</div>
+        <div className="flex flex-wrap gap-1.5">
+          {source.split('').map(c => {
+            const isActive = settings.charset.includes(c);
+            return (
+              <button
+                key={c}
+                type="button"
+                onClick={() => toggleChar(c)}
+                className={`w-9 h-9 flex items-center justify-center rounded-lg font-mono text-sm sm:text-base outline-none transition-all ${
+                  isActive 
+                  ? 'bg-blue-500 text-white shadow-sm font-bold scale-100' 
+                  : 'bg-transparent text-gray-500 hover:bg-black/10 dark:hover:bg-white/10 scale-[0.98]'
+                }`}
+              >
+                {c}
+              </button>
+            )
+          })}
+        </div>
+      </div>
+    );
+  };
+
+  const groupedResults = results.reduce((acc, item) => {
+     const key = item.label || `${item.length}文字`;
+     if (!acc[key]) acc[key] = [];
+     acc[key].push(item);
+     return acc;
+  }, {} as Record<string, GeneratedItem[]>);
+
   return (
     <ToolPageLayout title="パスワード生成" maxWidth="6xl">
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1.2fr)_minmax(340px,0.9fr)] items-start">
@@ -370,7 +470,7 @@ export default function PasswordGeneratorPage() {
               }}
               className={`flex-1 rounded-xl py-3 text-sm font-semibold transition-all ${settingMode === "simple" ? 'bg-white dark:bg-zinc-800 shadow shadow-black/5 dark:shadow-black/20 text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 hover:bg-black/5 dark:hover:bg-white/5'}`}
             >
-              簡易設定
+              簡易生成
             </button>
             <button
               type="button"
@@ -380,7 +480,7 @@ export default function PasswordGeneratorPage() {
               }}
               className={`flex-1 rounded-xl py-3 text-sm font-semibold transition-all ${settingMode === "detailed" ? 'bg-white dark:bg-zinc-800 shadow shadow-black/5 dark:shadow-black/20 text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 hover:bg-black/5 dark:hover:bg-white/5'}`}
             >
-              詳細設定
+              詳細生成
             </button>
           </div>
 
@@ -409,23 +509,35 @@ export default function PasswordGeneratorPage() {
               <hr className="border-black/5 dark:border-white/5" />
 
               <div className="space-y-3">
-                <h2 className="text-lg font-semibold">文字数の選択</h2>
+                <div className="flex justify-between items-end">
+                  <h2 className="text-lg font-semibold">文字数の選択</h2>
+                  <span className={`text-xs ${mutedTextCls}`}>複数選択可能</span>
+                </div>
                 <div className="grid gap-2 sm:grid-cols-3">
-                  {[
-                    { id: 6, label: "短め", sub: "6文字" },
-                    { id: 8, label: "普通", sub: "8文字" },
-                    { id: 12, label: "長め", sub: "12文字" },
-                  ].map((len) => (
-                    <button
-                      key={len.id}
-                      type="button"
-                      onClick={() => updateSimple('lengthType', len.id as 6|8|12)}
-                      className={`rounded-2xl p-4 text-center transition-colors border ${simpleSettings.lengthType === len.id ? 'border-blue-500 bg-blue-500/10' : `border-transparent bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10`}`}
-                    >
-                      <div className="font-semibold">{len.label}</div>
-                      <div className="text-xs mt-1 opacity-75">{len.sub}</div>
-                    </button>
-                  ))}
+                  {SIMPLE_LENGTH_OPTIONS.map((len) => {
+                    const isActive = simpleSettings.selectedLengths.includes(len.id);
+                    return (
+                      <button
+                        key={len.id}
+                        type="button"
+                        onClick={() => {
+                           const current = simpleSettings.selectedLengths;
+                           let nextLengths;
+                           if (current.includes(len.id)) {
+                             nextLengths = current.filter(id => id !== len.id);
+                             if (nextLengths.length === 0) nextLengths = [len.id];
+                           } else {
+                             nextLengths = [...current, len.id].sort((a,b) => a - b);
+                           }
+                           updateSimple('selectedLengths', nextLengths);
+                        }}
+                        className={`rounded-2xl p-4 text-center transition-colors border ${isActive ? 'border-blue-500 bg-blue-500/10' : `border-transparent bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10`}`}
+                      >
+                        <div className="font-semibold">{len.label}</div>
+                        <div className="text-xs mt-1 opacity-75">{len.sub}</div>
+                      </button>
+                    )
+                  })}
                 </div>
               </div>
 
@@ -436,8 +548,8 @@ export default function PasswordGeneratorPage() {
                 <label className={`flex items-center gap-3 rounded-xl p-4 cursor-pointer transition-colors border ${simpleSettings.excludeAmbiguous ? 'border-blue-500 bg-blue-500/10' : `border-transparent bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10`}`}>
                   <input type="checkbox" checked={simpleSettings.excludeAmbiguous} onChange={(event) => updateSimple("excludeAmbiguous", event.target.checked)} className={`h-5 w-5 ${accentCls}`} />
                   <div>
-                    <span className="block font-medium">紛らわしい文字を除外する</span>
-                    <span className="block text-xs mt-0.5 opacity-70">(I, l, 1, O, 0 など)</span>
+                     <span className="block font-medium">紛らわしい文字を除外する</span>
+                     <span className="block text-xs mt-0.5 opacity-70">(I, l, 1, O, 0 など)</span>
                   </div>
                 </label>
               </div>
@@ -457,7 +569,7 @@ export default function PasswordGeneratorPage() {
               <div className="space-y-4">
                  <div>
                     <h2 className="text-lg font-semibold">1. 使用する文字</h2>
-                    <p className={`text-sm mt-1 mb-3 ${mutedTextCls}`}>チェックボックスでオンオフを切り替えるか、テキストフィールドから直接編集できます。</p>
+                    <p className={`text-sm mt-1 mb-3 ${mutedTextCls}`}>下のボタンをタップして特定の文字だけを除外・追加したり、テキストフィールドから直接編集できます。</p>
                  </div>
                  
                  <div className="grid gap-3 sm:grid-cols-2">
@@ -479,7 +591,14 @@ export default function PasswordGeneratorPage() {
                    </label>
                  </div>
 
-                 <div className="pt-2 space-y-3">
+                 <div className="pt-2">
+                   {settings.includeLowercase && <CharsetButtons source={LOWERCASE} label="英小文字" />}
+                   {settings.includeUppercase && <CharsetButtons source={UPPERCASE} label="英大文字" />}
+                   {settings.includeNumbers && <CharsetButtons source={NUMBERS} label="数字" />}
+                   {settings.includeSymbols && <CharsetButtons source={SYMBOLS} label="記号" />}
+                 </div>
+
+                 <div className="pt-4 space-y-3 border-t border-black/5 dark:border-white/5">
                    <label className={`flex items-center gap-3 rounded-xl p-3 cursor-pointer transition-colors border ${settings.excludeAmbiguous ? 'border-blue-500 bg-blue-500/10' : 'border-transparent bg-black/5 dark:bg-white/5'}`}>
                      <input type="checkbox" checked={settings.excludeAmbiguous} onChange={(event) => updateSetting("excludeAmbiguous", event.target.checked)} className={`h-4 w-4 ${accentCls}`} />
                      <span className="font-medium text-sm">紛らわしい文字を除外 (I, l, 1, O, 0 など)</span>
@@ -488,11 +607,15 @@ export default function PasswordGeneratorPage() {
                      <input type="checkbox" checked={settings.ensureEverySet} onChange={(event) => updateSetting("ensureEverySet", event.target.checked)} className={`h-4 w-4 ${accentCls}`} />
                      <span className="font-medium text-sm">有効な文字種を少なくとも1文字ずつ含める</span>
                    </label>
+                   <label className={`flex items-center gap-3 rounded-xl p-3 cursor-pointer transition-colors border ${settings.distribution === 'equal' ? 'border-blue-500 bg-blue-500/10' : 'border-transparent bg-black/5 dark:bg-white/5'}`}>
+                     <input type="checkbox" checked={settings.distribution === 'equal'} onChange={(event) => updateSetting("distribution", event.target.checked ? "equal" : "proportional")} className={`h-4 w-4 ${accentCls}`} />
+                     <span className="font-medium text-sm">文字種が均等な割合で出現するようにする</span>
+                   </label>
                  </div>
 
-                 <div className="space-y-2 mt-4 pt-4">
+                 <div className="space-y-2 mt-4 pt-4 border-t border-black/5 dark:border-white/5">
                    <div className="flex justify-between items-end">
-                     <label className="text-sm font-semibold">生成に使われる文字一覧</label>
+                     <label className="text-sm font-semibold">生成に使われる文字コード全体</label>
                      {settings.isCharsetEdited && (
                        <span className="text-xs text-amber-500 font-bold px-2 py-0.5 rounded bg-amber-500/20">カスタム編集中</span>
                      )}
@@ -610,7 +733,7 @@ export default function PasswordGeneratorPage() {
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-xl font-bold">パスワード</h2>
-                {results.length > 0 && (
+                {results.length > 0 && settingMode === "detailed" && (
                   <div className="flex items-center gap-2 mt-2">
                     <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${strengthBadge(results[0].strength, theme)}`}>
                       強度: {strengthLabel(results[0].strength)}
@@ -634,21 +757,41 @@ export default function PasswordGeneratorPage() {
               </div>
             </div>
 
-            <div className="flex flex-wrap gap-3">
-              {results.length > 0 ? results.map((item) => (
-                <div 
-                  key={item.id} 
-                  className="flex items-center gap-3 px-5 py-3 rounded-full border border-gray-200 dark:border-gray-800 bg-white dark:bg-zinc-900 shadow-sm transition-colors hover:border-blue-500/50 cursor-pointer"
-                  onClick={() => copyText(item.value)}
-                >
-                  <div className="font-mono text-lg">{item.value}</div>
-                  <button 
-                    type="button" 
-                    className="p-1 rounded-full text-gray-400 hover:text-black dark:hover:text-white transition-colors"
-                    aria-label="コピー"
-                  >
-                    <Copy size={16} />
-                  </button>
+            <div className="space-y-6">
+              {Object.keys(groupedResults).length > 0 ? Object.entries(groupedResults).map(([groupLabel, items]) => (
+                <div key={groupLabel} className="space-y-3">
+                  {/* 見出し (長さ・文字数ごと) */}
+                  <div className="flex items-center gap-3 border-b border-black/10 dark:border-white/10 pb-2 mb-3">
+                     <h3 className="text-sm font-bold opacity-80">{groupLabel}</h3>
+                     {settingMode === "simple" && items[0] && (
+                        <div className="flex items-center gap-2 text-xs">
+                           <span className={`px-1.5 py-0.5 rounded ${strengthBadge(items[0].strength, theme)}`}>
+                             {strengthLabel(items[0].strength)}
+                           </span>
+                           <span className="px-1.5 py-0.5 rounded bg-black/5 dark:bg-white/5 opacity-70">
+                             {Math.round(items[0].entropy)} bits
+                           </span>
+                        </div>
+                     )}
+                  </div>
+                  <div className="flex flex-wrap gap-3">
+                    {items.map((item) => (
+                      <div 
+                        key={item.id} 
+                        className="flex items-center gap-3 px-5 py-3 rounded-full border border-gray-200 dark:border-gray-800 bg-white dark:bg-zinc-900 shadow-sm transition-colors hover:border-blue-500/50 cursor-pointer"
+                        onClick={() => copyText(item.value)}
+                      >
+                        <div className="font-mono text-lg">{item.value}</div>
+                        <button 
+                          type="button" 
+                          className="p-1 rounded-full text-gray-400 hover:text-black dark:hover:text-white transition-colors"
+                          aria-label="コピー"
+                        >
+                          <Copy size={16} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )) : (
                 <div className={`p-8 w-full rounded-2xl text-center ${mutedTextCls} bg-black/5 dark:bg-white/5`}>
@@ -676,10 +819,15 @@ export default function PasswordGeneratorPage() {
                </div>
                <div className={`rounded-2xl p-4 text-sm bg-black/5 dark:bg-white/5`}>
                   <div className={`text-xs mb-1 ${mutedTextCls}`}>セキュリティ強度目安</div>
-                  <div className="font-bold text-lg">{strengthLabel(results[0]?.strength || "fair")}</div>
+                  <div className="font-bold text-sm">
+                    {settingMode === "simple" && simpleSettings.selectedLengths.length > 0 
+                      ? `${strengthLabel(strengthFromEntropy(calculateEntropy(uniqueChars((simpleSettings.pattern === "numbers" ? NUMBERS : LOWERCASE + UPPERCASE + NUMBERS + (simpleSettings.pattern === "symbols" ? SYMBOLS : "")).split('').filter(c => !simpleSettings.excludeAmbiguous || !AMBIGUOUS.includes(c)).join('')).length, simpleSettings.selectedLengths[0])))} ~ ${strengthLabel(strengthFromEntropy(calculateEntropy(uniqueChars((simpleSettings.pattern === "numbers" ? NUMBERS : LOWERCASE + UPPERCASE + NUMBERS + (simpleSettings.pattern === "symbols" ? SYMBOLS : "")).split('').filter(c => !simpleSettings.excludeAmbiguous || !AMBIGUOUS.includes(c)).join('')).length, simpleSettings.selectedLengths[simpleSettings.selectedLengths.length - 1])))}`
+                      : strengthLabel(results[0]?.strength || "fair")
+                    }
+                  </div>
                </div>
             </div>
-            {(settingMode === "simple" ? simpleSettings.lengthType : settings.length) < 12 && (
+            {((settingMode === "simple" ? simpleSettings.selectedLengths[0] : settings.length) < 12) && (
               <div className={`rounded-2xl p-4 text-sm bg-black/5 dark:bg-white/5`}>短いパスワードは入力しやすいですが、重要なアカウントには弱くなります。</div>
             )}
             {!(settingMode === "simple" ? simpleSettings.pattern === "symbols" : settings.includeSymbols) && (
