@@ -701,9 +701,9 @@
     {
       "id": "password-generator",
       "title": "パスワード生成",
-      "version": "2.1.0",
+      "version": "2.2.0",
       "updatedAt": "2026-03-19",
-      "changeSummary": "Refine presets to patterns, simplify format, add quick len/qty selectors and editable charset pool",
+      "changeSummary": "Refine presets to patterns, simplify formats, add quick numeric selectors and UI enhancements",
       "history": [
         {
           "version": "1.0.0",
@@ -734,6 +734,11 @@
           "version": "2.1.0",
           "updatedAt": "2026-03-19",
           "summary": "Refine presets to patterns, simplify format, add quick len/qty selectors and editable charset pool"
+        },
+        {
+          "version": "2.2.0",
+          "updatedAt": "2026-03-19",
+          "summary": "Refine presets to patterns, simplify formats, add quick numeric selectors and UI enhancements"
         }
       ]
     },
