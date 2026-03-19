@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-03-18",
+  "generatedAt": "2026-03-19",
   "tools": [
     {
       "id": "[category]",
@@ -701,9 +701,9 @@
     {
       "id": "password-generator",
       "title": "パスワード生成",
-      "version": "1.0.2",
-      "updatedAt": "2026-03-17",
-      "changeSummary": "Apply new UI theme abstraction",
+      "version": "2.1.0",
+      "updatedAt": "2026-03-19",
+      "changeSummary": "Refine presets to patterns, simplify format, add quick len/qty selectors and editable charset pool",
       "history": [
         {
           "version": "1.0.0",
@@ -719,6 +719,21 @@
           "version": "1.0.2",
           "updatedAt": "2026-03-17",
           "summary": "Apply new UI theme abstraction"
+        },
+        {
+          "version": "1.0.3",
+          "updatedAt": "2026-03-19",
+          "summary": "Expanded password generator with presets, passphrases, and advanced controls"
+        },
+        {
+          "version": "2.0.0",
+          "updatedAt": "2026-03-19",
+          "summary": "UI redesign (2-column layout) and Japanese localization"
+        },
+        {
+          "version": "2.1.0",
+          "updatedAt": "2026-03-19",
+          "summary": "Refine presets to patterns, simplify format, add quick len/qty selectors and editable charset pool"
         }
       ]
     },
