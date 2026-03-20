@@ -7,6 +7,7 @@ import { ClipboardPaste, Copy } from "lucide-react";
 import { useToolTheme } from "@/lib/useToolTheme";
 import { ToolPageLayout } from "@/components/ToolPageLayout";
 import { ToolPanel } from "@/components/ToolPanel";
+import { ToolColorInputRow, ToolRadioOption } from "@/components/ToolFormPrimitives";
 
 type AdjustMode = "none" | "auto" | "modules" | "percent";
 type PrefixMode = "free" | "https" | "http";
@@ -534,36 +535,27 @@ export default function QrCodePage() {
             <div className={`rounded-2xl px-4 py-5 sm:px-5 sm:py-6 space-y-4 text-center ${blockCls}`}>
               <label className="block text-lg font-bold">URLまたはテキスト</label>
               <div className="grid gap-2 sm:grid-cols-3 mb-2 max-w-2xl mx-auto">
-                <label className={`rounded-xl px-3 py-3 text-base cursor-pointer transition-colors ${radioLabelCls(prefixMode === "https")}`}>
-                  <input
-                    type="radio"
-                    name="prefix-mode"
-                    checked={prefixMode === "https"}
-                    onChange={() => handlePrefixModeChange("https")}
-                    className="mr-2"
-                  />
-                  https://
-                </label>
-                <label className={`rounded-xl px-3 py-3 text-base cursor-pointer transition-colors ${radioLabelCls(prefixMode === "http")}`}>
-                  <input
-                    type="radio"
-                    name="prefix-mode"
-                    checked={prefixMode === "http"}
-                    onChange={() => handlePrefixModeChange("http")}
-                    className="mr-2"
-                  />
-                  http://
-                </label>
-                <label className={`rounded-xl px-3 py-3 text-base cursor-pointer transition-colors ${radioLabelCls(prefixMode === "free")}`}>
-                  <input
-                    type="radio"
-                    name="prefix-mode"
-                    checked={prefixMode === "free"}
-                    onChange={() => handlePrefixModeChange("free")}
-                    className="mr-2"
-                  />
-                  自由入力
-                </label>
+                <ToolRadioOption
+                  name="prefix-mode"
+                  checked={prefixMode === "https"}
+                  onChange={() => handlePrefixModeChange("https")}
+                  activeClassName={radioLabelCls(prefixMode === "https")}
+                  label="https://"
+                />
+                <ToolRadioOption
+                  name="prefix-mode"
+                  checked={prefixMode === "http"}
+                  onChange={() => handlePrefixModeChange("http")}
+                  activeClassName={radioLabelCls(prefixMode === "http")}
+                  label="http://"
+                />
+                <ToolRadioOption
+                  name="prefix-mode"
+                  checked={prefixMode === "free"}
+                  onChange={() => handlePrefixModeChange("free")}
+                  activeClassName={radioLabelCls(prefixMode === "free")}
+                  label="自由入力"
+                />
               </div>
               <div className="flex items-center gap-2 max-w-2xl mx-auto">
                 <button
@@ -615,58 +607,46 @@ export default function QrCodePage() {
             <div className={`rounded-2xl px-4 py-5 sm:px-5 sm:py-6 space-y-3 text-center ${blockCls}`}>
               <p className="text-lg font-bold">外周余白</p>
               <div className="grid grid-cols-2 gap-2 max-w-2xl mx-auto">
-                <label className={`rounded-xl px-3 py-3 text-base cursor-pointer transition-colors ${radioLabelCls(marginMode === "none")}`}>
-                  <input
-                    type="radio"
-                    name="margin-mode"
-                    checked={marginMode === "none"}
-                    onChange={() => {
-                      setMarginMode("none");
-                      scheduleAutoGenerate(500);
-                    }}
-                    className="mr-2"
-                  />
-                  最小
-                </label>
-                <label className={`rounded-xl px-3 py-3 text-base cursor-pointer transition-colors ${radioLabelCls(marginMode === "auto")}`}>
-                  <input
-                    type="radio"
-                    name="margin-mode"
-                    checked={marginMode === "auto"}
-                    onChange={() => {
-                      setMarginMode("auto");
-                      scheduleAutoGenerate(500);
-                    }}
-                    className="mr-2"
-                  />
-                  自動
-                </label>
-                <label className={`rounded-xl px-3 py-3 text-base cursor-pointer transition-colors ${radioLabelCls(marginMode === "modules")}`}>
-                  <input
-                    type="radio"
-                    name="margin-mode"
-                    checked={marginMode === "modules"}
-                    onChange={() => {
-                      setMarginMode("modules");
-                      scheduleAutoGenerate(500);
-                    }}
-                    className="mr-2"
-                  />
-                  ドット数指定
-                </label>
-                <label className={`rounded-xl px-3 py-3 text-base cursor-pointer transition-colors ${radioLabelCls(marginMode === "percent")}`}>
-                  <input
-                    type="radio"
-                    name="margin-mode"
-                    checked={marginMode === "percent"}
-                    onChange={() => {
-                      setMarginMode("percent");
-                      scheduleAutoGenerate(500);
-                    }}
-                    className="mr-2"
-                  />
-                  パーセント指定
-                </label>
+                <ToolRadioOption
+                  name="margin-mode"
+                  checked={marginMode === "none"}
+                  onChange={() => {
+                    setMarginMode("none");
+                    scheduleAutoGenerate(500);
+                  }}
+                  activeClassName={radioLabelCls(marginMode === "none")}
+                  label="最小"
+                />
+                <ToolRadioOption
+                  name="margin-mode"
+                  checked={marginMode === "auto"}
+                  onChange={() => {
+                    setMarginMode("auto");
+                    scheduleAutoGenerate(500);
+                  }}
+                  activeClassName={radioLabelCls(marginMode === "auto")}
+                  label="自動"
+                />
+                <ToolRadioOption
+                  name="margin-mode"
+                  checked={marginMode === "modules"}
+                  onChange={() => {
+                    setMarginMode("modules");
+                    scheduleAutoGenerate(500);
+                  }}
+                  activeClassName={radioLabelCls(marginMode === "modules")}
+                  label="ドット数指定"
+                />
+                <ToolRadioOption
+                  name="margin-mode"
+                  checked={marginMode === "percent"}
+                  onChange={() => {
+                    setMarginMode("percent");
+                    scheduleAutoGenerate(500);
+                  }}
+                  activeClassName={radioLabelCls(marginMode === "percent")}
+                  label="パーセント指定"
+                />
               </div>
 
               {marginMode === "modules" && (
@@ -713,58 +693,46 @@ export default function QrCodePage() {
             <div className={`rounded-2xl px-4 py-5 sm:px-5 sm:py-6 space-y-3 text-center ${blockCls}`}>
               <p className="text-lg font-bold">角丸設定</p>
               <div className="grid grid-cols-2 gap-2 max-w-2xl mx-auto">
-                <label className={`rounded-xl px-3 py-3 text-base cursor-pointer transition-colors ${radioLabelCls(roundMode === "none")}`}>
-                  <input
-                    type="radio"
-                    name="round-mode"
-                    checked={roundMode === "none"}
-                    onChange={() => {
-                      setRoundMode("none");
-                      scheduleAutoGenerate(500);
-                    }}
-                    className="mr-2"
-                  />
-                  なし
-                </label>
-                <label className={`rounded-xl px-3 py-3 text-base cursor-pointer transition-colors ${radioLabelCls(roundMode === "auto")}`}>
-                  <input
-                    type="radio"
-                    name="round-mode"
-                    checked={roundMode === "auto"}
-                    onChange={() => {
-                      setRoundMode("auto");
-                      scheduleAutoGenerate(500);
-                    }}
-                    className="mr-2"
-                  />
-                  自動
-                </label>
-                <label className={`rounded-xl px-3 py-3 text-base cursor-pointer transition-colors ${radioLabelCls(roundMode === "modules")}`}>
-                  <input
-                    type="radio"
-                    name="round-mode"
-                    checked={roundMode === "modules"}
-                    onChange={() => {
-                      setRoundMode("modules");
-                      scheduleAutoGenerate(500);
-                    }}
-                    className="mr-2"
-                  />
-                  ドット指定
-                </label>
-                <label className={`rounded-xl px-3 py-3 text-base cursor-pointer transition-colors ${radioLabelCls(roundMode === "percent")}`}>
-                  <input
-                    type="radio"
-                    name="round-mode"
-                    checked={roundMode === "percent"}
-                    onChange={() => {
-                      setRoundMode("percent");
-                      scheduleAutoGenerate(500);
-                    }}
-                    className="mr-2"
-                  />
-                  パーセント指定
-                </label>
+                <ToolRadioOption
+                  name="round-mode"
+                  checked={roundMode === "none"}
+                  onChange={() => {
+                    setRoundMode("none");
+                    scheduleAutoGenerate(500);
+                  }}
+                  activeClassName={radioLabelCls(roundMode === "none")}
+                  label="なし"
+                />
+                <ToolRadioOption
+                  name="round-mode"
+                  checked={roundMode === "auto"}
+                  onChange={() => {
+                    setRoundMode("auto");
+                    scheduleAutoGenerate(500);
+                  }}
+                  activeClassName={radioLabelCls(roundMode === "auto")}
+                  label="自動"
+                />
+                <ToolRadioOption
+                  name="round-mode"
+                  checked={roundMode === "modules"}
+                  onChange={() => {
+                    setRoundMode("modules");
+                    scheduleAutoGenerate(500);
+                  }}
+                  activeClassName={radioLabelCls(roundMode === "modules")}
+                  label="ドット指定"
+                />
+                <ToolRadioOption
+                  name="round-mode"
+                  checked={roundMode === "percent"}
+                  onChange={() => {
+                    setRoundMode("percent");
+                    scheduleAutoGenerate(500);
+                  }}
+                  activeClassName={radioLabelCls(roundMode === "percent")}
+                  label="パーセント指定"
+                />
               </div>
 
               {roundMode === "modules" && (
@@ -813,67 +781,49 @@ export default function QrCodePage() {
             <div className={`rounded-2xl px-4 py-5 sm:px-5 sm:py-6 space-y-4 text-center ${blockCls}`}>
               <p className="text-lg font-bold">カラー設定</p>
               <div className="grid gap-4 sm:grid-cols-2 max-w-3xl mx-auto">
-                <div>
-                  <label className="block text-base font-semibold mb-1">背景色</label>
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="color"
-                      value={backgroundColor}
-                      onChange={(e) => {
-                        const next = normalizeHexColor(e.target.value, backgroundColor);
-                        setBackgroundColor(next);
-                        setBackgroundColorInput(next);
-                        scheduleAutoGenerate(500);
-                      }}
-                      className="h-12 w-16 rounded-xl cursor-pointer"
-                      aria-label="背景色"
-                    />
-                    <input
-                      type="text"
-                      value={backgroundColorInput}
-                      onChange={(e) => setBackgroundColorInput(e.target.value)}
-                      onBlur={() => {
-                        const next = normalizeHexColor(backgroundColorInput, backgroundColor);
-                        setBackgroundColor(next);
-                        setBackgroundColorInput(next);
-                        scheduleAutoGenerate(500);
-                      }}
-                      className={`w-full p-3 rounded-xl border outline-none text-base sm:text-lg focus:ring-2 transition ${inputCls}`}
-                      placeholder="#ffffff"
-                    />
-                  </div>
-                </div>
+                <ToolColorInputRow
+                  label="背景色"
+                  colorValue={backgroundColor}
+                  textValue={backgroundColorInput}
+                  onColorChange={(value) => {
+                    const next = normalizeHexColor(value, backgroundColor);
+                    setBackgroundColor(next);
+                    setBackgroundColorInput(next);
+                    scheduleAutoGenerate(500);
+                  }}
+                  onTextChange={setBackgroundColorInput}
+                  onTextBlur={() => {
+                    const next = normalizeHexColor(backgroundColorInput, backgroundColor);
+                    setBackgroundColor(next);
+                    setBackgroundColorInput(next);
+                    scheduleAutoGenerate(500);
+                  }}
+                  inputCls={inputCls}
+                  ariaLabel="背景色"
+                  placeholder="#ffffff"
+                />
 
-                <div>
-                  <label className="block text-base font-semibold mb-1">ドット色</label>
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="color"
-                      value={dotColor}
-                      onChange={(e) => {
-                        const next = normalizeHexColor(e.target.value, dotColor);
-                        setDotColor(next);
-                        setDotColorInput(next);
-                        scheduleAutoGenerate(500);
-                      }}
-                      className="h-12 w-16 rounded-xl cursor-pointer"
-                      aria-label="ドット色"
-                    />
-                    <input
-                      type="text"
-                      value={dotColorInput}
-                      onChange={(e) => setDotColorInput(e.target.value)}
-                      onBlur={() => {
-                        const next = normalizeHexColor(dotColorInput, dotColor);
-                        setDotColor(next);
-                        setDotColorInput(next);
-                        scheduleAutoGenerate(500);
-                      }}
-                      className={`w-full p-3 rounded-xl border outline-none text-base sm:text-lg focus:ring-2 transition ${inputCls}`}
-                      placeholder="#000000"
-                    />
-                  </div>
-                </div>
+                <ToolColorInputRow
+                  label="ドット色"
+                  colorValue={dotColor}
+                  textValue={dotColorInput}
+                  onColorChange={(value) => {
+                    const next = normalizeHexColor(value, dotColor);
+                    setDotColor(next);
+                    setDotColorInput(next);
+                    scheduleAutoGenerate(500);
+                  }}
+                  onTextChange={setDotColorInput}
+                  onTextBlur={() => {
+                    const next = normalizeHexColor(dotColorInput, dotColor);
+                    setDotColor(next);
+                    setDotColorInput(next);
+                    scheduleAutoGenerate(500);
+                  }}
+                  inputCls={inputCls}
+                  ariaLabel="ドット色"
+                  placeholder="#000000"
+                />
               </div>
             </div>
 
@@ -881,45 +831,36 @@ export default function QrCodePage() {
               <p className="text-lg font-bold">中央アイコン・絵文字・画像</p>
               <div className="max-w-3xl mx-auto space-y-3">
                 <div className="grid grid-cols-3 gap-2 max-w-2xl mx-auto">
-                  <label className={`rounded-xl px-3 py-3 text-base cursor-pointer transition-colors ${radioLabelCls(centerOverlayMode === "none")}`}>
-                    <input
-                      type="radio"
-                      name="center-overlay-mode"
-                      checked={centerOverlayMode === "none"}
-                      onChange={() => {
-                        setCenterOverlayMode("none");
-                        scheduleAutoGenerate(500);
-                      }}
-                      className="mr-2"
-                    />
-                    なし
-                  </label>
-                  <label className={`rounded-xl px-3 py-3 text-base cursor-pointer transition-colors ${radioLabelCls(centerOverlayMode === "char")}`}>
-                    <input
-                      type="radio"
-                      name="center-overlay-mode"
-                      checked={centerOverlayMode === "char"}
-                      onChange={() => {
-                        setCenterOverlayMode("char");
-                        scheduleAutoGenerate(500);
-                      }}
-                      className="mr-2"
-                    />
-                    1文字
-                  </label>
-                  <label className={`rounded-xl px-3 py-3 text-base cursor-pointer transition-colors ${radioLabelCls(centerOverlayMode === "image")}`}>
-                    <input
-                      type="radio"
-                      name="center-overlay-mode"
-                      checked={centerOverlayMode === "image"}
-                      onChange={() => {
-                        setCenterOverlayMode("image");
-                        scheduleAutoGenerate(500);
-                      }}
-                      className="mr-2"
-                    />
-                    画像
-                  </label>
+                  <ToolRadioOption
+                    name="center-overlay-mode"
+                    checked={centerOverlayMode === "none"}
+                    onChange={() => {
+                      setCenterOverlayMode("none");
+                      scheduleAutoGenerate(500);
+                    }}
+                    activeClassName={radioLabelCls(centerOverlayMode === "none")}
+                    label="なし"
+                  />
+                  <ToolRadioOption
+                    name="center-overlay-mode"
+                    checked={centerOverlayMode === "char"}
+                    onChange={() => {
+                      setCenterOverlayMode("char");
+                      scheduleAutoGenerate(500);
+                    }}
+                    activeClassName={radioLabelCls(centerOverlayMode === "char")}
+                    label="1文字"
+                  />
+                  <ToolRadioOption
+                    name="center-overlay-mode"
+                    checked={centerOverlayMode === "image"}
+                    onChange={() => {
+                      setCenterOverlayMode("image");
+                      scheduleAutoGenerate(500);
+                    }}
+                    activeClassName={radioLabelCls(centerOverlayMode === "image")}
+                    label="画像"
+                  />
                 </div>
 
                 <div className="max-w-xl mx-auto text-center">
@@ -945,34 +886,27 @@ export default function QrCodePage() {
                       />
 
                       <div className="mt-3">
-                        <label className="block text-base font-semibold mb-1">文字色</label>
-                        <div className="flex items-center gap-2">
-                          <input
-                            type="color"
-                            value={centerOverlayTextColor}
-                            onChange={(e) => {
-                              const next = normalizeHexColor(e.target.value, centerOverlayTextColor);
-                              setCenterOverlayTextColor(next);
-                              setCenterOverlayTextColorInput(next);
-                              scheduleAutoGenerate(500);
-                            }}
-                            className="h-12 w-16 rounded-xl cursor-pointer"
-                            aria-label="中央文字色"
-                          />
-                          <input
-                            type="text"
-                            value={centerOverlayTextColorInput}
-                            onChange={(e) => setCenterOverlayTextColorInput(e.target.value)}
-                            onBlur={() => {
-                              const next = normalizeHexColor(centerOverlayTextColorInput, centerOverlayTextColor);
-                              setCenterOverlayTextColor(next);
-                              setCenterOverlayTextColorInput(next);
-                              scheduleAutoGenerate(500);
-                            }}
-                            className={`w-full p-3 rounded-xl border outline-none text-base sm:text-lg focus:ring-2 transition ${inputCls}`}
-                            placeholder="#000000"
-                          />
-                        </div>
+                        <ToolColorInputRow
+                          label="文字色"
+                          colorValue={centerOverlayTextColor}
+                          textValue={centerOverlayTextColorInput}
+                          onColorChange={(value) => {
+                            const next = normalizeHexColor(value, centerOverlayTextColor);
+                            setCenterOverlayTextColor(next);
+                            setCenterOverlayTextColorInput(next);
+                            scheduleAutoGenerate(500);
+                          }}
+                          onTextChange={setCenterOverlayTextColorInput}
+                          onTextBlur={() => {
+                            const next = normalizeHexColor(centerOverlayTextColorInput, centerOverlayTextColor);
+                            setCenterOverlayTextColor(next);
+                            setCenterOverlayTextColorInput(next);
+                            scheduleAutoGenerate(500);
+                          }}
+                          inputCls={inputCls}
+                          ariaLabel="中央文字色"
+                          placeholder="#000000"
+                        />
                       </div>
 
                       <div className="mt-3">
@@ -993,32 +927,26 @@ export default function QrCodePage() {
                       </div>
 
                       <div className="grid grid-cols-2 gap-2 mt-3">
-                        <label className={`rounded-xl px-3 py-3 text-base cursor-pointer transition-colors ${radioLabelCls(centerOverlayCharWithBadge)}`}>
-                          <input
-                            type="radio"
-                            name="center-char-badge"
-                            checked={centerOverlayCharWithBadge}
-                            onChange={() => {
-                              setCenterOverlayCharWithBadge(true);
-                              scheduleAutoGenerate(500);
-                            }}
-                            className="mr-2"
-                          />
-                          バッジあり
-                        </label>
-                        <label className={`rounded-xl px-3 py-3 text-base cursor-pointer transition-colors ${radioLabelCls(!centerOverlayCharWithBadge)}`}>
-                          <input
-                            type="radio"
-                            name="center-char-badge"
-                            checked={!centerOverlayCharWithBadge}
-                            onChange={() => {
-                              setCenterOverlayCharWithBadge(false);
-                              scheduleAutoGenerate(500);
-                            }}
-                            className="mr-2"
-                          />
-                          バッジなし
-                        </label>
+                        <ToolRadioOption
+                          name="center-char-badge"
+                          checked={centerOverlayCharWithBadge}
+                          onChange={() => {
+                            setCenterOverlayCharWithBadge(true);
+                            scheduleAutoGenerate(500);
+                          }}
+                          activeClassName={radioLabelCls(centerOverlayCharWithBadge)}
+                          label="バッジあり"
+                        />
+                        <ToolRadioOption
+                          name="center-char-badge"
+                          checked={!centerOverlayCharWithBadge}
+                          onChange={() => {
+                            setCenterOverlayCharWithBadge(false);
+                            scheduleAutoGenerate(500);
+                          }}
+                          activeClassName={radioLabelCls(!centerOverlayCharWithBadge)}
+                          label="バッジなし"
+                        />
                       </div>
 
                       {centerOverlayCharWithBadge && (
