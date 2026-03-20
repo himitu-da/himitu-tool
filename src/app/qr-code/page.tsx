@@ -7,7 +7,7 @@ import { ClipboardPaste, Copy } from "lucide-react";
 import { useToolTheme } from "@/lib/useToolTheme";
 import { ToolPageLayout } from "@/components/ToolPageLayout";
 import { ToolPanel } from "@/components/ToolPanel";
-import { ToolColorInputRow, ToolRadioOption } from "@/components/ToolFormPrimitives";
+import { ToolCheckbox, ToolColorInputRow, ToolFieldInput, ToolRadioOption, ToolRangeInput } from "@/components/ToolFormPrimitives";
 
 type AdjustMode = "none" | "auto" | "modules" | "percent";
 type PrefixMode = "free" | "https" | "http";
@@ -571,14 +571,14 @@ export default function QrCodePage() {
                     {prefixMode}://
                   </span>
                 )}
-                <input
+                <ToolFieldInput
                   type="text"
                   value={text}
                   onChange={(e) => {
                     setText(e.target.value);
                     scheduleAutoGenerate(1500);
                   }}
-                  className={`w-full p-3 rounded-xl border outline-none text-base sm:text-lg focus:ring-2 transition ${inputCls}`}
+                  inputCls={inputCls}
                   placeholder={prefixMode === "free" ? "https://example.com" : "example.com/path"}
                 />
               </div>
@@ -589,8 +589,7 @@ export default function QrCodePage() {
 
             <div className={`rounded-2xl px-4 py-5 sm:px-5 sm:py-6 space-y-3 text-center ${blockCls}`}>
               <label className="block text-lg font-bold">QRサイズ</label>
-              <input
-                type="range"
+              <ToolRangeInput
                 min={MIN_QR_SIZE}
                 max={MAX_QR_SIZE}
                 step={QR_STEP}
@@ -599,7 +598,8 @@ export default function QrCodePage() {
                   setQrSize(Number(e.target.value));
                   scheduleAutoGenerate(500);
                 }}
-                className="w-full h-3 cursor-pointer max-w-2xl mx-auto"
+                isClassic={theme === "classic"}
+                className="max-w-2xl mx-auto"
               />
               <p className={`mt-2 text-base ${mutedTextCls}`}>{printHint}</p>
             </div>
@@ -652,7 +652,7 @@ export default function QrCodePage() {
               {marginMode === "modules" && (
                 <div className="mt-3 max-w-xl mx-auto text-center">
                   <label className="block text-base font-semibold mb-1">余白（ドット数: 0〜20）</label>
-                  <input
+                  <ToolFieldInput
                     type="number"
                     min={0}
                     max={20}
@@ -663,7 +663,7 @@ export default function QrCodePage() {
                       setMarginModules(Number.isNaN(next) ? 0 : next);
                       scheduleAutoGenerate(500);
                     }}
-                    className={`w-full p-3 rounded-xl border outline-none text-base sm:text-lg focus:ring-2 transition ${inputCls}`}
+                    inputCls={inputCls}
                   />
                   <p className={`mt-2 text-base ${mutedTextCls}`}>QRの1セル単位で周囲余白を広げます。</p>
                 </div>
@@ -672,7 +672,7 @@ export default function QrCodePage() {
               {marginMode === "percent" && (
                 <div className="mt-3 max-w-xl mx-auto text-center">
                   <label className="block text-base font-semibold mb-1">余白率（0〜30%）</label>
-                  <input
+                  <ToolFieldInput
                     type="number"
                     min={0}
                     max={30}
@@ -683,7 +683,7 @@ export default function QrCodePage() {
                       setMarginPercent(Number.isNaN(next) ? 0 : next);
                       scheduleAutoGenerate(500);
                     }}
-                    className={`w-full p-3 rounded-xl border outline-none text-base sm:text-lg focus:ring-2 transition ${inputCls}`}
+                    inputCls={inputCls}
                   />
                   <p className={`mt-2 text-base ${mutedTextCls}`}>上下左右に同率の余白を確保します。</p>
                 </div>
@@ -738,7 +738,7 @@ export default function QrCodePage() {
               {roundMode === "modules" && (
                 <div className="mt-3 max-w-xl mx-auto text-center">
                   <label className="block text-base font-semibold mb-1">角丸量（ドット数: 0〜20）</label>
-                  <input
+                  <ToolFieldInput
                     type="number"
                     min={0}
                     max={20}
@@ -749,7 +749,7 @@ export default function QrCodePage() {
                       setRoundModules(Number.isNaN(next) ? 0 : next);
                       scheduleAutoGenerate(500);
                     }}
-                    className={`w-full p-3 rounded-xl border outline-none text-base sm:text-lg focus:ring-2 transition ${inputCls}`}
+                    inputCls={inputCls}
                   />
                 </div>
               )}
@@ -757,7 +757,7 @@ export default function QrCodePage() {
               {roundMode === "percent" && (
                 <div className="mt-3 max-w-xl mx-auto text-center">
                   <label className="block text-base font-semibold mb-1">角丸率（0〜45%）</label>
-                  <input
+                  <ToolFieldInput
                     type="number"
                     min={0}
                     max={45}
@@ -768,7 +768,7 @@ export default function QrCodePage() {
                       setRoundPercent(Number.isNaN(next) ? 0 : next);
                       scheduleAutoGenerate(500);
                     }}
-                    className={`w-full p-3 rounded-xl border outline-none text-base sm:text-lg focus:ring-2 transition ${inputCls}`}
+                    inputCls={inputCls}
                   />
                 </div>
               )}
@@ -801,6 +801,7 @@ export default function QrCodePage() {
                   inputCls={inputCls}
                   ariaLabel="背景色"
                   placeholder="#ffffff"
+                  isClassic={theme === "classic"}
                 />
 
                 <ToolColorInputRow
@@ -823,6 +824,7 @@ export default function QrCodePage() {
                   inputCls={inputCls}
                   ariaLabel="ドット色"
                   placeholder="#000000"
+                  isClassic={theme === "classic"}
                 />
               </div>
             </div>
@@ -869,7 +871,7 @@ export default function QrCodePage() {
                   ) : centerOverlayMode === "char" ? (
                     <>
                       <label className="block text-base font-semibold mb-1">表示する文字（1文字）</label>
-                      <input
+                      <ToolFieldInput
                         type="text"
                         value={centerOverlayText}
                         onChange={(e) => {
@@ -881,7 +883,7 @@ export default function QrCodePage() {
                           setCenterOverlayText(nextChar);
                           scheduleAutoGenerate(500);
                         }}
-                        className={`w-full p-3 rounded-xl border outline-none text-base sm:text-lg focus:ring-2 transition ${inputCls}`}
+                        inputCls={inputCls}
                         placeholder="例: ★"
                       />
 
@@ -906,13 +908,13 @@ export default function QrCodePage() {
                           inputCls={inputCls}
                           ariaLabel="中央文字色"
                           placeholder="#000000"
+                          isClassic={theme === "classic"}
                         />
                       </div>
 
                       <div className="mt-3">
                         <label className="block text-base font-semibold mb-1">文字サイズ（3〜25%）</label>
-                        <input
-                          type="range"
+                        <ToolRangeInput
                           min={3}
                           max={25}
                           step={1}
@@ -921,7 +923,7 @@ export default function QrCodePage() {
                             setCenterOverlayTextSizePercent(Number(e.target.value));
                             scheduleAutoGenerate(500);
                           }}
-                          className="w-full h-3 cursor-pointer"
+                          isClassic={theme === "classic"}
                         />
                         <p className={`mt-2 text-base ${mutedTextCls}`}>{centerOverlayTextSizePercent}%</p>
                       </div>
@@ -952,8 +954,7 @@ export default function QrCodePage() {
                       {centerOverlayCharWithBadge && (
                         <div className="mt-3">
                           <label className="block text-base font-semibold mb-1">バッジサイズ（5〜30%）</label>
-                          <input
-                            type="range"
+                          <ToolRangeInput
                             min={5}
                             max={30}
                             step={1}
@@ -962,7 +963,7 @@ export default function QrCodePage() {
                               setCenterOverlayBadgeSizePercent(Number(e.target.value));
                               scheduleAutoGenerate(500);
                             }}
-                            className="w-full h-3 cursor-pointer"
+                            isClassic={theme === "classic"}
                           />
                           <p className={`mt-2 text-base ${mutedTextCls}`}>{centerOverlayBadgeSizePercent}%</p>
                         </div>
@@ -971,7 +972,7 @@ export default function QrCodePage() {
                   ) : (
                     <>
                       <label className="block text-base font-semibold mb-1">中央に表示する画像</label>
-                      <input
+                      <ToolFieldInput
                         type="file"
                         accept="image/*"
                         onChange={(e) => {
@@ -987,12 +988,12 @@ export default function QrCodePage() {
                           };
                           reader.readAsDataURL(file);
                         }}
-                        className={`w-full p-3 rounded-xl border outline-none text-base sm:text-lg focus:ring-2 transition ${inputCls}`}
+                        inputCls={inputCls}
                       />
                       {centerOverlayImageDataUrl && (
                         <div className="mt-3 flex items-center justify-center gap-3">
                           {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img src={centerOverlayImageDataUrl} alt="中央画像プレビュー" className="w-12 h-12 rounded-full object-cover" />
+                          <img src={centerOverlayImageDataUrl} alt="中央画像プレビュー" className={`w-12 h-12 object-cover ${theme === "classic" ? "rounded-none border border-gray-500" : "rounded-full"}`} />
                           <button
                             type="button"
                             onClick={() => {
@@ -1008,8 +1009,7 @@ export default function QrCodePage() {
 
                       <div className="mt-3">
                         <label className="block text-base font-semibold mb-1">表示サイズ（5〜25%）</label>
-                        <input
-                          type="range"
+                        <ToolRangeInput
                           min={5}
                           max={25}
                           step={1}
@@ -1018,7 +1018,7 @@ export default function QrCodePage() {
                             setCenterOverlayBadgeSizePercent(Number(e.target.value));
                             scheduleAutoGenerate(500);
                           }}
-                          className="w-full h-3 cursor-pointer"
+                          isClassic={theme === "classic"}
                         />
                         <p className={`mt-2 text-base ${mutedTextCls}`}>{centerOverlayBadgeSizePercent}%</p>
                       </div>
@@ -1047,12 +1047,9 @@ export default function QrCodePage() {
           style={{ top: `${rightStickyTop}px` }}
         >
           <div className="space-y-5">
-            <label className="inline-flex items-center gap-2 text-base sm:text-lg font-semibold">
-              <input
-                type="checkbox"
-                checked={autoGenerate}
-                onChange={(e) => {
-                  const checked = e.target.checked;
+            <ToolCheckbox
+              checked={autoGenerate}
+              onChange={(checked) => {
                   setAutoGenerate(checked);
                   if (checked) {
                     scheduleAutoGenerate(500);
@@ -1060,19 +1057,19 @@ export default function QrCodePage() {
                     clearTimeout(generateTimerRef.current);
                     setIsLoading(false);
                   }
-                }}
-              />
-              自動生成を有効にする
-            </label>
+              }}
+              isClassic={theme === "classic"}
+              label="自動生成を有効にする"
+            />
 
-            <div className="flex justify-center items-center min-h-[360px] rounded-2xl p-5" style={getCheckerboardStyle()}>
+            <div className={`flex justify-center items-center min-h-[360px] p-5 ${theme === "classic" ? "rounded-none border border-gray-500" : "rounded-2xl"}`} style={getCheckerboardStyle()}>
               {isLoading ? (
-                <div className="w-full max-w-[320px] aspect-square rounded-xl bg-gray-200 animate-pulse" />
+                <div className={`w-full max-w-[320px] aspect-square bg-gray-200 animate-pulse ${theme === "classic" ? "rounded-none border border-gray-500" : "rounded-xl"}`} />
               ) : qrDataUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={qrDataUrl} alt="生成されたQRコード" width={qrSize} height={qrSize} className="w-full h-auto max-w-[420px]" />
               ) : (
-                <div className="w-full max-w-[320px] aspect-square rounded-xl bg-gray-100 flex items-center justify-center text-sm text-gray-500 text-center px-4">
+                <div className={`w-full max-w-[320px] aspect-square bg-gray-100 flex items-center justify-center text-sm text-gray-500 text-center px-4 ${theme === "classic" ? "rounded-none border border-gray-500" : "rounded-xl"}`}>
                   URLまたはテキストを入力するとここにQRコードが表示されます。
                 </div>
               )}
