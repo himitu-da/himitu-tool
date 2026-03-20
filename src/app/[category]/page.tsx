@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { ToolGrid } from "@/components/ToolCollection";
 import { categorizedTools, getCategoryById } from "@/lib/tools";
 
 type CategoryPageProps = {
@@ -59,20 +60,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
           </Link>
         </div>
 
-        <ul className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {matchedCategory.tools.map((tool) => (
-            <li key={tool.id}>
-              <Link
-                href={tool.path}
-                className="flex h-full flex-col items-center justify-center rounded-2xl bg-black/5 p-6 text-center backdrop-blur-sm transition-transform hover:-translate-y-1 dark:bg-white/5"
-              >
-                <div className="mb-3 text-4xl">{tool.icon}</div>
-                <h3 className="mb-2 text-xl font-bold">{tool.title}</h3>
-                <p className="text-sm opacity-70">{tool.desc}</p>
-              </Link>
-            </li>
-          ))}
-        </ul>
+        <ToolGrid tools={matchedCategory.tools} variant="category" />
       </section>
     </div>
   );

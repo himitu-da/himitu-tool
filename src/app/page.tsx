@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { GoogleAd } from "../components/GoogleAd";
+import { CategoryTitleLink, ToolChipList, ToolGrid } from "../components/ToolCollection";
 import { categorizedTools } from "../lib/tools";
 
 export default function Home() {
@@ -53,22 +54,9 @@ export default function Home() {
             {categorizedTools.map((cat) => (
               <div key={cat.category}>
                 <div className="mb-6 text-center sm:text-left">
-                  <Link href={cat.path} className="text-xl font-bold opacity-70 transition-opacity hover:opacity-100">
-                    {cat.category}
-                  </Link>
+                  <CategoryTitleLink href={cat.path} title={cat.category} variant="homeMin" />
                 </div>
-                <ul className="flex flex-wrap gap-2 justify-center sm:justify-start">
-                  {cat.tools.map((tool) => (
-                    <li key={tool.path}>
-                      <Link
-                        href={tool.path}
-                        className="inline-block px-4 py-2 bg-black/5 dark:bg-white/5 rounded-md hover:opacity-75 transition-opacity"
-                      >
-                        <span className="text-sm font-medium">{tool.title}</span>
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
+                <ToolChipList tools={cat.tools} />
               </div>
             ))}
           </div>
@@ -77,24 +65,9 @@ export default function Home() {
             {categorizedTools.map((cat) => (
               <div key={cat.category}>
                 <div className="mb-8 text-center sm:text-left">
-                  <Link href={cat.path} className="text-2xl font-bold opacity-80 transition-opacity hover:opacity-100">
-                    {cat.category}
-                  </Link>
+                  <CategoryTitleLink href={cat.path} title={cat.category} variant="homeMax" />
                 </div>
-                <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {cat.tools.map((tool) => (
-                    <li key={tool.path}>
-                      <Link
-                        href={tool.path}
-                        className="flex flex-col items-center justify-center p-6 bg-black/5 dark:bg-white/5 rounded-xl hover:-translate-y-1 transition-transform h-full backdrop-blur-sm"
-                      >
-                        <div className="text-4xl mb-3">{tool.icon}</div>
-                        <h3 className="text-xl font-bold mb-2 text-current">{tool.title}</h3>
-                        <p className="opacity-70 text-sm text-center">{tool.desc}</p>
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
+                <ToolGrid tools={cat.tools} variant="home" />
               </div>
             ))}
           </div>

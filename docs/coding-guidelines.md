@@ -90,3 +90,8 @@ import Link from 'next/link';
 `
 
 > **注意:** 外部サイトへのリンク（例: https://hmts.jp などドメインまで含んだ絶対URL）については、引き続き <a> タグを使用して問題ありません。
+
+## 2. UI標準化ガイド
+
+UI統一の最新ルールは `docs/ui-standardization-goals.md` を参照してください。
+新規/改修ページでは、ToolPageLayout / ToolPanel / useToolTheme を標準構成として扱います。
