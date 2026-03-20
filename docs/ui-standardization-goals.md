@@ -32,7 +32,6 @@
 - `useToolTheme` 未使用
 - 色ユーティリティ直書きの検出
 - inline SVG過多（目安: 4個以上）
-- `useState` 過多（目安: 16個以上）
 
 ## 6. 優先移行対象
 - トップページ: `src/app/page.tsx`

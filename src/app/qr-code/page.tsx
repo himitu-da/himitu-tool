@@ -63,7 +63,7 @@ const addRoundedRectPath = (
 };
 
 export default function QrCodePage() {
-  const { theme, panelCls: _panelCls, blockCls, mutedTextCls, inputCls, primaryBtnCls, secondaryBtnCls, radioLabelCls } = useToolTheme();
+  const { theme, panelCls: _panelCls, blockCls, mutedTextCls, inputCls, primaryBtnCls, secondaryBtnCls, radioLabelCls, skeletonCls, placeholderBoxCls, containerBorderCls } = useToolTheme();
   const [rightStickyTop, setRightStickyTop] = useState(140);
   const [prefixMode, setPrefixMode] = useState<PrefixMode>("https");
   const [text, setText] = useState("example.com");
@@ -993,7 +993,7 @@ export default function QrCodePage() {
                       {centerOverlayImageDataUrl && (
                         <div className="mt-3 flex items-center justify-center gap-3">
                           {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img src={centerOverlayImageDataUrl} alt="中央画像プレビュー" className={`w-12 h-12 object-cover ${theme === "classic" ? "rounded-none border border-gray-500" : "rounded-full"}`} />
+                          <img src={centerOverlayImageDataUrl} alt="中央画像プレビュー" className={`w-12 h-12 object-cover rounded-full ${containerBorderCls}`} />
                           <button
                             type="button"
                             onClick={() => {
@@ -1062,14 +1062,14 @@ export default function QrCodePage() {
               label="自動生成を有効にする"
             />
 
-            <div className={`flex justify-center items-center min-h-[360px] p-5 ${theme === "classic" ? "rounded-none border border-gray-500" : "rounded-2xl"}`} style={getCheckerboardStyle()}>
+            <div className={`flex justify-center items-center min-h-[360px] p-5 rounded-2xl ${containerBorderCls}`} style={getCheckerboardStyle()}>
               {isLoading ? (
-                <div className={`w-full max-w-[320px] aspect-square bg-gray-200 animate-pulse ${theme === "classic" ? "rounded-none border border-gray-500" : "rounded-xl"}`} />
+                <div className={`w-full max-w-[320px] aspect-square rounded-xl ${skeletonCls}`} />
               ) : qrDataUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={qrDataUrl} alt="生成されたQRコード" width={qrSize} height={qrSize} className="w-full h-auto max-w-[420px]" />
               ) : (
-                <div className={`w-full max-w-[320px] aspect-square bg-gray-100 flex items-center justify-center text-sm text-gray-500 text-center px-4 ${theme === "classic" ? "rounded-none border border-gray-500" : "rounded-xl"}`}>
+                <div className={`w-full max-w-[320px] aspect-square flex items-center justify-center text-sm text-center px-4 rounded-xl ${placeholderBoxCls}`}>
                   URLまたはテキストを入力するとここにQRコードが表示されます。
                 </div>
               )}

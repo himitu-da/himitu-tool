@@ -21,6 +21,12 @@ export interface ToolTheme {
     secondaryBtnCls: string;
     /** ラジオ/トグルラベルの色。active=true でハイライト */
     radioLabelCls: (active: boolean) => string;
+    /** ロード中の骨格エリア用（スケルトン） */
+    skeletonCls: string;
+    /** 何もないときのプレースホルダー表示用 */
+    placeholderBoxCls: string;
+    /** 装飾的な枠線（コンテナや画像の枠向け） */
+    containerBorderCls: string;
 }
 
 export function useToolTheme(): ToolTheme {
@@ -130,5 +136,29 @@ export function useToolTheme(): ToolTheme {
         primaryBtnCls,
         secondaryBtnCls,
         radioLabelCls,
+        skeletonCls: (() => {
+            switch (theme) {
+                case "light": return "bg-gray-200 animate-pulse";
+                case "dark": return "bg-gray-700 animate-pulse";
+                case "ocean": return "bg-cyan-800/60 animate-pulse";
+                case "classic": return "bg-gray-200 border border-gray-400 !rounded-none animate-pulse";
+                default: return "bg-gray-200 animate-pulse";
+            }
+        })(),
+        placeholderBoxCls: (() => {
+            switch (theme) {
+                case "light": return "bg-gray-100 text-gray-500";
+                case "dark": return "bg-gray-700/50 text-gray-400";
+                case "ocean": return "bg-cyan-900/50 text-cyan-200";
+                case "classic": return "bg-gray-100 text-gray-700 border border-gray-400 !rounded-none";
+                default: return "bg-gray-100 text-gray-500";
+            }
+        })(),
+        containerBorderCls: (() => {
+            switch (theme) {
+                case "classic": return "border border-gray-400 !rounded-none";
+                default: return "";
+            }
+        })(),
     };
 }
