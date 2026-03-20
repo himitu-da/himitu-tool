@@ -7,6 +7,8 @@ import { ClipboardPaste, Copy } from "lucide-react";
 import { useToolTheme } from "@/lib/useToolTheme";
 import { ToolPageLayout } from "@/components/ToolPageLayout";
 import { ToolPanel } from "@/components/ToolPanel";
+import { ToolGrid } from "@/components/ToolGrid";
+import { ToolColumn } from "@/components/ToolColumn";
 import { ToolInput } from "@/components/ui/ToolInput";
 import { ToolSlider } from "@/components/ui/ToolSlider";
 import { ToolCheckbox } from "@/components/ui/ToolCheckbox";
@@ -68,7 +70,7 @@ const addRoundedRectPath = (
 };
 
 export default function QrCodePage() {
-  const { theme, panelCls: _panelCls, blockCls, mutedTextCls, inputCls, primaryBtnCls, secondaryBtnCls, radioLabelCls, skeletonCls, placeholderBoxCls, containerBorderCls } = useToolTheme();
+  const { theme, mutedTextCls, secondaryBtnCls, skeletonCls, placeholderBoxCls, containerBorderCls } = useToolTheme();
   const [rightStickyTop, setRightStickyTop] = useState(140);
   const [prefixMode, setPrefixMode] = useState<PrefixMode>("https");
   const [text, setText] = useState("example.com");
@@ -534,12 +536,12 @@ export default function QrCodePage() {
 
   return (
     <ToolPageLayout title="QRコード生成" maxWidth="6xl" headerClassName="qr-tool-sticky-header">
-      <div className="grid gap-4 lg:grid-cols-2">
-        <ToolPanel>
-          <div className="space-y-6">
-            <div className={`rounded-2xl px-4 py-5 sm:px-5 sm:py-6 space-y-4 text-center ${blockCls}`}>
-              <label className="block text-lg font-bold">URLまたはテキスト</label>
-              <div className="grid gap-2 sm:grid-cols-3 mb-2 max-w-2xl mx-auto">
+      <ToolGrid>
+        {/* 左カラム：設定群 */}
+        <ToolColumn>
+          <ToolPanel title="URLまたはテキスト">
+            <div className="space-y-4">
+              <div className="grid gap-2 sm:grid-cols-3">
                 <ToolRadio
                   name="prefix-mode"
                   checked={prefixMode === "https"}
@@ -559,7 +561,7 @@ export default function QrCodePage() {
                   label="自由入力"
                 />
               </div>
-              <div className="flex items-center gap-2 max-w-2xl mx-auto">
+              <div className="flex items-center gap-2">
                 <ToolButton
                   variant="secondary"
                   onClick={handlePaste}
@@ -584,13 +586,14 @@ export default function QrCodePage() {
                   placeholder={prefixMode === "free" ? "https://example.com" : "example.com/path"}
                 />
               </div>
-              <p className={`mt-2 text-base ${mutedTextCls}`}>
+              <p className={`text-sm ${mutedTextCls}`}>
                 手入力時は1.5秒、ペーストや設定変更時は0.5秒待って自動生成します。
               </p>
             </div>
+          </ToolPanel>
 
-            <div className={`rounded-2xl px-4 py-5 sm:px-5 sm:py-6 space-y-3 text-center ${blockCls}`}>
-              <label className="block text-lg font-bold">QRサイズ</label>
+          <ToolPanel title="QRサイズ">
+            <div className="space-y-3">
               <ToolSlider
                 min={MIN_QR_SIZE}
                 max={MAX_QR_SIZE}
@@ -600,431 +603,217 @@ export default function QrCodePage() {
                   setQrSize(Number(e.target.value));
                   scheduleAutoGenerate(500);
                 }}
-                className="max-w-2xl mx-auto"
               />
-              <p className={`mt-2 text-base ${mutedTextCls}`}>{printHint}</p>
+              <p className={`text-sm ${mutedTextCls}`}>{printHint}</p>
             </div>
+          </ToolPanel>
 
-            <div className={`rounded-2xl px-4 py-5 sm:px-5 sm:py-6 space-y-3 text-center ${blockCls}`}>
-              <p className="text-lg font-bold">外周余白</p>
-              <div className="grid grid-cols-2 gap-2 max-w-2xl mx-auto">
+          <ToolPanel title="外周余白">
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-2">
                 <ToolRadio
                   name="margin-mode"
                   checked={marginMode === "none"}
-                  onChange={() => {
-                    setMarginMode("none");
-                    scheduleAutoGenerate(500);
-                  }}
+                  onChange={() => { setMarginMode("none"); scheduleAutoGenerate(500); }}
                   label="最小"
                 />
                 <ToolRadio
                   name="margin-mode"
                   checked={marginMode === "auto"}
-                  onChange={() => {
-                    setMarginMode("auto");
-                    scheduleAutoGenerate(500);
-                  }}
+                  onChange={() => { setMarginMode("auto"); scheduleAutoGenerate(500); }}
                   label="自動"
                 />
                 <ToolRadio
                   name="margin-mode"
                   checked={marginMode === "modules"}
-                  onChange={() => {
-                    setMarginMode("modules");
-                    scheduleAutoGenerate(500);
-                  }}
+                  onChange={() => { setMarginMode("modules"); scheduleAutoGenerate(500); }}
                   label="ドット数指定"
                 />
                 <ToolRadio
                   name="margin-mode"
                   checked={marginMode === "percent"}
-                  onChange={() => {
-                    setMarginMode("percent");
-                    scheduleAutoGenerate(500);
-                  }}
+                  onChange={() => { setMarginMode("percent"); scheduleAutoGenerate(500); }}
                   label="パーセント指定"
                 />
               </div>
-
               {marginMode === "modules" && (
-                <div className="mt-3 max-w-xl mx-auto text-center">
-                  <label className="block text-base font-semibold mb-1">余白（ドット数: 0〜20）</label>
+                <div className="space-y-2">
+                  <label className="block text-sm font-semibold">余白（ドット数: 0〜20）</label>
                   <ToolInput
-                    type="number"
-                    min={0}
-                    max={20}
-                    step={0.1}
-                    value={marginModules}
-                    onChange={(e) => {
-                      const next = Number(e.target.value);
-                      setMarginModules(Number.isNaN(next) ? 0 : next);
-                      scheduleAutoGenerate(500);
-                    }}
+                    type="number" min={0} max={20} step={0.1} value={marginModules}
+                    onChange={(e) => { const next = Number(e.target.value); setMarginModules(Number.isNaN(next) ? 0 : next); scheduleAutoGenerate(500); }}
                   />
-                  <p className={`mt-2 text-base ${mutedTextCls}`}>QRの1セル単位で周囲余白を広げます。</p>
+                  <p className={`text-sm ${mutedTextCls}`}>QRの1セル単位で周囲余白を広げます。</p>
                 </div>
               )}
-
               {marginMode === "percent" && (
-                <div className="mt-3 max-w-xl mx-auto text-center">
-                  <label className="block text-base font-semibold mb-1">余白率（0〜30%）</label>
+                <div className="space-y-2">
+                  <label className="block text-sm font-semibold">余白率（0〜30%）</label>
                   <ToolInput
-                    type="number"
-                    min={0}
-                    max={30}
-                    step={0.1}
-                    value={marginPercent}
-                    onChange={(e) => {
-                      const next = Number(e.target.value);
-                      setMarginPercent(Number.isNaN(next) ? 0 : next);
-                      scheduleAutoGenerate(500);
-                    }}
+                    type="number" min={0} max={30} step={0.1} value={marginPercent}
+                    onChange={(e) => { const next = Number(e.target.value); setMarginPercent(Number.isNaN(next) ? 0 : next); scheduleAutoGenerate(500); }}
                   />
-                  <p className={`mt-2 text-base ${mutedTextCls}`}>上下左右に同率の余白を確保します。</p>
+                  <p className={`text-sm ${mutedTextCls}`}>上下左右に同率の余白を確保します。</p>
                 </div>
               )}
             </div>
+          </ToolPanel>
 
-            <div className={`rounded-2xl px-4 py-5 sm:px-5 sm:py-6 space-y-3 text-center ${blockCls}`}>
-              <p className="text-lg font-bold">角丸設定</p>
-              <div className="grid grid-cols-2 gap-2 max-w-2xl mx-auto">
-                <ToolRadio
-                  name="round-mode"
-                  checked={roundMode === "none"}
-                  onChange={() => {
-                    setRoundMode("none");
-                    scheduleAutoGenerate(500);
-                  }}
-                  label="なし"
-                />
-                <ToolRadio
-                  name="round-mode"
-                  checked={roundMode === "auto"}
-                  onChange={() => {
-                    setRoundMode("auto");
-                    scheduleAutoGenerate(500);
-                  }}
-                  label="自動"
-                />
-                <ToolRadio
-                  name="round-mode"
-                  checked={roundMode === "modules"}
-                  onChange={() => {
-                    setRoundMode("modules");
-                    scheduleAutoGenerate(500);
-                  }}
-                  label="ドット指定"
-                />
-                <ToolRadio
-                  name="round-mode"
-                  checked={roundMode === "percent"}
-                  onChange={() => {
-                    setRoundMode("percent");
-                    scheduleAutoGenerate(500);
-                  }}
-                  label="パーセント指定"
-                />
+          <ToolPanel title="角丸設定">
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-2">
+                <ToolRadio name="round-mode" checked={roundMode === "none"} onChange={() => { setRoundMode("none"); scheduleAutoGenerate(500); }} label="なし" />
+                <ToolRadio name="round-mode" checked={roundMode === "auto"} onChange={() => { setRoundMode("auto"); scheduleAutoGenerate(500); }} label="自動" />
+                <ToolRadio name="round-mode" checked={roundMode === "modules"} onChange={() => { setRoundMode("modules"); scheduleAutoGenerate(500); }} label="ドット指定" />
+                <ToolRadio name="round-mode" checked={roundMode === "percent"} onChange={() => { setRoundMode("percent"); scheduleAutoGenerate(500); }} label="パーセント指定" />
               </div>
-
               {roundMode === "modules" && (
-                <div className="mt-3 max-w-xl mx-auto text-center">
-                  <label className="block text-base font-semibold mb-1">角丸量（ドット数: 0〜20）</label>
+                <div className="space-y-2">
+                  <label className="block text-sm font-semibold">角丸量（ドット数: 0〜20）</label>
                   <ToolInput
-                    type="number"
-                    min={0}
-                    max={20}
-                    step={0.1}
-                    value={roundModules}
-                    onChange={(e) => {
-                      const next = Number(e.target.value);
-                      setRoundModules(Number.isNaN(next) ? 0 : next);
-                      scheduleAutoGenerate(500);
-                    }}
+                    type="number" min={0} max={20} step={0.1} value={roundModules}
+                    onChange={(e) => { const next = Number(e.target.value); setRoundModules(Number.isNaN(next) ? 0 : next); scheduleAutoGenerate(500); }}
                   />
                 </div>
               )}
-
               {roundMode === "percent" && (
-                <div className="mt-3 max-w-xl mx-auto text-center">
-                  <label className="block text-base font-semibold mb-1">角丸率（0〜45%）</label>
+                <div className="space-y-2">
+                  <label className="block text-sm font-semibold">角丸率（0〜45%）</label>
                   <ToolInput
-                    type="number"
-                    min={0}
-                    max={45}
-                    step={1}
-                    value={roundPercent}
-                    onChange={(e) => {
-                      const next = Number(e.target.value);
-                      setRoundPercent(Number.isNaN(next) ? 0 : next);
-                      scheduleAutoGenerate(500);
-                    }}
+                    type="number" min={0} max={45} step={1} value={roundPercent}
+                    onChange={(e) => { const next = Number(e.target.value); setRoundPercent(Number.isNaN(next) ? 0 : next); scheduleAutoGenerate(500); }}
                   />
                 </div>
               )}
-
-              <p className={`mt-2 text-base ${mutedTextCls}`}>
+              <p className={`text-sm ${mutedTextCls}`}>
                 画像全体に角丸を適用します。余白不足時は角丸を優先し、必要な余白を自動で拡張します。
               </p>
             </div>
+          </ToolPanel>
 
-            <div className={`rounded-2xl px-4 py-5 sm:px-5 sm:py-6 space-y-4 text-center ${blockCls}`}>
-              <p className="text-lg font-bold">カラー設定</p>
-              <div className="grid gap-4 sm:grid-cols-2 max-w-3xl mx-auto">
-                <ToolColorInputRow
-                  label="背景色"
-                  colorValue={backgroundColor}
-                  textValue={backgroundColorInput}
-                  onColorChange={(value) => {
-                    const next = normalizeHexColor(value, backgroundColor);
-                    setBackgroundColor(next);
-                    setBackgroundColorInput(next);
-                    scheduleAutoGenerate(500);
-                  }}
-                  onTextChange={setBackgroundColorInput}
-                  onTextBlur={() => {
-                    const next = normalizeHexColor(backgroundColorInput, backgroundColor);
-                    setBackgroundColor(next);
-                    setBackgroundColorInput(next);
-                    scheduleAutoGenerate(500);
-                  }}
-                  ariaLabel="背景色"
-                  placeholder="#ffffff"
-                />
-
-                <ToolColorInputRow
-                  label="ドット色"
-                  colorValue={dotColor}
-                  textValue={dotColorInput}
-                  onColorChange={(value) => {
-                    const next = normalizeHexColor(value, dotColor);
-                    setDotColor(next);
-                    setDotColorInput(next);
-                    scheduleAutoGenerate(500);
-                  }}
-                  onTextChange={setDotColorInput}
-                  onTextBlur={() => {
-                    const next = normalizeHexColor(dotColorInput, dotColor);
-                    setDotColor(next);
-                    setDotColorInput(next);
-                    scheduleAutoGenerate(500);
-                  }}
-                  ariaLabel="ドット色"
-                  placeholder="#000000"
-                />
-              </div>
+          <ToolPanel title="カラー設定">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <ToolColorInputRow
+                label="背景色"
+                colorValue={backgroundColor}
+                textValue={backgroundColorInput}
+                onColorChange={(value) => { const next = normalizeHexColor(value, backgroundColor); setBackgroundColor(next); setBackgroundColorInput(next); scheduleAutoGenerate(500); }}
+                onTextChange={setBackgroundColorInput}
+                onTextBlur={() => { const next = normalizeHexColor(backgroundColorInput, backgroundColor); setBackgroundColor(next); setBackgroundColorInput(next); scheduleAutoGenerate(500); }}
+                ariaLabel="背景色"
+                placeholder="#ffffff"
+              />
+              <ToolColorInputRow
+                label="ドット色"
+                colorValue={dotColor}
+                textValue={dotColorInput}
+                onColorChange={(value) => { const next = normalizeHexColor(value, dotColor); setDotColor(next); setDotColorInput(next); scheduleAutoGenerate(500); }}
+                onTextChange={setDotColorInput}
+                onTextBlur={() => { const next = normalizeHexColor(dotColorInput, dotColor); setDotColor(next); setDotColorInput(next); scheduleAutoGenerate(500); }}
+                ariaLabel="ドット色"
+                placeholder="#000000"
+              />
             </div>
+          </ToolPanel>
 
-            <div className={`rounded-2xl px-4 py-5 sm:px-5 sm:py-6 space-y-4 text-center ${blockCls}`}>
-              <p className="text-lg font-bold">中央アイコン・絵文字・画像</p>
-              <div className="max-w-3xl mx-auto space-y-3">
-                <div className="grid grid-cols-3 gap-2 max-w-2xl mx-auto">
-                  <ToolRadio
-                    name="center-overlay-mode"
-                    checked={centerOverlayMode === "none"}
-                    onChange={() => {
-                      setCenterOverlayMode("none");
-                      scheduleAutoGenerate(500);
-                    }}
-                    label="なし"
+          <ToolPanel title="中央アイコン・絵文字・画像">
+            <div className="space-y-4">
+              <div className="grid grid-cols-3 gap-2">
+                <ToolRadio name="center-overlay-mode" checked={centerOverlayMode === "none"} onChange={() => { setCenterOverlayMode("none"); scheduleAutoGenerate(500); }} label="なし" />
+                <ToolRadio name="center-overlay-mode" checked={centerOverlayMode === "char"} onChange={() => { setCenterOverlayMode("char"); scheduleAutoGenerate(500); }} label="1文字" />
+                <ToolRadio name="center-overlay-mode" checked={centerOverlayMode === "image"} onChange={() => { setCenterOverlayMode("image"); scheduleAutoGenerate(500); }} label="画像" />
+              </div>
+              {centerOverlayMode === "char" && (
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <label className="block text-sm font-semibold">表示する文字（1文字）</label>
+                    <ToolInput
+                      type="text"
+                      value={centerOverlayText}
+                      onChange={(e) => { setCenterOverlayText(e.target.value); scheduleAutoGenerate(500); }}
+                      onBlur={() => { const nextChar = Array.from(centerOverlayText.trim()).slice(0, 1).join(""); setCenterOverlayText(nextChar); scheduleAutoGenerate(500); }}
+                      placeholder="例: ★"
+                    />
+                  </div>
+                  <ToolColorInputRow
+                    label="文字色"
+                    colorValue={centerOverlayTextColor}
+                    textValue={centerOverlayTextColorInput}
+                    onColorChange={(value) => { const next = normalizeHexColor(value, centerOverlayTextColor); setCenterOverlayTextColor(next); setCenterOverlayTextColorInput(next); scheduleAutoGenerate(500); }}
+                    onTextChange={setCenterOverlayTextColorInput}
+                    onTextBlur={() => { const next = normalizeHexColor(centerOverlayTextColorInput, centerOverlayTextColor); setCenterOverlayTextColor(next); setCenterOverlayTextColorInput(next); scheduleAutoGenerate(500); }}
+                    ariaLabel="中央文字色"
+                    placeholder="#000000"
                   />
-                  <ToolRadio
-                    name="center-overlay-mode"
-                    checked={centerOverlayMode === "char"}
-                    onChange={() => {
-                      setCenterOverlayMode("char");
-                      scheduleAutoGenerate(500);
-                    }}
-                    label="1文字"
-                  />
-                  <ToolRadio
-                    name="center-overlay-mode"
-                    checked={centerOverlayMode === "image"}
-                    onChange={() => {
-                      setCenterOverlayMode("image");
-                      scheduleAutoGenerate(500);
-                    }}
-                    label="画像"
-                  />
-                </div>
-
-                <div className="max-w-xl mx-auto text-center">
-                  {centerOverlayMode === "none" ? (
-                    <></>
-                  ) : centerOverlayMode === "char" ? (
-                    <>
-                      <label className="block text-base font-semibold mb-1">表示する文字（1文字）</label>
-                      <ToolInput
-                        type="text"
-                        value={centerOverlayText}
-                        onChange={(e) => {
-                          setCenterOverlayText(e.target.value);
-                          scheduleAutoGenerate(500);
-                        }}
-                        onBlur={() => {
-                          const nextChar = Array.from(centerOverlayText.trim()).slice(0, 1).join("");
-                          setCenterOverlayText(nextChar);
-                          scheduleAutoGenerate(500);
-                        }}
-                        placeholder="例: ★"
-                      />
-
-                      <div className="mt-3">
-                        <ToolColorInputRow
-                          label="文字色"
-                          colorValue={centerOverlayTextColor}
-                          textValue={centerOverlayTextColorInput}
-                          onColorChange={(value) => {
-                            const next = normalizeHexColor(value, centerOverlayTextColor);
-                            setCenterOverlayTextColor(next);
-                            setCenterOverlayTextColorInput(next);
-                            scheduleAutoGenerate(500);
-                          }}
-                          onTextChange={setCenterOverlayTextColorInput}
-                          onTextBlur={() => {
-                            const next = normalizeHexColor(centerOverlayTextColorInput, centerOverlayTextColor);
-                            setCenterOverlayTextColor(next);
-                            setCenterOverlayTextColorInput(next);
-                            scheduleAutoGenerate(500);
-                          }}
-                          ariaLabel="中央文字色"
-                          placeholder="#000000"
-                        />
-                      </div>
-
-                      <div className="mt-3">
-                        <label className="block text-base font-semibold mb-1">文字サイズ（3〜25%）</label>
-                        <ToolSlider
-                          min={3}
-                          max={25}
-                          step={1}
-                          value={centerOverlayTextSizePercent}
-                          onChange={(e) => {
-                            setCenterOverlayTextSizePercent(Number(e.target.value));
-                            scheduleAutoGenerate(500);
-                          }}
-                        />
-                        <p className={`mt-2 text-base ${mutedTextCls}`}>{centerOverlayTextSizePercent}%</p>
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-2 mt-3">
-                        <ToolRadio
-                          name="center-char-badge"
-                          checked={centerOverlayCharWithBadge}
-                          onChange={() => {
-                            setCenterOverlayCharWithBadge(true);
-                            scheduleAutoGenerate(500);
-                          }}
-                          label="バッジあり"
-                        />
-                        <ToolRadio
-                          name="center-char-badge"
-                          checked={!centerOverlayCharWithBadge}
-                          onChange={() => {
-                            setCenterOverlayCharWithBadge(false);
-                            scheduleAutoGenerate(500);
-                          }}
-                          label="バッジなし"
-                        />
-                      </div>
-
-                      {centerOverlayCharWithBadge && (
-                        <div className="mt-3">
-                          <label className="block text-base font-semibold mb-1">バッジサイズ（5〜30%）</label>
-                          <ToolSlider
-                            min={5}
-                            max={30}
-                            step={1}
-                            value={centerOverlayBadgeSizePercent}
-                            onChange={(e) => {
-                              setCenterOverlayBadgeSizePercent(Number(e.target.value));
-                              scheduleAutoGenerate(500);
-                            }}
-                          />
-                          <p className={`mt-2 text-base ${mutedTextCls}`}>{centerOverlayBadgeSizePercent}%</p>
-                        </div>
-                      )}
-                    </>
-                  ) : (
-                    <>
-                      <label className="block text-base font-semibold mb-1">中央に表示する画像</label>
-                      <ToolInput
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (!file) {
-                            return;
-                          }
-                          const reader = new FileReader();
-                          reader.onload = () => {
-                            const result = typeof reader.result === "string" ? reader.result : "";
-                            setCenterOverlayImageDataUrl(result);
-                            scheduleAutoGenerate(500);
-                          };
-                          reader.readAsDataURL(file);
-                        }}
-                      />
-                      {centerOverlayImageDataUrl && (
-                        <div className="mt-3 flex items-center justify-center gap-3">
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img src={centerOverlayImageDataUrl} alt="中央画像プレビュー" className={`w-12 h-12 object-cover rounded-full ${containerBorderCls}`} />
-                          <ToolButton
-                            variant="secondary"
-                            type="button"
-                            onClick={() => {
-                              setCenterOverlayImageDataUrl("");
-                              scheduleAutoGenerate(500);
-                            }}
-                            className="px-3 py-2 text-sm"
-                          >
-                            画像をクリア
-                          </ToolButton>
-                        </div>
-                      )}
-
-                      <div className="mt-3">
-                        <label className="block text-base font-semibold mb-1">表示サイズ（5〜25%）</label>
-                        <ToolSlider
-                          min={5}
-                          max={25}
-                          step={1}
-                          value={centerOverlayBadgeSizePercent}
-                          onChange={(e) => {
-                            setCenterOverlayBadgeSizePercent(Number(e.target.value));
-                            scheduleAutoGenerate(500);
-                          }}
-                        />
-                        <p className={`mt-2 text-base ${mutedTextCls}`}>{centerOverlayBadgeSizePercent}%</p>
-                      </div>
-                    </>
+                  <div className="space-y-2">
+                    <label className="block text-sm font-semibold">文字サイズ（3〜25%）</label>
+                    <ToolSlider min={3} max={25} step={1} value={centerOverlayTextSizePercent} onChange={(e) => { setCenterOverlayTextSizePercent(Number(e.target.value)); scheduleAutoGenerate(500); }} />
+                    <p className={`text-sm ${mutedTextCls}`}>{centerOverlayTextSizePercent}%</p>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <ToolRadio name="center-char-badge" checked={centerOverlayCharWithBadge} onChange={() => { setCenterOverlayCharWithBadge(true); scheduleAutoGenerate(500); }} label="バッジあり" />
+                    <ToolRadio name="center-char-badge" checked={!centerOverlayCharWithBadge} onChange={() => { setCenterOverlayCharWithBadge(false); scheduleAutoGenerate(500); }} label="バッジなし" />
+                  </div>
+                  {centerOverlayCharWithBadge && (
+                    <div className="space-y-2">
+                      <label className="block text-sm font-semibold">バッジサイズ（5〜30%）</label>
+                      <ToolSlider min={5} max={30} step={1} value={centerOverlayBadgeSizePercent} onChange={(e) => { setCenterOverlayBadgeSizePercent(Number(e.target.value)); scheduleAutoGenerate(500); }} />
+                      <p className={`text-sm ${mutedTextCls}`}>{centerOverlayBadgeSizePercent}%</p>
+                    </div>
                   )}
                 </div>
-              </div>
+              )}
+              {centerOverlayMode === "image" && (
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <label className="block text-sm font-semibold">中央に表示する画像</label>
+                    <ToolInput
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        const reader = new FileReader();
+                        reader.onload = () => { const result = typeof reader.result === "string" ? reader.result : ""; setCenterOverlayImageDataUrl(result); scheduleAutoGenerate(500); };
+                        reader.readAsDataURL(file);
+                      }}
+                    />
+                  </div>
+                  {centerOverlayImageDataUrl && (
+                    <div className="flex items-center gap-3">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={centerOverlayImageDataUrl} alt="中央画像プレビュー" className={`w-12 h-12 object-cover rounded-full ${containerBorderCls}`} />
+                      <ToolButton variant="secondary" type="button" onClick={() => { setCenterOverlayImageDataUrl(""); scheduleAutoGenerate(500); }} className="px-3 py-2 text-sm">
+                        画像をクリア
+                      </ToolButton>
+                    </div>
+                  )}
+                  <div className="space-y-2">
+                    <label className="block text-sm font-semibold">表示サイズ（5〜25%）</label>
+                    <ToolSlider min={5} max={25} step={1} value={centerOverlayBadgeSizePercent} onChange={(e) => { setCenterOverlayBadgeSizePercent(Number(e.target.value)); scheduleAutoGenerate(500); }} />
+                    <p className={`text-sm ${mutedTextCls}`}>{centerOverlayBadgeSizePercent}%</p>
+                  </div>
+                </div>
+              )}
             </div>
+          </ToolPanel>
 
-            <ToolButton
-              variant="primary"
-              onClick={() => {
-                if (generateTimerRef.current) {
-                  clearTimeout(generateTimerRef.current);
-                }
-                void generateQrCode();
-              }}
-              className="w-full py-4 text-lg"
-            >
-              生成する
-            </ToolButton>
-          </div>
-        </ToolPanel>
+          <ToolButton
+            variant="primary"
+            onClick={() => { if (generateTimerRef.current) clearTimeout(generateTimerRef.current); void generateQrCode(); }}
+            className="w-full py-4 text-lg"
+          >
+            生成する
+          </ToolButton>
+        </ToolColumn>
 
-        <ToolPanel
-          className="lg:sticky lg:self-start"
-          style={{ top: `${rightStickyTop}px` }}
-        >
-          <div className="space-y-5">
-            <ToolCheckbox
-              checked={autoGenerate}
-              onChange={(checked) => {
+        {/* 右カラム：プレビューと出力 */}
+        <ToolColumn className="lg:sticky lg:self-start" style={{ top: `${rightStickyTop}px` }}>
+          <ToolPanel title="プレビュー">
+            <div className="space-y-5">
+              <ToolCheckbox
+                checked={autoGenerate}
+                onChange={(checked) => {
                   setAutoGenerate(checked);
                   if (checked) {
                     scheduleAutoGenerate(500);
@@ -1032,54 +821,38 @@ export default function QrCodePage() {
                     clearTimeout(generateTimerRef.current);
                     setIsLoading(false);
                   }
-              }}
-              label="自動生成を有効にする"
-            />
-
-            <div className={`flex justify-center items-center min-h-[360px] p-5 rounded-2xl ${containerBorderCls}`} style={getCheckerboardStyle()}>
-              {isLoading ? (
-                <div className={`w-full max-w-[320px] aspect-square rounded-xl ${skeletonCls}`} />
-              ) : qrDataUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={qrDataUrl} alt="生成されたQRコード" width={qrSize} height={qrSize} className="w-full h-auto max-w-[420px]" />
-              ) : (
-                <div className={`w-full max-w-[320px] aspect-square flex items-center justify-center text-sm text-center px-4 rounded-xl ${placeholderBoxCls}`}>
-                  URLまたはテキストを入力するとここにQRコードが表示されます。
-                </div>
-              )}
-            </div>
-
-            <div className="flex w-full flex-wrap gap-2 items-stretch">
-              <ToolButton
-                variant="secondary"
-                onClick={handleCopyImage}
-                className="basis-full w-full px-4 py-3 text-base whitespace-nowrap text-center"
-              >
-                <Copy size={16} />
-                画像をコピー
-              </ToolButton>
-              <ToolButton
-                variant="secondary"
-                onClick={handleSaveImage}
-                className="flex-1 min-w-[11rem] px-4 py-3 text-base whitespace-nowrap text-center"
-              >
-                画像を保存
-              </ToolButton>
-              <ToolButton
-                variant="secondary"
-                onClick={() => {
-                  void handleSaveImageAs();
                 }}
-                className="flex-1 min-w-[12.5rem] px-4 py-3 text-base whitespace-nowrap text-center"
-              >
-                場所を指定して保存
-              </ToolButton>
+                label="自動生成を有効にする"
+              />
+              <div className={`flex justify-center items-center min-h-[360px] p-5 rounded-2xl ${containerBorderCls}`} style={getCheckerboardStyle()}>
+                {isLoading ? (
+                  <div className={`w-full max-w-[320px] aspect-square rounded-xl ${skeletonCls}`} />
+                ) : qrDataUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={qrDataUrl} alt="生成されたQRコード" width={qrSize} height={qrSize} className="w-full h-auto max-w-[420px]" />
+                ) : (
+                  <div className={`w-full max-w-[320px] aspect-square flex items-center justify-center text-sm text-center px-4 rounded-xl ${placeholderBoxCls}`}>
+                    URLまたはテキストを入力するとここにQRコードが表示されます。
+                  </div>
+                )}
+              </div>
+              <div className="flex w-full flex-wrap gap-2 items-stretch">
+                <ToolButton variant="secondary" onClick={handleCopyImage} className="basis-full w-full px-4 py-3 text-base whitespace-nowrap text-center">
+                  <Copy size={16} />
+                  画像をコピー
+                </ToolButton>
+                <ToolButton variant="secondary" onClick={handleSaveImage} className="flex-1 min-w-[11rem] px-4 py-3 text-base whitespace-nowrap text-center">
+                  画像を保存
+                </ToolButton>
+                <ToolButton variant="secondary" onClick={() => { void handleSaveImageAs(); }} className="flex-1 min-w-[12.5rem] px-4 py-3 text-base whitespace-nowrap text-center">
+                  場所を指定して保存
+                </ToolButton>
+              </div>
+              {statusMessage && <p className={`text-sm ${mutedTextCls}`}>{statusMessage}</p>}
             </div>
-
-            {statusMessage && <p className={`text-base ${mutedTextCls}`}>{statusMessage}</p>}
-          </div>
-        </ToolPanel>
-      </div>
+          </ToolPanel>
+        </ToolColumn>
+      </ToolGrid>
     </ToolPageLayout>
   );
 }

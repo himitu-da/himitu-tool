@@ -10,6 +10,8 @@ interface ToolPanelProps {
     className?: string;
     /** インラインスタイル（動的な sticky top など） */
     style?: React.CSSProperties;
+    /** パネル上部に見出しを表示する場合 */
+    title?: string;
 }
 
 /**
@@ -23,11 +25,14 @@ interface ToolPanelProps {
  * </ToolPanel>
  * ```
  */
-export function ToolPanel({ children, className = "", style }: ToolPanelProps) {
+export function ToolPanel({ title, children, className = "", style }: ToolPanelProps) {
     const { panelCls } = useToolTheme();
 
     return (
         <section className={`rounded-2xl p-5 sm:p-7 shadow-sm ${panelCls} ${className}`.trim()} style={style}>
+            {title && (
+                <h3 className="text-xl font-bold mb-5 flex items-center">{title}</h3>
+            )}
             {children}
         </section>
     );
