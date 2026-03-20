@@ -809,7 +809,7 @@ export default function QrCodePage() {
 
         {/* 右カラム：プレビューと出力 */}
         <ToolColumn className="lg:sticky lg:self-start" style={{ top: `${rightStickyTop}px` }}>
-          <ToolPanel title="プレビュー">
+          <ToolPanel>
             <div className="space-y-5">
               <ToolCheckbox
                 checked={autoGenerate}
