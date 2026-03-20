@@ -12,7 +12,7 @@ import { ToolButton } from "@/components/ui/ToolButton";
 import { ToolInput } from "@/components/ui/ToolInput";
 import { ToolSlider } from "@/components/ui/ToolSlider";
 import { ToolCheckbox } from "@/components/ui/ToolCheckbox";
-import { ToolSelectCard } from "@/components/ui/ToolSelectCard";
+import { ToolRadio } from "@/components/ui/ToolRadio";
 import { ToolTabs } from "@/components/ui/ToolTabs";
 
 const LOWERCASE = "abcdefghijklmnopqrstuvwxyz";
@@ -382,24 +382,26 @@ export default function PasswordGeneratorPage() {
                     { id: "alphanumeric", label: "英数字のみ" },
                     { id: "symbols", label: "英数字記号" },
                   ].map((pattern) => (
-                    <ToolSelectCard
+                    <ToolRadio
                       key={pattern.id}
-                      active={simpleSettings.pattern === pattern.id}
-                      onClick={() => updateSimple('pattern', pattern.id as SimplePatternId)}
+                      variant="card"
+                      name="simple-pattern"
+                      checked={simpleSettings.pattern === pattern.id}
+                      onChange={() => updateSimple('pattern', pattern.id as SimplePatternId)}
                       label={pattern.label}
                     />
                   ))}
                 </div>
               </ToolPanel>
 
-              <ToolPanel title="文字数の選択">
-                <div className={`text-xs mb-3 ${mutedTextCls}`}>複数選択可能</div>
+              <ToolPanel title="文字数の選択 (複数選択可能)">
                 <div className="grid gap-2 sm:grid-cols-3">
                   {SIMPLE_LENGTH_OPTIONS.map((len) => (
-                    <ToolSelectCard
+                    <ToolCheckbox
                       key={len.id}
-                      active={simpleSettings.selectedLengths.includes(len.id)}
-                      onClick={() => {
+                      variant="card"
+                      checked={simpleSettings.selectedLengths.includes(len.id)}
+                      onChange={() => {
                         const current = simpleSettings.selectedLengths;
                         let nextLengths;
                         if (current.includes(len.id)) {
@@ -411,7 +413,7 @@ export default function PasswordGeneratorPage() {
                         updateSimple('selectedLengths', nextLengths);
                       }}
                       label={len.label}
-                      sub={len.sub}
+                      description={len.sub}
                     />
                   ))}
                 </div>
@@ -419,11 +421,10 @@ export default function PasswordGeneratorPage() {
 
               <ToolPanel title="その他">
                 <ToolCheckbox
-                  variant="card"
+                  variant="checkbox"
                   checked={simpleSettings.excludeAmbiguous}
                   onChange={(v) => updateSimple("excludeAmbiguous", v)}
-                  label="紛らわしい文字を除外する"
-                  description="(I, l, 1, O, 0 など)"
+                  label="紛らわしい文字を除外する (I, l, 1, O, 0 など)"
                 />
               </ToolPanel>
 
@@ -439,7 +440,7 @@ export default function PasswordGeneratorPage() {
           ) : (
             <>
               {/* 1. 使用する文字 */}
-              <ToolPanel title="1. 使用する文字">
+              <ToolPanel title="1. 使用する文字 (複数選択可能)">
                 <p className={`text-sm mb-4 ${mutedTextCls}`}>下のボタンをタップして特定の文字だけを除外・追加したり、テキストフィールドから直接編集できます。</p>
                 <div className="grid gap-2 sm:grid-cols-2">
                   <ToolCheckbox variant="card" checked={settings.includeLowercase} onChange={(v) => updateSetting("includeLowercase", v)} label="英小文字 (a-z)" />
@@ -455,10 +456,10 @@ export default function PasswordGeneratorPage() {
                   {settings.includeSymbols && <CharsetButtons source={SYMBOLS} label="記号" />}
                 </div>
 
-                <div className="pt-4 mt-2 space-y-2 border-t border-black/5 dark:border-white/5">
-                  <ToolCheckbox variant="card" checked={settings.excludeAmbiguous} onChange={(v) => updateSetting("excludeAmbiguous", v)} label="紛らわしい文字を除外" description="(I, l, 1, O, 0 など)" />
-                  <ToolCheckbox variant="card" checked={settings.ensureEverySet} onChange={(v) => updateSetting("ensureEverySet", v)} label="有効な文字種を少なくとも1文字ずつ含める" />
-                  <ToolCheckbox variant="card" checked={settings.distribution === 'equal'} onChange={(v) => updateSetting("distribution", v ? "equal" : "proportional")} label="文字種が均等な割合で出現するようにする" />
+                <div className="pt-4 mt-2 space-y-4 border-t border-black/5 dark:border-white/5">
+                  <ToolCheckbox variant="checkbox" checked={settings.excludeAmbiguous} onChange={(v) => updateSetting("excludeAmbiguous", v)} label="紛らわしい文字を除外 (I, l, 1, O, 0 など)" />
+                  <ToolCheckbox variant="checkbox" checked={settings.ensureEverySet} onChange={(v) => updateSetting("ensureEverySet", v)} label="有効な文字種を少なくとも1文字ずつ含める" />
+                  <ToolCheckbox variant="checkbox" checked={settings.distribution === 'equal'} onChange={(v) => updateSetting("distribution", v ? "equal" : "proportional")} label="文字種が均等な割合で出現するようにする" />
                 </div>
 
                 <div className="mt-4">
@@ -491,12 +492,14 @@ export default function PasswordGeneratorPage() {
                   />
                   <div className="flex flex-wrap gap-2">
                     {LENGTH_OPTIONS.map(len => (
-                      <ToolSelectCard
+                      <ToolRadio
                         key={len}
-                        active={settings.length === len}
-                        onClick={() => updateSetting('length', len)}
+                        variant="card"
+                        name="detail-length"
+                        checked={settings.length === len}
+                        onChange={() => updateSetting('length', len)}
                         label={len}
-                        className={`px-3 py-1.5 text-sm !p-0 py-1.5 px-3 !rounded-lg`}
+                        className="px-3 py-1.5 !rounded-lg text-sm !p-0 px-3 py-1.5"
                       />
                     ))}
                   </div>
@@ -520,12 +523,14 @@ export default function PasswordGeneratorPage() {
                   />
                   <div className="flex flex-wrap gap-2">
                     {COUNT_OPTIONS.map(cnt => (
-                      <ToolSelectCard
+                      <ToolRadio
                         key={cnt}
-                        active={settings.count === cnt}
-                        onClick={() => updateSetting('count', cnt)}
+                        variant="card"
+                        name="detail-count"
+                        checked={settings.count === cnt}
+                        onChange={() => updateSetting('count', cnt)}
                         label={cnt}
-                        className="px-3 py-1.5 text-sm !p-0 py-1.5 px-3 !rounded-lg"
+                        className="px-3 py-1.5 !rounded-lg text-sm !p-0 px-3 py-1.5"
                       />
                     ))}
                   </div>

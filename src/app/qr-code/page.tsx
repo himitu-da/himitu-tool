@@ -812,6 +812,7 @@ export default function QrCodePage() {
           <ToolPanel>
             <div className="space-y-5">
               <ToolCheckbox
+                variant="checkboxcard"
                 checked={autoGenerate}
                 onChange={(checked) => {
                   setAutoGenerate(checked);

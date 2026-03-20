@@ -110,19 +110,19 @@ export function useToolTheme(): ToolTheme {
     const radioLabelCls = (active: boolean): string => {
         if (active) {
             switch (theme) {
-                case "light": return "bg-slate-700 text-white";
-                case "dark": return "bg-sky-600 text-white";
-                case "ocean": return "bg-teal-600 text-white";
+                case "light": return "bg-blue-500/10 border-blue-500 shadow-sm";
+                case "dark": return "bg-sky-500/20 border-sky-500 shadow-sm";
+                case "ocean": return "bg-teal-400/20 border-teal-400 shadow-sm";
                 case "classic": return "bg-gray-300 border-2 border-gray-600 text-black !rounded-none font-bold";
-                default: return "bg-slate-700 text-white";
+                default: return "bg-blue-500/10 border-blue-500 shadow-sm";
             }
         }
         switch (theme) {
-            case "light": return "bg-gray-100 text-gray-700 hover:bg-gray-200";
-            case "dark": return "bg-gray-700/70 text-gray-200 hover:bg-gray-700";
-            case "ocean": return "bg-cyan-800/70 text-cyan-100 hover:bg-cyan-800";
-            case "classic": return "bg-gray-100 border-2 border-t-white border-l-white border-b-gray-600 border-r-gray-600 text-black !rounded-none";
-            default: return "bg-gray-100 text-gray-700 hover:bg-gray-200";
+            case "light": return "bg-black/[0.04] dark:bg-white/[0.04] text-gray-600 border-transparent hover:bg-black/[0.08] dark:hover:bg-white/[0.08]";
+            case "dark": return "bg-white/[0.08] text-gray-300 border-transparent hover:bg-white/[0.12]";
+            case "ocean": return "bg-cyan-800/40 text-cyan-100 border-transparent hover:bg-cyan-800/60";
+            case "classic": return "bg-gray-200 border-2 border-t-white border-l-white border-b-gray-600 border-r-gray-600 text-black !rounded-none";
+            default: return "bg-black/[0.04] text-gray-600 border-transparent hover:bg-black/[0.08]";
         }
     };
 
