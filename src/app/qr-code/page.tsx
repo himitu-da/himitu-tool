@@ -7,7 +7,12 @@ import { ClipboardPaste, Copy } from "lucide-react";
 import { useToolTheme } from "@/lib/useToolTheme";
 import { ToolPageLayout } from "@/components/ToolPageLayout";
 import { ToolPanel } from "@/components/ToolPanel";
-import { ToolCheckbox, ToolColorInputRow, ToolFieldInput, ToolRadioOption, ToolRangeInput } from "@/components/ToolFormPrimitives";
+import { ToolInput } from "@/components/ui/ToolInput";
+import { ToolSlider } from "@/components/ui/ToolSlider";
+import { ToolCheckbox } from "@/components/ui/ToolCheckbox";
+import { ToolRadio } from "@/components/ui/ToolRadio";
+import { ToolButton } from "@/components/ui/ToolButton";
+import { ToolColorInputRow } from "@/components/ui/ToolColorInputRow";
 
 type AdjustMode = "none" | "auto" | "modules" | "percent";
 type PrefixMode = "free" | "https" | "http";
@@ -535,50 +540,47 @@ export default function QrCodePage() {
             <div className={`rounded-2xl px-4 py-5 sm:px-5 sm:py-6 space-y-4 text-center ${blockCls}`}>
               <label className="block text-lg font-bold">URLまたはテキスト</label>
               <div className="grid gap-2 sm:grid-cols-3 mb-2 max-w-2xl mx-auto">
-                <ToolRadioOption
+                <ToolRadio
                   name="prefix-mode"
                   checked={prefixMode === "https"}
                   onChange={() => handlePrefixModeChange("https")}
-                  activeClassName={radioLabelCls(prefixMode === "https")}
                   label="https://"
                 />
-                <ToolRadioOption
+                <ToolRadio
                   name="prefix-mode"
                   checked={prefixMode === "http"}
                   onChange={() => handlePrefixModeChange("http")}
-                  activeClassName={radioLabelCls(prefixMode === "http")}
                   label="http://"
                 />
-                <ToolRadioOption
+                <ToolRadio
                   name="prefix-mode"
                   checked={prefixMode === "free"}
                   onChange={() => handlePrefixModeChange("free")}
-                  activeClassName={radioLabelCls(prefixMode === "free")}
                   label="自由入力"
                 />
               </div>
               <div className="flex items-center gap-2 max-w-2xl mx-auto">
-                <button
+                <ToolButton
+                  variant="secondary"
                   onClick={handlePaste}
-                  className={`shrink-0 px-4 py-3 rounded-xl font-semibold text-base flex items-center gap-2 transition-colors ${secondaryBtnCls}`}
+                  className="shrink-0 px-4 py-3 text-base"
                   aria-label="クリップボードからペースト"
                 >
                   <ClipboardPaste size={18} />
                   <span>ペースト</span>
-                </button>
+                </ToolButton>
                 {prefixMode !== "free" && (
                   <span className={`shrink-0 px-3 py-3 rounded-xl text-base font-semibold ${secondaryBtnCls}`}>
                     {prefixMode}://
                   </span>
                 )}
-                <ToolFieldInput
+                <ToolInput
                   type="text"
                   value={text}
                   onChange={(e) => {
                     setText(e.target.value);
                     scheduleAutoGenerate(1500);
                   }}
-                  inputCls={inputCls}
                   placeholder={prefixMode === "free" ? "https://example.com" : "example.com/path"}
                 />
               </div>
@@ -589,7 +591,7 @@ export default function QrCodePage() {
 
             <div className={`rounded-2xl px-4 py-5 sm:px-5 sm:py-6 space-y-3 text-center ${blockCls}`}>
               <label className="block text-lg font-bold">QRサイズ</label>
-              <ToolRangeInput
+              <ToolSlider
                 min={MIN_QR_SIZE}
                 max={MAX_QR_SIZE}
                 step={QR_STEP}
@@ -598,7 +600,6 @@ export default function QrCodePage() {
                   setQrSize(Number(e.target.value));
                   scheduleAutoGenerate(500);
                 }}
-                isClassic={theme === "classic"}
                 className="max-w-2xl mx-auto"
               />
               <p className={`mt-2 text-base ${mutedTextCls}`}>{printHint}</p>
@@ -607,44 +608,40 @@ export default function QrCodePage() {
             <div className={`rounded-2xl px-4 py-5 sm:px-5 sm:py-6 space-y-3 text-center ${blockCls}`}>
               <p className="text-lg font-bold">外周余白</p>
               <div className="grid grid-cols-2 gap-2 max-w-2xl mx-auto">
-                <ToolRadioOption
+                <ToolRadio
                   name="margin-mode"
                   checked={marginMode === "none"}
                   onChange={() => {
                     setMarginMode("none");
                     scheduleAutoGenerate(500);
                   }}
-                  activeClassName={radioLabelCls(marginMode === "none")}
                   label="最小"
                 />
-                <ToolRadioOption
+                <ToolRadio
                   name="margin-mode"
                   checked={marginMode === "auto"}
                   onChange={() => {
                     setMarginMode("auto");
                     scheduleAutoGenerate(500);
                   }}
-                  activeClassName={radioLabelCls(marginMode === "auto")}
                   label="自動"
                 />
-                <ToolRadioOption
+                <ToolRadio
                   name="margin-mode"
                   checked={marginMode === "modules"}
                   onChange={() => {
                     setMarginMode("modules");
                     scheduleAutoGenerate(500);
                   }}
-                  activeClassName={radioLabelCls(marginMode === "modules")}
                   label="ドット数指定"
                 />
-                <ToolRadioOption
+                <ToolRadio
                   name="margin-mode"
                   checked={marginMode === "percent"}
                   onChange={() => {
                     setMarginMode("percent");
                     scheduleAutoGenerate(500);
                   }}
-                  activeClassName={radioLabelCls(marginMode === "percent")}
                   label="パーセント指定"
                 />
               </div>
@@ -652,7 +649,7 @@ export default function QrCodePage() {
               {marginMode === "modules" && (
                 <div className="mt-3 max-w-xl mx-auto text-center">
                   <label className="block text-base font-semibold mb-1">余白（ドット数: 0〜20）</label>
-                  <ToolFieldInput
+                  <ToolInput
                     type="number"
                     min={0}
                     max={20}
@@ -663,7 +660,6 @@ export default function QrCodePage() {
                       setMarginModules(Number.isNaN(next) ? 0 : next);
                       scheduleAutoGenerate(500);
                     }}
-                    inputCls={inputCls}
                   />
                   <p className={`mt-2 text-base ${mutedTextCls}`}>QRの1セル単位で周囲余白を広げます。</p>
                 </div>
@@ -672,7 +668,7 @@ export default function QrCodePage() {
               {marginMode === "percent" && (
                 <div className="mt-3 max-w-xl mx-auto text-center">
                   <label className="block text-base font-semibold mb-1">余白率（0〜30%）</label>
-                  <ToolFieldInput
+                  <ToolInput
                     type="number"
                     min={0}
                     max={30}
@@ -683,7 +679,6 @@ export default function QrCodePage() {
                       setMarginPercent(Number.isNaN(next) ? 0 : next);
                       scheduleAutoGenerate(500);
                     }}
-                    inputCls={inputCls}
                   />
                   <p className={`mt-2 text-base ${mutedTextCls}`}>上下左右に同率の余白を確保します。</p>
                 </div>
@@ -693,44 +688,40 @@ export default function QrCodePage() {
             <div className={`rounded-2xl px-4 py-5 sm:px-5 sm:py-6 space-y-3 text-center ${blockCls}`}>
               <p className="text-lg font-bold">角丸設定</p>
               <div className="grid grid-cols-2 gap-2 max-w-2xl mx-auto">
-                <ToolRadioOption
+                <ToolRadio
                   name="round-mode"
                   checked={roundMode === "none"}
                   onChange={() => {
                     setRoundMode("none");
                     scheduleAutoGenerate(500);
                   }}
-                  activeClassName={radioLabelCls(roundMode === "none")}
                   label="なし"
                 />
-                <ToolRadioOption
+                <ToolRadio
                   name="round-mode"
                   checked={roundMode === "auto"}
                   onChange={() => {
                     setRoundMode("auto");
                     scheduleAutoGenerate(500);
                   }}
-                  activeClassName={radioLabelCls(roundMode === "auto")}
                   label="自動"
                 />
-                <ToolRadioOption
+                <ToolRadio
                   name="round-mode"
                   checked={roundMode === "modules"}
                   onChange={() => {
                     setRoundMode("modules");
                     scheduleAutoGenerate(500);
                   }}
-                  activeClassName={radioLabelCls(roundMode === "modules")}
                   label="ドット指定"
                 />
-                <ToolRadioOption
+                <ToolRadio
                   name="round-mode"
                   checked={roundMode === "percent"}
                   onChange={() => {
                     setRoundMode("percent");
                     scheduleAutoGenerate(500);
                   }}
-                  activeClassName={radioLabelCls(roundMode === "percent")}
                   label="パーセント指定"
                 />
               </div>
@@ -738,7 +729,7 @@ export default function QrCodePage() {
               {roundMode === "modules" && (
                 <div className="mt-3 max-w-xl mx-auto text-center">
                   <label className="block text-base font-semibold mb-1">角丸量（ドット数: 0〜20）</label>
-                  <ToolFieldInput
+                  <ToolInput
                     type="number"
                     min={0}
                     max={20}
@@ -749,7 +740,6 @@ export default function QrCodePage() {
                       setRoundModules(Number.isNaN(next) ? 0 : next);
                       scheduleAutoGenerate(500);
                     }}
-                    inputCls={inputCls}
                   />
                 </div>
               )}
@@ -757,7 +747,7 @@ export default function QrCodePage() {
               {roundMode === "percent" && (
                 <div className="mt-3 max-w-xl mx-auto text-center">
                   <label className="block text-base font-semibold mb-1">角丸率（0〜45%）</label>
-                  <ToolFieldInput
+                  <ToolInput
                     type="number"
                     min={0}
                     max={45}
@@ -768,7 +758,6 @@ export default function QrCodePage() {
                       setRoundPercent(Number.isNaN(next) ? 0 : next);
                       scheduleAutoGenerate(500);
                     }}
-                    inputCls={inputCls}
                   />
                 </div>
               )}
@@ -798,10 +787,8 @@ export default function QrCodePage() {
                     setBackgroundColorInput(next);
                     scheduleAutoGenerate(500);
                   }}
-                  inputCls={inputCls}
                   ariaLabel="背景色"
                   placeholder="#ffffff"
-                  isClassic={theme === "classic"}
                 />
 
                 <ToolColorInputRow
@@ -821,10 +808,8 @@ export default function QrCodePage() {
                     setDotColorInput(next);
                     scheduleAutoGenerate(500);
                   }}
-                  inputCls={inputCls}
                   ariaLabel="ドット色"
                   placeholder="#000000"
-                  isClassic={theme === "classic"}
                 />
               </div>
             </div>
@@ -833,34 +818,31 @@ export default function QrCodePage() {
               <p className="text-lg font-bold">中央アイコン・絵文字・画像</p>
               <div className="max-w-3xl mx-auto space-y-3">
                 <div className="grid grid-cols-3 gap-2 max-w-2xl mx-auto">
-                  <ToolRadioOption
+                  <ToolRadio
                     name="center-overlay-mode"
                     checked={centerOverlayMode === "none"}
                     onChange={() => {
                       setCenterOverlayMode("none");
                       scheduleAutoGenerate(500);
                     }}
-                    activeClassName={radioLabelCls(centerOverlayMode === "none")}
                     label="なし"
                   />
-                  <ToolRadioOption
+                  <ToolRadio
                     name="center-overlay-mode"
                     checked={centerOverlayMode === "char"}
                     onChange={() => {
                       setCenterOverlayMode("char");
                       scheduleAutoGenerate(500);
                     }}
-                    activeClassName={radioLabelCls(centerOverlayMode === "char")}
                     label="1文字"
                   />
-                  <ToolRadioOption
+                  <ToolRadio
                     name="center-overlay-mode"
                     checked={centerOverlayMode === "image"}
                     onChange={() => {
                       setCenterOverlayMode("image");
                       scheduleAutoGenerate(500);
                     }}
-                    activeClassName={radioLabelCls(centerOverlayMode === "image")}
                     label="画像"
                   />
                 </div>
@@ -871,7 +853,7 @@ export default function QrCodePage() {
                   ) : centerOverlayMode === "char" ? (
                     <>
                       <label className="block text-base font-semibold mb-1">表示する文字（1文字）</label>
-                      <ToolFieldInput
+                      <ToolInput
                         type="text"
                         value={centerOverlayText}
                         onChange={(e) => {
@@ -883,7 +865,6 @@ export default function QrCodePage() {
                           setCenterOverlayText(nextChar);
                           scheduleAutoGenerate(500);
                         }}
-                        inputCls={inputCls}
                         placeholder="例: ★"
                       />
 
@@ -905,16 +886,14 @@ export default function QrCodePage() {
                             setCenterOverlayTextColorInput(next);
                             scheduleAutoGenerate(500);
                           }}
-                          inputCls={inputCls}
                           ariaLabel="中央文字色"
                           placeholder="#000000"
-                          isClassic={theme === "classic"}
                         />
                       </div>
 
                       <div className="mt-3">
                         <label className="block text-base font-semibold mb-1">文字サイズ（3〜25%）</label>
-                        <ToolRangeInput
+                        <ToolSlider
                           min={3}
                           max={25}
                           step={1}
@@ -923,30 +902,27 @@ export default function QrCodePage() {
                             setCenterOverlayTextSizePercent(Number(e.target.value));
                             scheduleAutoGenerate(500);
                           }}
-                          isClassic={theme === "classic"}
                         />
                         <p className={`mt-2 text-base ${mutedTextCls}`}>{centerOverlayTextSizePercent}%</p>
                       </div>
 
                       <div className="grid grid-cols-2 gap-2 mt-3">
-                        <ToolRadioOption
+                        <ToolRadio
                           name="center-char-badge"
                           checked={centerOverlayCharWithBadge}
                           onChange={() => {
                             setCenterOverlayCharWithBadge(true);
                             scheduleAutoGenerate(500);
                           }}
-                          activeClassName={radioLabelCls(centerOverlayCharWithBadge)}
                           label="バッジあり"
                         />
-                        <ToolRadioOption
+                        <ToolRadio
                           name="center-char-badge"
                           checked={!centerOverlayCharWithBadge}
                           onChange={() => {
                             setCenterOverlayCharWithBadge(false);
                             scheduleAutoGenerate(500);
                           }}
-                          activeClassName={radioLabelCls(!centerOverlayCharWithBadge)}
                           label="バッジなし"
                         />
                       </div>
@@ -954,7 +930,7 @@ export default function QrCodePage() {
                       {centerOverlayCharWithBadge && (
                         <div className="mt-3">
                           <label className="block text-base font-semibold mb-1">バッジサイズ（5〜30%）</label>
-                          <ToolRangeInput
+                          <ToolSlider
                             min={5}
                             max={30}
                             step={1}
@@ -963,7 +939,6 @@ export default function QrCodePage() {
                               setCenterOverlayBadgeSizePercent(Number(e.target.value));
                               scheduleAutoGenerate(500);
                             }}
-                            isClassic={theme === "classic"}
                           />
                           <p className={`mt-2 text-base ${mutedTextCls}`}>{centerOverlayBadgeSizePercent}%</p>
                         </div>
@@ -972,7 +947,7 @@ export default function QrCodePage() {
                   ) : (
                     <>
                       <label className="block text-base font-semibold mb-1">中央に表示する画像</label>
-                      <ToolFieldInput
+                      <ToolInput
                         type="file"
                         accept="image/*"
                         onChange={(e) => {
@@ -988,28 +963,28 @@ export default function QrCodePage() {
                           };
                           reader.readAsDataURL(file);
                         }}
-                        inputCls={inputCls}
                       />
                       {centerOverlayImageDataUrl && (
                         <div className="mt-3 flex items-center justify-center gap-3">
                           {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img src={centerOverlayImageDataUrl} alt="中央画像プレビュー" className={`w-12 h-12 object-cover rounded-full ${containerBorderCls}`} />
-                          <button
+                          <ToolButton
+                            variant="secondary"
                             type="button"
                             onClick={() => {
                               setCenterOverlayImageDataUrl("");
                               scheduleAutoGenerate(500);
                             }}
-                            className={`px-3 py-2 rounded-xl text-sm font-semibold transition-colors ${secondaryBtnCls}`}
+                            className="px-3 py-2 text-sm"
                           >
                             画像をクリア
-                          </button>
+                          </ToolButton>
                         </div>
                       )}
 
                       <div className="mt-3">
                         <label className="block text-base font-semibold mb-1">表示サイズ（5〜25%）</label>
-                        <ToolRangeInput
+                        <ToolSlider
                           min={5}
                           max={25}
                           step={1}
@@ -1018,7 +993,6 @@ export default function QrCodePage() {
                             setCenterOverlayBadgeSizePercent(Number(e.target.value));
                             scheduleAutoGenerate(500);
                           }}
-                          isClassic={theme === "classic"}
                         />
                         <p className={`mt-2 text-base ${mutedTextCls}`}>{centerOverlayBadgeSizePercent}%</p>
                       </div>
@@ -1028,17 +1002,18 @@ export default function QrCodePage() {
               </div>
             </div>
 
-            <button
+            <ToolButton
+              variant="primary"
               onClick={() => {
                 if (generateTimerRef.current) {
                   clearTimeout(generateTimerRef.current);
                 }
                 void generateQrCode();
               }}
-              className={`w-full py-4 rounded-xl text-lg font-bold transition-colors ${primaryBtnCls}`}
+              className="w-full py-4 text-lg"
             >
               生成する
-            </button>
+            </ToolButton>
           </div>
         </ToolPanel>
 
@@ -1058,7 +1033,6 @@ export default function QrCodePage() {
                     setIsLoading(false);
                   }
               }}
-              isClassic={theme === "classic"}
               label="自動生成を有効にする"
             />
 
@@ -1076,27 +1050,30 @@ export default function QrCodePage() {
             </div>
 
             <div className="flex w-full flex-wrap gap-2 items-stretch">
-              <button
+              <ToolButton
+                variant="secondary"
                 onClick={handleCopyImage}
-                className={`basis-full w-full px-4 py-3 rounded-xl text-base font-bold whitespace-nowrap flex items-center justify-center gap-2 text-center transition-colors ${secondaryBtnCls}`}
+                className="basis-full w-full px-4 py-3 text-base whitespace-nowrap text-center"
               >
                 <Copy size={16} />
                 画像をコピー
-              </button>
-              <button
+              </ToolButton>
+              <ToolButton
+                variant="secondary"
                 onClick={handleSaveImage}
-                className={`flex-1 min-w-[11rem] px-4 py-3 rounded-xl text-base font-bold whitespace-nowrap flex items-center justify-center gap-2 text-center transition-colors ${secondaryBtnCls}`}
+                className="flex-1 min-w-[11rem] px-4 py-3 text-base whitespace-nowrap text-center"
               >
                 画像を保存
-              </button>
-              <button
+              </ToolButton>
+              <ToolButton
+                variant="secondary"
                 onClick={() => {
                   void handleSaveImageAs();
                 }}
-                className={`flex-1 min-w-[12.5rem] px-4 py-3 rounded-xl text-base font-bold whitespace-nowrap flex items-center justify-center gap-2 text-center transition-colors ${secondaryBtnCls}`}
+                className="flex-1 min-w-[12.5rem] px-4 py-3 text-base whitespace-nowrap text-center"
               >
                 場所を指定して保存
-              </button>
+              </ToolButton>
             </div>
 
             {statusMessage && <p className={`text-base ${mutedTextCls}`}>{statusMessage}</p>}
