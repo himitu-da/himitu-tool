@@ -118,11 +118,11 @@ export function useToolTheme(): ToolTheme {
             }
         }
         switch (theme) {
-            case "light": return "bg-gray-50 text-gray-600";
-            case "dark": return "bg-gray-800 text-gray-300";
-            case "ocean": return "bg-cyan-900/60 text-cyan-100";
+            case "light": return "bg-gray-100 text-gray-700 hover:bg-gray-200";
+            case "dark": return "bg-gray-700/70 text-gray-200 hover:bg-gray-700";
+            case "ocean": return "bg-cyan-800/70 text-cyan-100 hover:bg-cyan-800";
             case "classic": return "bg-gray-100 border-2 border-t-white border-l-white border-b-gray-600 border-r-gray-600 text-black !rounded-none";
-            default: return "bg-gray-50 text-gray-600";
+            default: return "bg-gray-100 text-gray-700 hover:bg-gray-200";
         }
     };
 
