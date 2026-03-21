@@ -19,7 +19,7 @@ type Mag = 0 | 1 | 2 | 3 | 4 | 5;
 const MAGS: Mag[] = [0, 1, 2, 3, 4, 5];
 
 const getSymbol = (prefix: Prefix, type: UnitBaseType, mag: Mag) => {
-  if (mag === 0) return type === "byte" ? "B" : "bit";
+  if (mag === 0) return type === "byte" ? "B" : "b";
 
   const p = ["", "K", "M", "G", "T", "P"][mag];
   if (type === "byte") {
