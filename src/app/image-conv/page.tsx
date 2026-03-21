@@ -3,7 +3,12 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { ToolPageLayout } from "@/components/ToolPageLayout";
 import { ToolPanel } from "@/components/ToolPanel";
+import { ToolGrid } from "@/components/ToolGrid";
+import { ToolColumn } from "@/components/ToolColumn";
 import { useToolTheme } from "@/lib/useToolTheme";
+import { ToolButton } from "@/components/ui/ToolButton";
+import { ToolRadio } from "@/components/ui/ToolRadio";
+import { ToolSlider } from "@/components/ui/ToolSlider";
 
 type OutputFormat = "image/png" | "image/jpeg" | "image/webp" | "image/avif";
 
@@ -238,7 +243,7 @@ export default function ImageConvPage() {
   const [conversionNotes, setConversionNotes] = useState<string[]>([]);
   const [previewImage, setPreviewImage] = useState<PreviewImage | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const { primaryBtnCls, secondaryBtnCls, blockCls, mutedTextCls, radioLabelCls, theme } = useToolTheme();
+  const { mutedTextCls, theme } = useToolTheme();
 
   const selectedOutput = useMemo(() => {
     return OUTPUT_OPTIONS.find((item) => item.mime === outputMime) ?? OUTPUT_OPTIONS[0];
@@ -444,239 +449,230 @@ export default function ImageConvPage() {
     }
   })();
 
-  const cardSurfaceCls = theme === "light" ? "bg-white" : "bg-black/10";
-
   return (
-    <ToolPageLayout title="画像拡張子変換ツール" maxWidth="5xl">
-      <ToolPanel className="space-y-5">
-        <div className={`rounded-3xl p-5 sm:p-6 ${blockCls}`}>
-          <div
-            onDrop={onDrop}
-            onDragOver={onDragOver}
-            onDragLeave={onDragLeave}
-            className={dropZoneCls}
-          >
-            <div className="space-y-2 text-center">
-              <p className="text-lg font-semibold">画像をドロップ</p>
-              <p className={`text-sm ${mutedTextCls}`}>
-                このエリアに画像をドラッグしてください。複数ファイルもまとめて追加できます。
-              </p>
-            </div>
-          </div>
-
-          <div className="mt-4 flex justify-center">
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              className={`rounded-xl px-5 py-3 font-semibold transition-colors ${secondaryBtnCls}`}
+    <ToolPageLayout title="画像拡張子変換ツール" maxWidth="6xl">
+      <ToolGrid>
+        <ToolColumn>
+          {/* 画像ドロップエリア */}
+          <ToolPanel title="画像を選択">
+            <div
+              onDrop={onDrop}
+              onDragOver={onDragOver}
+              onDragLeave={onDragLeave}
+              className={dropZoneCls}
             >
-              ファイルを選択
-            </button>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept={ACCEPT_EXTENSIONS}
-              multiple
-              onChange={onFileChange}
-              className="hidden"
-            />
-          </div>
-        </div>
-
-        <div className={`rounded-3xl p-5 sm:p-6 ${blockCls}`}>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <h2 className="text-sm font-semibold opacity-90">変換後の拡張子</h2>
-              <div className="flex flex-wrap gap-2">
-                {OUTPUT_OPTIONS.map((option) => {
-                  const active = outputMime === option.mime;
-                  return (
-                    <button
-                      key={option.mime}
-                      type="button"
-                      onClick={() => setOutputMime(option.mime)}
-                      className={`rounded-xl px-4 py-2 text-sm font-semibold transition-colors ${radioLabelCls(active)}`}
-                      aria-pressed={active}
-                    >
-                      {option.label}
-                    </button>
-                  );
-                })}
+              <div className="space-y-2 text-center">
+                <p className="text-lg font-semibold">画像をドロップ</p>
+                <p className={`text-sm ${mutedTextCls}`}>
+                  このエリアに画像をドラッグしてください。<br />複数ファイルもまとめて追加できます。
+                </p>
               </div>
             </div>
 
-            {selectedOutput.lossy ? (
-              <label className="flex max-w-xl flex-col gap-2">
-                <span className="text-sm font-semibold opacity-90">画質 {Math.round(quality * 100)}%</span>
-                <div className={`rounded-xl px-4 py-4 ${cardSurfaceCls}`}>
-                  <input
-                    type="range"
+            <div className="mt-6 flex justify-center">
+              <ToolButton
+                variant="secondary"
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="px-6 py-3"
+              >
+                ファイルを選択して追加
+              </ToolButton>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept={ACCEPT_EXTENSIONS}
+                multiple
+                onChange={onFileChange}
+                className="hidden"
+              />
+            </div>
+          </ToolPanel>
+
+          {/* 変換後の拡張子 */}
+          <ToolPanel title="変換設定">
+            <div className="space-y-6">
+              <div className="space-y-3">
+                <h3 className="text-sm font-bold opacity-80">変換後の拡張子</h3>
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                  {OUTPUT_OPTIONS.map((option) => (
+                    <ToolRadio
+                      key={option.mime}
+                      variant="card"
+                      name="output-format"
+                      checked={outputMime === option.mime}
+                      onChange={() => setOutputMime(option.mime)}
+                      label={option.label}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              {selectedOutput.lossy ? (
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-sm font-bold opacity-80">画質</h3>
+                    <span className="text-sm font-bold">{Math.round(quality * 100)}%</span>
+                  </div>
+                  <ToolSlider
                     min={0.4}
                     max={1}
                     step={0.05}
                     value={quality}
                     onChange={(e) => setQuality(Number(e.target.value))}
-                    className="w-full accent-blue-500"
                   />
                 </div>
-              </label>
+              ) : (
+                <div className={`rounded-xl p-4 text-sm bg-black/5 dark:bg-white/5 ${mutedTextCls}`}>
+                  PNGは劣化なし（ロスレス）で出力します。
+                </div>
+              )}
+            </div>
+          </ToolPanel>
+        </ToolColumn>
+
+        <ToolColumn>
+          {/* 選択した画像と変換ボタンを1つのパネルに集約 */}
+          <ToolPanel title="選択した画像">
+            {selectedFiles.length ? (
+              <div className="space-y-6">
+                <div className="flex justify-end">
+                  <ToolButton variant="secondary" onClick={clearSelectedFiles} className="px-3 py-1.5 text-xs">
+                    すべてクリア
+                  </ToolButton>
+                </div>
+                <ul className="grid gap-3 overflow-hidden">
+                  {selectedFiles.map((item) => (
+                    <li key={item.id} className="flex items-center gap-3 overflow-hidden rounded-2xl p-3 bg-black/5 dark:bg-white/5 border border-black/5 dark:border-white/5">
+                      <button
+                        type="button"
+                        onClick={() => setPreviewImage({ src: item.previewUrl, alt: item.file.name })}
+                        className="shrink-0 transition-transform hover:scale-105"
+                        aria-label={`${item.file.name} を拡大表示`}
+                      >
+                        <img
+                          src={item.previewUrl}
+                          alt={item.file.name}
+                          className="h-14 w-14 rounded-xl object-cover shadow-sm"
+                        />
+                      </button>
+                      <div className="min-w-0 flex-1 overflow-hidden">
+                        <p className="truncate text-sm font-bold">{item.file.name}</p>
+                        <p className={`text-xs truncate ${mutedTextCls}`}>
+                          {fileExtension(item.file.name).toUpperCase() || "FILE"} / {formatBytes(item.file.size)}
+                        </p>
+                        {item.note && <p className={`mt-1 text-xs truncate text-amber-500 font-medium`}>{item.note}</p>}
+                      </div>
+                      <ToolButton
+                        variant="secondary"
+                        onClick={() => removeSelectedFile(item.id)}
+                        className="shrink-0 w-8 h-8 !p-0 rounded-full"
+                        aria-label={`${item.file.name} を削除`}
+                      >
+                        ×
+                      </ToolButton>
+                    </li>
+                  ))}
+                </ul>
+
+                <div className="pt-6 border-t border-black/5 dark:border-white/5">
+                  <ToolButton
+                    variant="primary"
+                    type="button"
+                    onClick={convert}
+                    disabled={!selectedFiles.length || loading}
+                    className="w-full py-4 text-lg font-bold"
+                  >
+                    {loading ? "変換中..." : "画像を一括変換する"}
+                  </ToolButton>
+
+                  {loading && (
+                    <p className={`mt-4 text-center text-sm ${mutedTextCls}`}>
+                      画像を処理しています。完了までしばらくお待ちください...
+                    </p>
+                  )}
+
+                  {error && (
+                    <div className="mt-4 rounded-xl p-4 bg-rose-500/10 text-rose-500 text-sm font-medium border border-rose-500/20">
+                      {error}
+                    </div>
+                  )}
+                </div>
+              </div>
             ) : (
-              <div className={`max-w-xl rounded-xl p-4 text-sm ${cardSurfaceCls} ${mutedTextCls}`}>
-                PNGは劣化なしで出力します。
+              <div className={`p-8 text-center rounded-2xl text-sm bg-black/5 dark:bg-white/5 ${mutedTextCls}`}>
+                画像を選択してください。
               </div>
             )}
-          </div>
-        </div>
+          </ToolPanel>
 
-        <div className={`rounded-3xl p-5 sm:p-6 ${blockCls}`}>
-          <div className="mb-3 flex items-center justify-between gap-3">
-            <h2 className="text-sm font-semibold opacity-90">選択した画像</h2>
-            {!!selectedFiles.length && (
-              <button
-                type="button"
-                onClick={clearSelectedFiles}
-                className={`rounded-lg px-3 py-2 text-sm font-medium transition-colors ${secondaryBtnCls}`}
-              >
-                すべてクリア
-              </button>
-            )}
-          </div>
-
-          {selectedFiles.length ? (
-            <ul className="grid gap-2.5">
-              {selectedFiles.map((item) => (
-                <li key={item.id} className={`rounded-2xl p-3 ${cardSurfaceCls}`}>
-                  <div className="flex items-center gap-3">
-                    <button
-                      type="button"
-                      onClick={() => setPreviewImage({ src: item.previewUrl, alt: item.file.name })}
-                      className="shrink-0"
-                      aria-label={`${item.file.name} を拡大表示`}
-                    >
-                      <img
-                        src={item.previewUrl}
-                        alt={item.file.name}
-                        className="h-14 w-14 rounded-xl object-cover"
-                      />
-                    </button>
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-semibold">{item.file.name}</p>
-                      <p className={`text-xs ${mutedTextCls}`}>
-                        {fileExtension(item.file.name).toUpperCase() || "FILE"} / {formatBytes(item.file.size)}
-                      </p>
-                      {item.note && <p className={`mt-1 text-xs ${mutedTextCls}`}>{item.note}</p>}
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => removeSelectedFile(item.id)}
-                      className={`shrink-0 rounded-full px-2.5 py-1.5 text-sm leading-none transition-colors ${secondaryBtnCls}`}
-                      aria-label={`${item.file.name} を削除`}
-                    >
-                      ×
-                    </button>
+          {/* 変換後の画像 */}
+          <ToolPanel title="変換後の画像">
+            {results.length ? (
+              <div className="space-y-6">
+                {results.length > 1 && (
+                  <div className="flex justify-end">
+                    <ToolButton variant="secondary" onClick={downloadAll} className="px-3 py-1.5 text-xs">
+                      一括保存
+                    </ToolButton>
                   </div>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <div className={`rounded-2xl p-4 text-sm ${cardSurfaceCls} ${mutedTextCls}`}>
-              まだ画像は選択されていません。
-            </div>
-          )}
-        </div>
-
-        <button
-          type="button"
-          onClick={convert}
-          disabled={!selectedFiles.length || loading}
-          className={`min-h-14 w-full rounded-2xl px-6 py-4 text-base font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${primaryBtnCls}`}
-        >
-          {loading ? "変換中..." : "変換する"}
-        </button>
-
-        {loading && (
-          <div className={`rounded-2xl p-4 text-sm ${blockCls} ${mutedTextCls}`}>
-            画像を順番に処理しています。完了まで少しだけお待ちください。
-          </div>
-        )}
-
-        {error && (
-          <div className={`rounded-2xl p-4 text-sm ${blockCls}`}>
-            {error}
-          </div>
-        )}
-
-        <div className={`rounded-3xl p-5 sm:p-6 ${blockCls}`}>
-          <div className="mb-4 flex items-center justify-between gap-3">
-            <div>
-              <h2 className="text-lg font-semibold">変換後の画像</h2>
-              <p className={`text-sm ${mutedTextCls}`}>
-                {results.length ? `${results.length}件の画像を出力しました。` : "変換後の画像はここに表示されます。"}
-              </p>
-            </div>
-            {results.length > 1 && (
-              <button
-                type="button"
-                onClick={downloadAll}
-                className={`rounded-xl px-4 py-3 text-sm font-semibold transition-colors ${secondaryBtnCls}`}
-              >
-                一括ダウンロード
-              </button>
+                )}
+                <div className="grid gap-3">
+                  {results.map((item) => (
+                    <article key={item.id} className="flex items-center gap-3 overflow-hidden rounded-2xl p-3 bg-black/5 dark:bg-white/5 border border-black/5 dark:border-white/5">
+                      <button
+                        type="button"
+                        onClick={() => setPreviewImage({ src: item.previewUrl, alt: item.downloadName })}
+                        className="shrink-0 transition-transform hover:scale-105"
+                        aria-label={`${item.downloadName} を拡大表示`}
+                      >
+                        <img
+                          src={item.previewUrl}
+                          alt={item.downloadName}
+                          className="h-14 w-14 rounded-xl object-cover shadow-sm"
+                        />
+                      </button>
+                      <div className="min-w-0 flex-1 overflow-hidden">
+                        <p className="truncate text-sm font-bold">{item.downloadName}</p>
+                        <p className={`text-xs truncate ${mutedTextCls}`}>
+                          {item.formatLabel} / {item.width} x {item.height} / {item.sizeLabel}
+                        </p>
+                      </div>
+                      <ToolButton
+                        variant="primary"
+                        onClick={() => downloadOne(item)}
+                        className="px-4 py-2 text-sm shrink-0"
+                      >
+                        保存
+                      </ToolButton>
+                    </article>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className={`p-12 text-center rounded-2xl text-sm bg-black/5 dark:bg-white/5 ${mutedTextCls}`}>
+                変換後の画像がここに表示されます。
+              </div>
             )}
-          </div>
+          </ToolPanel>
 
-          {results.length ? (
-            <div className="grid gap-2.5">
-              {results.map((item) => (
-                <article key={item.id} className={`rounded-2xl p-3 ${cardSurfaceCls}`}>
-                  <div className="flex items-center gap-3">
-                    <button
-                      type="button"
-                      onClick={() => setPreviewImage({ src: item.previewUrl, alt: item.downloadName })}
-                      className="shrink-0"
-                      aria-label={`${item.downloadName} を拡大表示`}
-                    >
-                      <img
-                        src={item.previewUrl}
-                        alt={item.downloadName}
-                        className="h-14 w-14 rounded-xl object-cover"
-                      />
-                    </button>
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-semibold">{item.downloadName}</p>
-                      <p className={`text-xs ${mutedTextCls}`}>
-                        {item.formatLabel} / {item.width} x {item.height} / {item.sizeLabel}
-                      </p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => downloadOne(item)}
-                      className={`shrink-0 rounded-xl px-4 py-3 text-sm font-semibold transition-colors ${primaryBtnCls}`}
-                    >
-                      ダウンロード
-                    </button>
-                  </div>
-                </article>
-              ))}
+          {/* 使い方と補足 */}
+          <ToolPanel title="使い方と補足">
+            <div className={`space-y-3 text-sm leading-relaxed ${mutedTextCls}`}>
+              <p>1. 変換したい画像をドロップまたは選択ボタンから追加します。</p>
+              <p>2. 出力したい形式（PNG/JPEG/WebP/AVIF）と画質を設定します。</p>
+              <p>3. 「画像を一括変換する」ボタンを押すと、ブラウザ内で変換処理が行われます。</p>
+              <p>4. 変換完了後、個別に保存するか一括保存ボタンでダウンロードしてください。</p>
+              <div className="pt-2 border-t border-black/5 dark:border-white/5">
+                <p>※ HEIC / HEIF / TIFF / ICO などの読み込みにも対応しています。</p>
+                {conversionNotes.map((note) => (
+                  <p key={note} className="text-amber-500 font-medium">※ {note}</p>
+                ))}
+              </div>
             </div>
-          ) : (
-            <div className={`rounded-2xl p-4 text-sm ${cardSurfaceCls} ${mutedTextCls}`}>
-              ファイルを選択して変換すると、ここに変換後の画像リストが並びます。
-            </div>
-          )}
-        </div>
-
-        <div className={`rounded-3xl p-5 sm:p-6 ${blockCls}`}>
-          <h2 className="text-lg font-semibold">使い方と補足</h2>
-          <div className={`mt-3 space-y-2 text-sm leading-relaxed ${mutedTextCls}`}>
-            <p>PNG / JPEG / WebP / AVIF へ変換できます。HEIC / HEIF / TIFF / ICO なども読み込みに対応しています。</p>
-            <p>複数画像をまとめて選択し、そのまま同じ拡張子へ一括変換できます。</p>
-            {conversionNotes.map((note) => (
-              <p key={note}>{note}</p>
-            ))}
-          </div>
-        </div>
-      </ToolPanel>
+          </ToolPanel>
+        </ToolColumn>
+      </ToolGrid>
 
       {previewImage && (
         <div

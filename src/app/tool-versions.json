@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-03-20",
+  "generatedAt": "2026-03-21",
   "tools": [
     {
       "id": "[category]",
@@ -485,9 +485,9 @@
     {
       "id": "image-conv",
       "title": "画像拡張子変換ツール",
-      "version": "1.0.6",
-      "updatedAt": "2026-03-18",
-      "changeSummary": "Rename default theme key to light",
+      "version": "1.0.8",
+      "updatedAt": "2026-03-21",
+      "changeSummary": "Refine UI layout: move selected images and convert button to right column, fix list item overflow",
       "history": [
         {
           "version": "1.0.0",
@@ -523,6 +523,16 @@
           "version": "1.0.6",
           "updatedAt": "2026-03-18",
           "summary": "Rename default theme key to light"
+        },
+        {
+          "version": "1.0.7",
+          "updatedAt": "2026-03-21",
+          "summary": "Refactor UI to use standardized Tool components (ToolGrid, ToolColumn, ToolPanel, ToolButton, ToolRadio, ToolSlider)"
+        },
+        {
+          "version": "1.0.8",
+          "updatedAt": "2026-03-21",
+          "summary": "Refine UI layout: move selected images and convert button to right column, fix list item overflow"
         }
       ]
     },
